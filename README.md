@@ -13,7 +13,7 @@ How to install:
 If the installer doesn't work:
 
 1. Copy the "baking\_tools" and "uv\_tools" folders into Documents/maya/scripts
-2. Copy the "shelf\_Jose\_Ivy\_Tools.mel" into Documents/maya/\[YEAR OF THE MAYA VERSION:ex.(2023,2024)]/prefs/shelves
+2. Copy the "shelf\_VFS\_Tools.mel" into Documents/maya/\[YEAR OF THE MAYA VERSION:ex.(2025,2026)]/prefs/shelves
 3. Open Maya (if Maya is allready open, close it and then open it again).
 4. The shelf with the tools loaded will be there ready to be used.
 
