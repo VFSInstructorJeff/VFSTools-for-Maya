@@ -1,5 +1,13 @@
 # VFS-Tools-for-Maya V 1.3.0
 
+---------------------------------------------------------------------------------------------------------------------------------------
+Contribution Members | 
+Phase 1 | GD67JoseMunguia
+Phase 2 | GD68IvyMedina
+Phase 3 | GD76RomanCaroly
+          GD71LauraRenis
+---------------------------------------------------------------------------------------------------------------------------------------
+
 This shelf of tools will help you to quickly iterate in you high to low resolution baking and UV editing processes in Maya.
 
 How to install:
