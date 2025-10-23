@@ -2,9 +2,9 @@
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 Contribution Members 
-Phase1-GD67JoseMunguia
-Phase2-GD68IvyMedina
-Phase3-GD76RomanCaroly GD71LauraRenis
+1. GD67JoseMunguia
+2. GD68IvyMedina
+3. GD76RomanCaroly GD71LauraRenis
 ---------------------------------------------------------------------------------------------------------------------------------------
 
 This shelf of tools will help you to quickly iterate in you high to low resolution baking and UV editing processes in Maya.
