@@ -1,8 +1,8 @@
 @echo off
-xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2023"
-xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2024"
-xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2025"
-xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2026"
+xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2023\"
+xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2024\"
+xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2025\"
+xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2026\"
 
 xcopy /s/y "%cd%\layer_editor_tools" "%userprofile%\Documents\maya\VFSTools\layer_editor_tools\"
 xcopy /s/y "%cd%\baking_tools" "%userprofile%\Documents\maya\VFSTools\baking_tools\"
