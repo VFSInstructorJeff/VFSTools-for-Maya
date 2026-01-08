@@ -33,7 +33,7 @@ MAGENTA = (0.200, 0.076, 0.228) # For debugging
 
 # Directories
 CURRENT_DIR = Path(__file__).parent # (...\Documents\maya\scripts\vfs_leveldesign_tools\)
-ICON_DIR = str(CURRENT_DIR) + r"\icons"
+ICON_DIR = str(CURRENT_DIR.parent) + r"\icons"
 
 # Maya Icons (Extract them from Maya and copy them to the custom icons folder as PySide requires a path)
 CUBE = ICON_DIR + r'\polyCube.png'

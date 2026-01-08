@@ -234,10 +234,11 @@ global proc shelf_VFS_Tools () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
+        -imageOverlayLabel "LD Tools"
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "layerEditor.png" 
-        -image1 "layerEditor.png" 
+        -image "vfs_ld.png" 
+        -image1 "vfs_ld.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
