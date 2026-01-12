@@ -3,7 +3,6 @@
 setx MAYA_ENV_DIR "%userprofile%"\Documents\maya\VFSTools\
 
 xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\VFSTools\"
-xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\2026\"
 xcopy /s/y "%cd%\shelf_VFS_Tools.mel" "%userprofile%\Documents\maya\VFSTools\"
 
 xcopy /s/y "%cd%\layer_editor_tools" "%userprofile%\Documents\maya\VFSTools\layer_editor_tools\"
