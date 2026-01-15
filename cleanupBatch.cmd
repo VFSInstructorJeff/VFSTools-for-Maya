@@ -1,20 +1,25 @@
 :: BATCH VERSION OF CLEANUP.PY
 :: ---------- CONSTANTS ----------
 :: Create constants that we'll use for searching
-SET PYTHONPATH = "PYTHONPATH"
-SET PYTHONPATH_STRING = "%userprofile%\Documents\maya\VFSTools"
-SET XBMLANGPATH = "XBMLANGPATH"
-SET XBMLANGPATH_STRING = "%userprofile%\Documents\maya\VFSTools\icons"
-SET OLD_USER_SETUP_FILTER = "layer_editor_tools"
+SET PYTHONPATH= PYTHONPATH
+SET PYTHONPATH_STRING= %userprofile%\Documents\maya\VFSTools
+SET XBMLANGPATH= XBMLANGPATH
+SET XBMLANGPATH_STRING= %userprofile%\Documents\maya\VFSTools\icons
+SET OLD_USER_SETUP_FILTER= layer_editor_tools
 :: Create constants for directories
-SET SOURCE_DIR = Path.cwd() # Get the directory where this script is (...\VFSTools-For-Maya\)
-SET MAYA_ENV_PATH = os.path.expanduser('~') + r"\Documents\maya\VFSTools\Maya.env"
-SET MAYA_SCRIPTS_DIR = os.path.expanduser('~') + r"\Documents\maya\scripts"
-SET VFS_TOOLS_DIR =  os.path.expanduser('~') + r"\Documents\maya\VFSTools"
-SET SCRIPT_DIRS = ["layer_editor_tools", "baking_tools", "uv_tools"]
+SET SOURCE_DIR= %~dp0 & :: ...\VFS-Maya-Tools\
+SET MAYA_ENV_PATH= %userprofile%\Documents\maya\VFSTools\Maya.env
+SET MAYA_SCRIPTS_DIR= %userprofile%\Documents\maya\scripts
+SET VFS_TOOLS_DIR=  %userprofile%\Documents\maya\VFSTools
+SET SCRIPT_DIRS= layer_editor_tools baking_tools uv_tools
 
 :: ---------- METHODS/FUNCTIONS ----------
 :: Create a method to go through userSetup.py file in .../maya/scripts/ and look for old VFSTools remains
+:userSetup
+:: read lines from file
+:: parse through lines, if match found
+:: remove file
+
 def userSetup(userSetupPath):
     with open(userSetupPath, 'r') as file:
         userSetupLines = file.readlines()                       # get all userSetup.py lines
@@ -25,6 +30,7 @@ def userSetup(userSetupPath):
             return
 
 :: Create a method to go through the Maya directory and delete any old versions of the VFS-Maya-Tools
+:purgeOldVFSTools
 def purgeOldVFSTools():
     for filename in os.listdir(MAYA_SCRIPTS_DIR):               # List all files in .../maya/scripts/ directory
         file_path = os.path.join(MAYA_SCRIPTS_DIR, filename)
@@ -35,7 +41,8 @@ def purgeOldVFSTools():
         path = os.path.join(MAYA_SCRIPTS_DIR, dir)
         shutil.rmtree(path)
 
-:: Create a method to go through the lines in a file and look for our PYTHONPATH or XBMLANGPATH constants 
+:: Create a method to go through the lines in a file and look for our PYTHONPATH or XBMLANGPATH constants
+:isVFSToolsThere
 def isVFSToolsThere(filelines, envVar, envVarStr):
     envpath_check = False
     for line in filelines:                      # Iterate through each line of the file
@@ -55,7 +62,8 @@ def isVFSToolsThere(filelines, envVar, envVarStr):
         
 :: ---------- FUNCTIONALITY/EXECUTION ----------
 :: Purge old VFS tool folders in .../maya/scripts/
-:: Purge userSetup.py located in .../maya/scripts/ IF it contains old VFS Tools 
+:: Purge userSetup.py located in .../maya/scripts/ IF it contains old VFS Tools
+CALL :purgeOldVFSTools 
 purgeOldVFSTools()
 
 :: Check if Maya.env exists, if it's empty, and if it has extra content
