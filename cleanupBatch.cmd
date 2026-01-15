@@ -2,20 +2,43 @@
 :: ---------- CONSTANTS ----------
 :: Create constants that we'll use for searching
 SET PYTHONPATH= PYTHONPATH
-SET PYTHONPATH_STRING= %userprofile%\Documents\maya\VFSTools
+SET PYTHONPATH_STRING= %userprofile%\Documents\maya\VFSTools\
 SET XBMLANGPATH= XBMLANGPATH
-SET XBMLANGPATH_STRING= %userprofile%\Documents\maya\VFSTools\icons
+SET XBMLANGPATH_STRING= %userprofile%\Documents\maya\VFSTools\icons\
 SET OLD_USER_SETUP_FILTER= layer_editor_tools
 :: Create constants for directories
 SET SOURCE_DIR= %~dp0 & :: ...\VFS-Maya-Tools\
 SET MAYA_ENV_PATH= %userprofile%\Documents\maya\VFSTools\Maya.env
-SET MAYA_SCRIPTS_DIR= %userprofile%\Documents\maya\scripts
-SET VFS_TOOLS_DIR=  %userprofile%\Documents\maya\VFSTools
+SET MAYA_SCRIPTS_DIR= %userprofile%\Documents\maya\scripts\
+SET VFS_TOOLS_DIR=  %userprofile%\Documents\maya\VFSTools\
 SET SCRIPT_DIRS= layer_editor_tools baking_tools uv_tools
+
+:: ---------- FUNCTIONALITY/EXECUTION ----------
+:: Purge old VFS tool folders in .../maya/scripts/
+:: Purge userSetup.py located in .../maya/scripts/ IF it contains old VFS Tools
+CALL :purgeOldVFSTools 
+
+:: Check if Maya.env exists, if it's empty, and if it has extra content
+with open(MAYA_ENV_PATH, 'r') as envfile:               # Open the Maya.env file
+    if FileNotFoundError:                               # If the file doesn't exist
+        print(f"File at {MAYA_ENV_PATH} doesn't exist!")
+        shutil.copy(SOURCE_DIR + r"\Maya.env", MAYA_ENV_PATH)
+    else:
+        lines = envfile.readlines()                     # If the file exists, put all lines in a list
+        if not lines:                                   # If there aren't any lines (if the file is empty)
+            print(f"File exists in {MAYA_ENV_PATH}, but it's empty!")
+            shutil.copy(SOURCE_DIR + r"\Maya.env", MAYA_ENV_PATH)
+        else:
+            isVFSToolsThere(lines, PYTHONPATH, PYTHONPATH_STRING)   # If the file isn't empty, check for VFSTools
+            isVFSToolsThere(lines, XBMLANGPATH, XBMLANGPATH_STRING)
 
 :: ---------- METHODS/FUNCTIONS ----------
 :: Create a method to go through userSetup.py file in .../maya/scripts/ and look for old VFSTools remains
 :userSetup
+SETLOCAL
+SET userSetupFile= %MAYA_SCRIPTS_DIR%userSetup.py
+FIND %OLD_USER_SETUP_FILTER% %userSetupFile%
+if ErrorLevel 1
 :: read lines from file
 :: parse through lines, if match found
 :: remove file
@@ -59,23 +82,3 @@ def isVFSToolsThere(filelines, envVar, envVarStr):
         filelines.append(envVar + " = " + envVarStr)    # Add it and add the path to VFSTools
         print(f"{envVar} was added!")
         return
-        
-:: ---------- FUNCTIONALITY/EXECUTION ----------
-:: Purge old VFS tool folders in .../maya/scripts/
-:: Purge userSetup.py located in .../maya/scripts/ IF it contains old VFS Tools
-CALL :purgeOldVFSTools 
-purgeOldVFSTools()
-
-:: Check if Maya.env exists, if it's empty, and if it has extra content
-with open(MAYA_ENV_PATH, 'r') as envfile:               # Open the Maya.env file
-    if FileNotFoundError:                               # If the file doesn't exist
-        print(f"File at {MAYA_ENV_PATH} doesn't exist!")
-        shutil.copy(SOURCE_DIR + r"\Maya.env", MAYA_ENV_PATH)
-    else:
-        lines = envfile.readlines()                     # If the file exists, put all lines in a list
-        if not lines:                                   # If there aren't any lines (if the file is empty)
-            print(f"File exists in {MAYA_ENV_PATH}, but it's empty!")
-            shutil.copy(SOURCE_DIR + r"\Maya.env", MAYA_ENV_PATH)
-        else:
-            isVFSToolsThere(lines, PYTHONPATH, PYTHONPATH_STRING)   # If the file isn't empty, check for VFSTools
-            isVFSToolsThere(lines, XBMLANGPATH, XBMLANGPATH_STRING)
