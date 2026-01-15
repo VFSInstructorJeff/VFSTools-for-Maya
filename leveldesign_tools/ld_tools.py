@@ -16,7 +16,7 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget,
                                QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
                                QPushButton, QRadioButton, QButtonGroup, QCheckBox,
-                               QMenu, QToolBar, QComboBox, QSizePolicy)
+                               QMenu, QToolBar, QComboBox, QSizePolicy, QFrame, QSpacerItem)
 from PySide6.QtGui import QIcon, QFont, QPixmap
 
 
@@ -72,6 +72,9 @@ MAT_MISC7 = ICON_DIR + r'\Misc07_grid_32.png'
 MAT_MISC8 = ICON_DIR + r'\Misc08_grid_32.png'
 MAT_MISC9 = ICON_DIR + r'\Misc09_grid_32.png'
 
+# MISC
+BUTTON_SPACING = 6
+
 
 # ---------- SETUP METHODS ----------
 
@@ -112,21 +115,30 @@ def create_primitive(primTypeRaw):
     else:
         print("Ruh-roh, something went wrong with create_primitive!")
 
+def grid_options(*args):
+    cmds.GridOptions()
+
 def grid_setup(gridRaw):
     cmds.setAttr('perspShape.farClipPlane', 500000) # 5km
     cmds.setAttr('perspShape.nearClipPlane', 10) # 10cm
 
-    if gridRaw == .5:
-        cmds.grid(size = 10000, spacing = 50, divisions = 1) # 100m, grid every 0.5m
+    try:
+        newGrid = int(gridRaw[:-2])
+    except ValueError:
+        grid_options()
+        return
+
+    if newGrid == 50:
+        cmds.grid(size = 10000, spacing = 50, divisions = 1) # 100m, grid every 50cm
         cmds.displayColor('gridAxis', 4, dormant = True)
-    if gridRaw == 1:
-        cmds.grid(size = 10000, spacing = 100, divisions = 1) # 100m, grid every 1m
+    elif newGrid == 100:
+        cmds.grid(size = 10000, spacing = 100, divisions = 1) # 100m, grid every 100cm
         cmds.displayColor('gridAxis', 4, dormant = True)
-    if gridRaw == 2:
-        cmds.grid(size = 10000, spacing = 200, divisions = 1) # 100m, grid every 2m
+    elif newGrid == 200:
+        cmds.grid(size = 10000, spacing = 200, divisions = 1) # 100m, grid every 200cm
         cmds.displayColor('gridAxis', 4, dormant = True)
-    if gridRaw == 4:
-        cmds.grid(size = 10000, spacing = 400, divisions = 1) # 100m, grid every 4m
+    elif newGrid == 400:
+        cmds.grid(size = 10000, spacing = 400, divisions = 1) # 100m, grid every 400cm
         cmds.displayColor('gridAxis', 4, dormant = True)
     else:
         print("Ruh-roh, something went wrong with grid_setup!")
@@ -240,7 +252,6 @@ class MainWindow(mixin, QtWidgets.QDialog):
 
         self.setObjectName(self.UI_OBJECT_NAME)
         self.setWindowTitle("LD Tools")
-        self.setFixedSize(500, 500)
 
         # Create the tab widget (pass self as parent so the widget is shown)
         self.tabs_layout = QTabWidget(self)
@@ -259,8 +270,6 @@ class MainWindow(mixin, QtWidgets.QDialog):
     def initUI(self):
         super(MainWindow, self).show(dockable=True)
         cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
-
-        self.tabs_layout.setFixedSize(500,500)
 
 
     def ldworkflow_tab_setup(self):
@@ -308,9 +317,18 @@ class MainWindow(mixin, QtWidgets.QDialog):
         primitives_layout.addWidget(button_torus, 2, 1)
         primitives_layout.addWidget(button_type, 2, 2)
 
+        # Separator Primitives/Tools
+        separator2_layout = QVBoxLayout()
+        ldworkflow_tab_layout.addLayout(separator2_layout)
+        separator2 = QFrame()
+        separator2.setFrameShape(QFrame.Shape.HLine)
+        separator2.setFrameShadow(QFrame.Shadow.Sunken)
+        separator2_layout.addWidget(separator2)
+
         # Tools layout
         curve_tools_layout = QHBoxLayout()
         ldworkflow_tab_layout.addLayout(curve_tools_layout)
+        curve_tools_layout.setSpacing(BUTTON_SPACING)
 
         # Tools buttons
         button_combine = QPushButton(icon=QIcon(COMBINE))
@@ -325,12 +343,12 @@ class MainWindow(mixin, QtWidgets.QDialog):
         button_sweepmesh = QPushButton(icon=QIcon(SWEEP_MESH))
 
         # Set icon and button sizes
-        tools_btnarray = {button_combine, button_separate, button_centerpivot,
+        tools_btnarray = [button_combine, button_separate, button_centerpivot,
                         button_killhistory, button_freeze, button_booldiff,
-                        button_circlecurve, button_curvetool, button_addknot, button_sweepmesh}
+                        button_circlecurve, button_curvetool, button_addknot, button_sweepmesh]
         for btn in tools_btnarray:
             btn.setIconSize(QSize(64, 64))
-            btn.setMaximumSize(50, 40)
+            btn.setMaximumSize(40, 40)
 
         # Connect buttons and methods
         button_combine.clicked.connect(combine)
@@ -344,11 +362,41 @@ class MainWindow(mixin, QtWidgets.QDialog):
         button_addknot.clicked.connect(insert_knot)
         button_sweepmesh.clicked.connect(sweep_mesh)
        
-        # Parenting widgets to layout
-        for btn in tools_btnarray:
-            curve_tools_layout.addWidget(btn)
+        # Parenting widgets to layout (adding it with a for loop randomizes the position everytime the tool is started)
+        for button in tools_btnarray:
+            curve_tools_layout.addWidget(button)
 
-        # Grid Options
+        # Separator Tools/Grid
+        separator2_layout = QVBoxLayout()
+        ldworkflow_tab_layout.addLayout(separator2_layout)
+        separator2 = QFrame()
+        separator2.setFrameShape(QFrame.Shape.HLine)
+        separator2.setFrameShadow(QFrame.Shadow.Sunken)
+        separator2_layout.addWidget(separator2)
+
+        # Grid Options layout
+        grid_layout = QHBoxLayout()
+        ldworkflow_tab_layout.addLayout(grid_layout)
+        grid_layout.setContentsMargins(0, 0, 300, 0) # left, top, right, bottom
+
+        # Grid widgets
+        grid_pixmap = QPixmap(GRID)
+        grid_icon = QLabel()
+        grid_icon.setPixmap(grid_pixmap)
+        grid_dropdown_label = QLabel("Grid Division: ")
+        grid_dropdown = QComboBox()
+        grid_dropdown.addItems(['50cm', '100cm', '200cm', '400cm', 'Custom'])
+        grid_dropdown.setCurrentIndex(1)
+
+        # Connect widgets and methods
+        grid_dropdown.currentTextChanged.connect(grid_setup)
+
+        # Add widget to layout
+        grid_layout.addWidget(grid_icon)
+        grid_layout.addWidget(grid_dropdown_label)
+        grid_layout.addWidget(grid_dropdown)
+
+
         
 
 
