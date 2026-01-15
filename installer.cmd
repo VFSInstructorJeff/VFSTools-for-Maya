@@ -1,8 +1,8 @@
 @echo off
 
 setx MAYA_ENV_DIR "%userprofile%"\Documents\maya\VFSTools\
-python cleanup.py
 
+xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\VFSTools\"
 xcopy /s/y "%cd%\userSetup.py" "%userprofile%\Documents\maya\VFSTools\"
 xcopy /s/y "%cd%\shelf_VFS_Tools.mel" "%userprofile%\Documents\maya\VFSTools\"
 
