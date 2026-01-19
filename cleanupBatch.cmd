@@ -29,21 +29,21 @@ if exist "%USER_SETUP_DIR%" (
 )
 
 ::purgeOldShelf
-set "2026_SHELF_DIR=!%userprofile%!\Documents\maya\2026\prefs\shelves\shelf_VFS_Tools.mel"
-set "2025_SHELF_DIR=!%userprofile%!\Documents\maya\2025\prefs\shelves\shelf_VFS_Tools.mel"
+set "SHELF_DIR_2026=%userprofile%\Documents\maya\2026\prefs\shelves\shelf_VFS_Tools.mel"
+set "SHELF_DIR_2025=%userprofile%\Documents\maya\2025\prefs\shelves\shelf_VFS_Tools.mel"
 
-if exist ("!2026_SHELF_DIR!") (
+if exist "%SHELF_DIR_2026%" (
     echo Deleting shelf_VFS_Tools.mel from .../2026/prefs/shelves/ folder
-    del /q "!2026_SHELF_DIR!"
+    del /q %SHELF_DIR_2026%
 ) else (
-    echo VFS Tools Shelf does not exist in !2026_SHELF_DIR!.
+    echo VFS Tools Shelf does not exist in %SHELF_DIR_2026%.
 )
 
-if exist ("!2025_SHELF_DIR!") (
+if exist "%SHELF_DIR_2025%" (
     echo Deleting shelf_VFS_Tools.mel from .../2025/prefs/shelves/ folder
-    del /q "!2025_SHELF_DIR!"
+    del /q "%SHELF_DIR_2025%"
 ) else (
-    echo VFS Tools Shelf does not exist in !2025_SHELF_DIR!.
+    echo VFS Tools Shelf does not exist in %SHELF_DIR_2025%.
 )
 
 
