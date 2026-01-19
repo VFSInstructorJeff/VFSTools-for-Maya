@@ -1,9 +1,7 @@
-:: ---------- CONSTANTS ----------
 setlocal EnableDelayedExpansion
+:: ---------- CONSTANTS ----------
 :: Create constants for directories
-set "SOURCE_DIR= %~dp0" & :: ...\VFS-Maya-Tools\
 set "MAYA_SCRIPTS_DIR=%userprofile%\Documents\maya\scripts\"
-set "VFS_TOOLS_DIR=%userprofile%\Documents\maya\VFSTools\"
 set "SCRIPT_DIRS=layer_editor_tools baking_tools uv_tools"
 
 :: ---------- FUNCTIONS ----------
@@ -18,17 +16,17 @@ FOR %%D in (%SCRIPT_DIRS%) do (
     )
 )
 
-::replaceUserSetup
+:: Replace userSetup.py
 set "USER_SETUP_DIR=%MAYA_SCRIPTS_DIR%\userSetup.py"
 if not exist "%USER_SETUP_DIR%" (
-    echo userProfile.py does not exist in %MAYA_SCRIPTS_DIR%.
+    echo userProfile.py does not exist in %MAYA_SCRIPTS_DIR% folder.
 )
 if exist "%USER_SETUP_DIR%" (
     echo Deleting userSetup.py...
     del /q "%USER_SETUP_DIR%"
 )
 
-::purgeOldShelf
+:: Purge old shelf
 set "SHELF_DIR_2026=%userprofile%\Documents\maya\2026\prefs\shelves\shelf_VFS_Tools.mel"
 set "SHELF_DIR_2025=%userprofile%\Documents\maya\2025\prefs\shelves\shelf_VFS_Tools.mel"
 set "SHELF_DIR_2024=%userprofile%\Documents\maya\2024\prefs\shelves\shelf_VFS_Tools.mel"
