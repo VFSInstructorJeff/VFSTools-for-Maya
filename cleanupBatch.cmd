@@ -11,6 +11,7 @@ set "SCRIPT_DIRS=layer_editor_tools baking_tools uv_tools"
 FOR %%D in (%SCRIPT_DIRS%) do (
     set "TARGET_DIR=!MAYA_SCRIPTS_DIR!%%D"
     if exist "!TARGET_DIR!" (
+        echo Deleting !%%D!
         rmdir /s /q "!TARGET_DIR!"
     ) else "!TARGET_DIR!" (
         echo !TARGET_DIR! does not exist
@@ -23,7 +24,7 @@ if not exist "%USER_SETUP_DIR%" (
     echo userProfile.py does not exist.
 )
 if exist "%USER_SETUP_DIR%" (
-    echo Deleting userSetup.py from .../maya/scripts/ folder
+    echo Deleting userSetup.py
     del /q "%USER_SETUP_DIR%"
 )
 
@@ -36,7 +37,6 @@ if exist ("!2026_SHELF_DIR!") (
     del /q "!2026_SHELF_DIR!"
 ) else (
     echo VFS Tools Shelf does not exist in !2026_SHELF_DIR!.
-    echo !2026_SHELF_DIR!
 )
 
 if exist ("!2025_SHELF_DIR!") (
