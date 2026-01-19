@@ -11,9 +11,9 @@ set "SCRIPT_DIRS=layer_editor_tools baking_tools uv_tools"
 FOR %%D in (%SCRIPT_DIRS%) do (
     set "TARGET_DIR=!MAYA_SCRIPTS_DIR!%%D"
     if exist "!TARGET_DIR!" (
-        echo Deleting !%%D!
+        echo Deleting %%D folder
         rmdir /s /q "!TARGET_DIR!"
-    ) else "!TARGET_DIR!" (
+    ) else (
         echo !TARGET_DIR! does not exist
     )
 )
