@@ -10,6 +10,8 @@ def mixamo_anim_editor():
         cmds.deleteUI(winName, window=True)
         print('Deleted old Mixamo Editor UI')
 
+    anim_tools_core.load_default_cons()
+
     window = cmds.window(winName, title="VFS Mixamo Animation Editor", iconName='MAE', widthHeight=(350, 500) )
     cmds.columnLayout( adjustableColumn=True )
     cmds.text( label='Select HIPS joint', align='center', fn = 'boldLabelFont', w = 20, h = 30)
@@ -48,7 +50,7 @@ def mixamo_anim_editor():
     cmds.button(label='', w = 30, bgc=[0.0, 0.0, 0.0], command=lambda x: anim_tools_core.set_color_value(1))
     cmds.button(label='', w = 30, bgc=[0.3, 0.3, 0.3], command=lambda x: anim_tools_core.set_color_value(2))
     cmds.button(label='', w = 30, bgc=[0.5, 0.5, 0.5], command=lambda x: anim_tools_core.set_color_value(3))
-    cmds.button(label='', w = 30, bgc=[0.5, 0.0, 0.0], command=lambda x: anim_tools_core.set_color_value(4))
+    cmds.button(label='', w = 30, bgc=[0.5, 0.0, 0.0], command=lambda x: anim_tools_core.set_color_value(4)) 
     cmds.button(label='', w = 30, bgc=[0.0, 0.0, 0.2], command=lambda x: anim_tools_core.set_color_value(5))
     cmds.button(label='', w = 30, bgc=[0.0, 0.0, 1.0], command=lambda x: anim_tools_core.set_color_value(6))
     cmds.button(label='', w = 30, bgc=[0.0, 0.2, 0.0], command=lambda x: anim_tools_core.set_color_value(7))
@@ -138,3 +140,5 @@ def mixamo_anim_editor():
 
         
     cmds.showWindow( window )
+
+

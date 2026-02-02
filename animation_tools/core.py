@@ -1,7 +1,119 @@
 import maya.cmds as cmds
 import json
+from pathlib import Path
+
+######## DEFAULT CONTROLLER SETTINGS ########
+
+DEFAULT_CONTROLLER_DATA = {
+    "controllers": {
+        "HeadTop_End_ctl": {"radius": 0.0, "color": 17, "lineWidth": -1.0},
+        "Head_ctl": {"radius": 10.0, "color": 17, "lineWidth": -1.0},
+        "Hips_ctl": {"radius": 25.0, "color": 14, "lineWidth": 3.0},
+
+        "LeftArm_ctl": {"radius": 9.0, "color": 18, "lineWidth": -1.0},
+        "LeftForeArm_ctl": {"radius": 8.0, "color": 18, "lineWidth": -1.0},
+        "LeftHand_ctl": {"radius": 6.0, "color": 18, "lineWidth": -1.0},
+
+        "LeftHandThumb1_ctl": {"radius": 3.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandThumb2_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandThumb3_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandThumb4_ctl": {"radius": 0.0, "color": 18, "lineWidth": -1.0},
+
+        "LeftHandIndex1_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandIndex2_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandIndex3_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandIndex4_ctl": {"radius": 0.0, "color": 18, "lineWidth": -1.0},
+
+        "LeftHandMiddle1_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandMiddle2_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandMiddle3_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandMiddle4_ctl": {"radius": 0.0, "color": 18, "lineWidth": -1.0},
+
+        "LeftHandRing1_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandRing2_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandRing3_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandRing4_ctl": {"radius": 0.0, "color": 18, "lineWidth": -1.0},
+
+        "LeftHandPinky1_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandPinky2_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandPinky3_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
+        "LeftHandPinky4_ctl": {"radius": 0.0, "color": 18, "lineWidth": -1.0},
+
+        "LeftShoulder_ctl": {"radius": 10.0, "color": 18, "lineWidth": 3.0},
+        "LeftUpLeg_ctl": {"radius": 15.0, "color": 18, "lineWidth": 2.0},
+        "LeftLeg_ctl": {"radius": 12.0, "color": 18, "lineWidth": -1.0},
+        "LeftFoot_ctl": {"radius": 10.0, "color": 18, "lineWidth": -1.0},
+        "LeftToeBase_ctl": {"radius": 8.0, "color": 18, "lineWidth": -1.0},
+        "LeftToe_End_ctl": {"radius": 8.0, "color": 18, "lineWidth": -1.0},
+
+        "Spine_ctl": {"radius": 13.0, "color": 17, "lineWidth": -1.0},
+        "Spine1_ctl": {"radius": 15.0, "color": 17, "lineWidth": -1.0},
+        "Spine2_ctl": {"radius": 19.0, "color": 17, "lineWidth": -1.0},
+        "Neck_ctl": {"radius": 12.0, "color": 17, "lineWidth": -1.0},
+
+        "RightArm_ctl": {"radius": 9.0, "color": 20, "lineWidth": -1.0},
+        "RightForeArm_ctl": {"radius": 8.0, "color": 20, "lineWidth": -1.0},
+        "RightHand_ctl": {"radius": 6.0, "color": 20, "lineWidth": -1.0},
+
+        "RightHandThumb1_ctl": {"radius": 3.0, "color": 20, "lineWidth": -1.0},
+        "RightHandThumb2_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandThumb3_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandThumb4_ctl": {"radius": 0.0, "color": 20, "lineWidth": -1.0},
+
+        "RightHandIndex1_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandIndex2_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandIndex3_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandIndex4_ctl": {"radius": 0.0, "color": 20, "lineWidth": -1.0},
+
+        "RightHandMiddle1_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandMiddle2_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandMiddle3_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandMiddle4_ctl": {"radius": 0.0, "color": 20, "lineWidth": -1.0},
+
+        "RightHandRing1_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandRing2_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandRing3_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandRing4_ctl": {"radius": 0.0, "color": 20, "lineWidth": -1.0},
+
+        "RightHandPinky1_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandPinky2_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandPinky3_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
+        "RightHandPinky4_ctl": {"radius": 0.0, "color": 20, "lineWidth": -1.0},
+
+        "RightShoulder_ctl": {"radius": 10.0, "color": 20, "lineWidth": 3.0},
+        "RightUpLeg_ctl": {"radius": 15.0, "color": 20, "lineWidth": 2.0},
+        "RightLeg_ctl": {"radius": 12.0, "color": 20, "lineWidth": -1.0},
+        "RightFoot_ctl": {"radius": 10.0, "color": 20, "lineWidth": -1.0},
+        "RightToeBase_ctl": {"radius": 8.0, "color": 20, "lineWidth": -1.0},
+        "RightToe_End_ctl": {"radius": 8.0, "color": 20, "lineWidth": -1.0}
+    }
+}
 
 ######## SAVING ########
+
+def set_controllers_to_default(*args):
+    saved_controllers = DEFAULT_CONTROLLER_DATA.get("controllers", {})
+
+    for ctl, settings in saved_controllers.items():
+        if not cmds.objExists(ctl):
+            print(f"[DEFAULT] Missing controller: {ctl}")
+            continue
+
+        shapes = cmds.listRelatives(ctl, s=True, type="nurbsCurve")
+        if not shapes:
+            continue
+        shape = shapes[0]
+
+        history = cmds.listHistory(shape)
+        make_circle = cmds.ls(history, type="makeNurbCircle")
+
+        if make_circle and settings["radius"] is not None:
+            cmds.setAttr(make_circle[0] + ".radius", settings["radius"])
+
+        cmds.setAttr(shape + ".overrideEnabled", 1)
+        cmds.setAttr(shape + ".overrideColor", settings["color"])
+        cmds.setAttr(shape + ".lineWidth", settings["lineWidth"])
+
 
 def save_controller_layout(*args):
     file_path = cmds.fileDialog2(
@@ -285,3 +397,19 @@ def fk_controller_builder(*args):
         cmds.cutKey(joint, cl = True)
         
         cmds.parentConstraint(ctl, joint, mo = True)
+        
+    set_controllers_to_default()
+
+######## LOADING DEFAULT CONTROLLERS ########
+
+def load_default_cons():
+    # Get a list of all top items in the hierarchy
+    outliner_top_nodes = cmds.ls(assemblies=True)
+    # Define the one item name we're looking for (Mixamo's rig root is Hips joint)
+    root_controller = "Hips"
+    # If the Hips joint is found, select it, build FK controllers, and load default controllers JSON file
+    if root_controller in outliner_top_nodes:
+        cmds.select("Hips")
+        fk_controller_builder()
+    else:
+        print("No Hips joint found. Do you have a Mixamo rig loaded?")
