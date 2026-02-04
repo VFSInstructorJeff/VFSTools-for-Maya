@@ -1,5 +1,6 @@
 from maya import cmds
 import maya.OpenMaya as om
+from pathlib import Path
 import os
 from layer_editor_tools import ui as layer_editor_tools_ui
 from animation_tools import ui as anim_tools_ui
@@ -32,14 +33,18 @@ def reopen_mixamo_editor(*args):
         print("Mixamo Editor is closed, no need to restart it.")
 
 def import_workspaces(*args):
-    # Create the absolute workspaces path to import from (.../VFSTools-for-Maya/)
-    VFSTools_dir = os.getcwd()
-    workspaces_dir = str(VFSTools_dir) + r"\workspaces"
+    # Create the absolute workspaces path to import from (.../VFSTools/)
+    VFSTools_dir = Path(__file__).parent
+    workspaces_dir = str(VFSTools_dir) + r"/workspaces"
+    print("WORKSPACES_DIR: " + workspaces_dir)
     # Add all files in workspaces folder to a list
     workspaces = os.listdir(workspaces_dir)
+    print("WORKSPACES: " + workspaces)
     # For each workspace item in the workspaces folder list, import it 
     for workspace in workspaces:
-        workspace_str = workspaces_dir + r"/" + workspace
+        print("WORKSPACE: " + workspace)
+        workspace_str = workspaces_dir + r"/" + workspace + ".json"
+        print("WORKSPACES_STR: " + workspace_str)
         cmds.workspaceLayoutManager(i=workspace_str)
 
 callbacks = []
