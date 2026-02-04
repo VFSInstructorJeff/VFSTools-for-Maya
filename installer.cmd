@@ -3,7 +3,6 @@
 setx MAYA_ENV_DIR "%userprofile%"\Documents\maya\VFSTools\
 
 call cleanupBatch.cmd
-pause
 
 xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\VFSTools\"
 xcopy /s/y "%cd%\userSetup.py" "%userprofile%\Documents\maya\VFSTools\"
@@ -15,5 +14,4 @@ xcopy /s/y "%cd%\uv_tools" "%userprofile%\Documents\maya\VFSTools\uv_tools\"
 xcopy /s/y "%cd%\animation_tools" "%userprofile%\Documents\maya\VFSTools\animation_tools\"
 xcopy /s/y "%cd%\leveldesign_tools" "%userprofile%\Documents\maya\VFSTools\leveldesign_tools\"
 xcopy /s/y "%cd%\icons" "%userprofile%\Documents\maya\VFSTools\icons\"
-
-pause
+xcopy /s/y "%cd%\workspaces" "%userprofile%\Documents\maya\VFSTools\workspaces\"
