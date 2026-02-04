@@ -34,17 +34,15 @@ def reopen_mixamo_editor(*args):
 
 def import_workspaces(*args):
     # Create the absolute workspaces path to import from (.../VFSTools/)
-    VFSTools_dir = Path(__file__).parent
-    workspaces_dir = str(VFSTools_dir) + r"/workspaces"
-    print("WORKSPACES_DIR: " + workspaces_dir)
+    workspaces_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/workspaces"
+    workspaces_dir = workspaces_dir.replace("\\", "/")
+    
     # Add all files in workspaces folder to a list
     workspaces = os.listdir(workspaces_dir)
-    print("WORKSPACES: " + workspaces)
+
     # For each workspace item in the workspaces folder list, import it 
     for workspace in workspaces:
-        print("WORKSPACE: " + workspace)
-        workspace_str = workspaces_dir + r"/" + workspace + ".json"
-        print("WORKSPACES_STR: " + workspace_str)
+        workspace_str = workspaces_dir + r"/" + workspace
         cmds.workspaceLayoutManager(i=workspace_str)
 
 callbacks = []
