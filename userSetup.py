@@ -1,6 +1,5 @@
 from maya import cmds
 import maya.OpenMaya as om
-from pathlib import Path
 import os
 from layer_editor_tools import ui as layer_editor_tools_ui
 from animation_tools import ui as anim_tools_ui
