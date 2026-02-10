@@ -1,18 +1,17 @@
-from PySide2 import QtWidgets, QtCore, QtGui
-import shiboken2
+# ---------- IMPORT LIBRARIES/MODULES ----------
+from typing import Optional, Union
+
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
+from maya.app.general.mayaMixin import MayaQWidgetDockableMixin as mixin
 
-# ------------------------------
-# Maya main window helper
-# ------------------------------
-def get_maya_main_window():
-    main_window_ptr = omui.MQtUtil.mainWindow()
-    return shiboken2.wrapInstance(int(main_window_ptr), QtWidgets.QMainWindow)
+import shiboken6
 
-# ------------------------------
+from PySide6 import QtWidgets, QtCore, QtGui
+
+# ---------- SETUP CONSTANTS ----------
+
 # Maya index colors (0-29)
-# ------------------------------
 maya_index_colors = {
     0: (0.0, 0.0, 0.1), 1: (0.0, 0.0, 0.0), 2: (0.3, 0.3, 0.3), 3: (0.5, 0.5, 0.5),
     4: (0.5, 0.0, 0.0), 5: (0.0, 0.0, 0.2), 6: (0.0, 0.0, 1.0), 7: (0.0, 0.2, 0.0),
@@ -23,6 +22,13 @@ maya_index_colors = {
     24: (0.6, 0.4, 0.2), 25: (0.6, 0.6, 0.2), 26: (0.4, 0.6, 0.2), 27: (0.2, 0.6, 0.4),
     28: (0.2, 0.6, 0.6), 29: (0.2, 0.4, 0.6)
 }
+
+# ---------- SETUP METHODS ----------
+
+# Maya main window helper / Shiboken MainWindow Wrapper
+def get_maya_main_window() -> QtWidgets.QWidget:
+    main_window_ptr = omui.MQtUtil.mainWindow()                             # Pointer to the Maya main window
+    return shiboken6.wrapInstance(int(main_window_ptr), QtWidgets.QWidget)  # Convert the pointer to an int (get only the address), feed the Python type for the C++ obj
 
 # ------------------------------
 # Color selector popup
@@ -367,12 +373,26 @@ class ReorderableList(QtWidgets.QWidget):
         self.layout.insertWidget(index,self.indicator)
         self.indicator.setVisible(True)
 
+
+# ---------- CREATE THE MAIN WINDOW ----------
+
+
 # ------------------------------
 # Layer Editor Window
 # ------------------------------
-class LayerEditorWindow(QtWidgets.QDialog):
-    def __init__(self,parent=get_maya_main_window()):
-        super(LayerEditorWindow,self).__init__(parent)
+class LayerEditorWindow(mixin, QtWidgets.QDialog):
+# Setup unique identifier as it is required by workspaceControl 
+    UI_OBJECT_NAME = "LayerToolsWindow"
+
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+
+        # Delete any existing instances to avoid conflict
+        if cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", exists=True):
+            cmds.deleteUI(self.UI_OBJECT_NAME + "WorkspaceControl")
+
+        super().__init__(get_maya_main_window() if not parent else parent)
+
+        self.setObjectName(self.UI_OBJECT_NAME)
         self.setWindowTitle("VFS Layer Editor")
         self.setFixedSize(440,420)
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
@@ -396,6 +416,8 @@ class LayerEditorWindow(QtWidgets.QDialog):
         remove_btn.clicked.connect(self.layer_list.remove_selected_tab)
         btn_layout.addWidget(remove_btn)
 
+        self.initUI()
+
     def open_add_layer_popup(self):
         self.popup = AddLayerPopup(self)
         self.popup.layer_added.connect(self.add_layer)
@@ -408,6 +430,10 @@ class LayerEditorWindow(QtWidgets.QDialog):
             idx = next((i for i,v in maya_index_colors.items() if v==color),None)
             if idx is not None: cmds.setAttr(f"{name}.color",idx)
         except: pass
+
+    def initUI(self):
+        super(LayerEditorWindow, self).show(dockable=True)
+        cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
 
 # ------------------------------
 # Show editor
