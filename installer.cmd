@@ -13,5 +13,9 @@ xcopy /s/y "%cd%\baking_tools" "%userprofile%\Documents\maya\VFSTools\baking_too
 xcopy /s/y "%cd%\uv_tools" "%userprofile%\Documents\maya\VFSTools\uv_tools\"
 xcopy /s/y "%cd%\animation_tools" "%userprofile%\Documents\maya\VFSTools\animation_tools\"
 xcopy /s/y "%cd%\leveldesign_tools" "%userprofile%\Documents\maya\VFSTools\leveldesign_tools\"
+
 xcopy /s/y "%cd%\icons" "%userprofile%\Documents\maya\VFSTools\icons\"
 xcopy /s/y "%cd%\workspaces" "%userprofile%\Documents\maya\VFSTools\workspaces\"
+
+xcopy /s/y "%cd%\favs.json" "%userprofile%\Documents\maya\2026\prefs\"
+xcopy /s/y "%cd%\favs.json" "%userprofile%\Documents\maya\2025\prefs\"
