@@ -198,7 +198,7 @@ global proc shelf_VFS_Tools () {
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont"
+        -font "plainLabelFont" 
         -imageOverlayLabel "Mixamo Autorig" 
         -overlayLabelColor 0.682 0.616 0.851 
         -overlayLabelBackColor 0 0 0 0.5 
@@ -207,7 +207,7 @@ global proc shelf_VFS_Tools () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from animation_tools import ui as animation_ui\nimport importlib\nimportlib.reload(animation_ui)\n\nanimation_ui.mixamo_anim_editor()"
+        -command "from animation_tools import ui as animation_ui\nimport importlib\nimportlib.reload(animation_ui)\n\nanimation_ui.mixamo_anim_editor()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -234,7 +234,7 @@ global proc shelf_VFS_Tools () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
-        -imageOverlayLabel "LD Tools"
+        -imageOverlayLabel "LD Tools" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
         -image "vfs_ld.png" 
@@ -243,6 +243,41 @@ global proc shelf_VFS_Tools () {
         -marginWidth 0
         -marginHeight 1
         -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.main()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Smooth With 2 Divisions" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Smooth Lvl.2" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "Smooth" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySmooth.png" 
+        -image1 "polySmooth.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "import maya.cmds as cmds\n\nlist = cmds.ls(selection=True)\nfor item in list:\n    cmds.select(item)\n    cmds.polySmooth(divisions=2)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
