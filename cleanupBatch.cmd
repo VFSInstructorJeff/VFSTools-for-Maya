@@ -71,28 +71,28 @@ if exist "%FAVS_DIR_2023%" (
     echo Deleting shelf_VFS_Tools.mel from .../2023/prefs/shelves/ folder
     del /q "%FAVS_DIR_2023%"
 ) else (
-    echo VFS Tools Shelf does not exist in %FAVS_DIR_2023%.
+    echo favs.json does not exist in %FAVS_DIR_2023%.
 )
 
 if exist "%FAVS_DIR_2024%" (
     echo Deleting shelf_VFS_Tools.mel from .../2023/prefs/shelves/ folder
     del /q "%FAVS_DIR_2024%"
 ) else (
-    echo VFS Tools Shelf does not exist in %FAVS_DIR_2024%.
+    echo favs.json does not exist in %FAVS_DIR_2024%.
 )
 
 if exist "%FAVS_DIR_2025%" (
     echo Deleting shelf_VFS_Tools.mel from .../2023/prefs/shelves/ folder
     del /q "%FAVS_DIR_2025%"
 ) else (
-    echo VFS Tools Shelf does not exist in %FAVS_DIR_2025%.
+    echo favs.json does not exist in %FAVS_DIR_2025%.
 )
 
 if exist "%FAVS_DIR_2026%" (
     echo Deleting shelf_VFS_Tools.mel from .../2023/prefs/shelves/ folder
     del /q "%FAVS_DIR_2026%"
 ) else (
-    echo VFS Tools Shelf does not exist in %FAVS_DIR_2026%.
+    echo favs.json does not exist in %FAVS_DIR_2026%.
 )
 
 :: We ignore Maya.env because we're setting MAYA_ENV_DIR
