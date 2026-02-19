@@ -6,8 +6,6 @@ setx MAYA_ENV_DIR "%userprofile%"\Documents\maya\VFSTools\
 :: Cleanup old tools (Deletes everything we've added and files we've modified. We're completely wiping it, so if any other installed tools also modified the file, they'll have to be reinstalled.)
 call cleanupBatch.cmd
 
-pause
-
 :: Copy setup files
 xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\VFSTools\"
 xcopy /s/y "%cd%\userSetup.py" "%userprofile%\Documents\maya\VFSTools\"
@@ -22,8 +20,7 @@ xcopy /s/y "%cd%\leveldesign_tools" "%userprofile%\Documents\maya\VFSTools\level
 xcopy /s/y "%cd%\modular_kit" "%userprofile%\Documents\maya\VFSTools\modular_kit\"
 
 :: Fix workspaces absolute paths
-
-pause
+call VFSLDWorkspaceEditor.exe
 
 :: Copy icons and workspaces (organizational/aesthetic stuff mostly)
 xcopy /s/y "%cd%\icons" "%userprofile%\Documents\maya\VFSTools\icons\"

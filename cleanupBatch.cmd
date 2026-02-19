@@ -68,28 +68,28 @@ if exist "%SHELF_DIR_2023%" (
 :: Purging all favs
 
 if exist "%FAVS_DIR_2023%" (
-    echo Deleting shelf_VFS_Tools.mel from .../2023/prefs/shelves/ folder
+    echo Deleting favs.json from .../2023/prefs/ folder
     del /q "%FAVS_DIR_2023%"
 ) else (
     echo favs.json does not exist in %FAVS_DIR_2023%.
 )
 
 if exist "%FAVS_DIR_2024%" (
-    echo Deleting shelf_VFS_Tools.mel from .../2023/prefs/shelves/ folder
+    echo Deleting favs.json from .../2024/prefs/ folder
     del /q "%FAVS_DIR_2024%"
 ) else (
     echo favs.json does not exist in %FAVS_DIR_2024%.
 )
 
 if exist "%FAVS_DIR_2025%" (
-    echo Deleting shelf_VFS_Tools.mel from .../2023/prefs/shelves/ folder
+    echo Deleting favs.json from .../2025/prefs/ folder
     del /q "%FAVS_DIR_2025%"
 ) else (
     echo favs.json does not exist in %FAVS_DIR_2025%.
 )
 
 if exist "%FAVS_DIR_2026%" (
-    echo Deleting shelf_VFS_Tools.mel from .../2023/prefs/shelves/ folder
+    echo Deleting favs.json from .../2026/prefs/ folder
     del /q "%FAVS_DIR_2026%"
 ) else (
     echo favs.json does not exist in %FAVS_DIR_2026%.
