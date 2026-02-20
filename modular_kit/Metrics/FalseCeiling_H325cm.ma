@@ -1,18 +1,18 @@
 //Maya ASCII 2026 scene
 //Name: FalseCeiling_H325cm.ma
-//Last modified: Tue, Feb 17, 2026 05:02:36 PM
+//Last modified: Thu, Feb 19, 2026 01:08:15 PM
 //Codeset: 1252
 requires maya "2026";
 requires "stereoCamera" "10.0";
 requires "mtoa" "5.5.4.2";
-requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
 fileInfo "product" "Maya 2026";
 fileInfo "version" "2026";
 fileInfo "cutIdentifier" "202510291147-60ec9eda33";
-fileInfo "osv" "Windows 11 Home v2009 (Build: 26200)";
-fileInfo "UUID" "640DAEBE-448F-C13F-91ED-07873290F435";
+fileInfo "osv" "Windows 11 Education v2009 (Build: 26200)";
+fileInfo "UUID" "D84F8143-412A-CBE2-E7E8-E6811F9395EA";
+fileInfo "license" "education";
 createNode transform -n "FalseCeiling_H325cm";
 	rename -uid "A76ACCC1-47D6-8317-54FA-258324840FD2";
 createNode mesh -n "FalseCeiling_H325cmShape" -p "FalseCeiling_H325cm";
@@ -141,16 +141,16 @@ createNode shadingEngine -n "lambert11SG";
 	setAttr ".ihi" 0;
 	setAttr -s 4 ".dsm";
 	setAttr ".ro" yes;
-createNode lambert -n "Misc04_grid_512";
+createNode lambert -n "Misc04_grid";
 	rename -uid "B6321B6E-4062-26C5-DE45-869FC8180BD7";
 createNode file -n "file10";
 	rename -uid "F2DF0C04-431A-858D-6AAC-85908F065777";
-	setAttr ".ftn" -type "string" "X:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc04_grid_512.tga";
-	setAttr ".cs" -type "string" "sRGB";
+	setAttr ".ftn" -type "string" "G:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc04_grid.tga";
+	setAttr ".cs" -type "string" "sRGB Encoded Rec.709 (sRGB)";
 createNode place2dTexture -n "place2dTexture10";
 	rename -uid "AA52AE62-4820-5F6A-DF85-C5A2E6057140";
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "8E7BE03F-418C-0914-2F6F-1C9BACC5062E";
+	rename -uid "708644FF-42B6-1EAB-5FD4-0C8CCB38AB2C";
 	setAttr -s 32 ".lnk";
 	setAttr -s 32 ".slnk";
 select -ne :time1;
@@ -207,14 +207,14 @@ select -ne :hardwareRenderGlobals;
 	setAttr ".btrs" 512;
 select -ne :defaultHideFaceDataSet;
 connectAttr "lambert11SG.msg" "materialInfo18.sg";
-connectAttr "Misc04_grid_512.msg" "materialInfo18.m";
+connectAttr "Misc04_grid.msg" "materialInfo18.m";
 connectAttr "file10.msg" "materialInfo18.t" -na;
-connectAttr "Misc04_grid_512.oc" "lambert11SG.ss";
+connectAttr "Misc04_grid.oc" "lambert11SG.ss";
 connectAttr "FalseCeiling_H325cmShape.iog" "lambert11SG.dsm" -na;
 connectAttr "WindowSill_H100cmShape.iog" "lambert11SG.dsm" -na;
 connectAttr "HallwayMinimum_W200cmShape.iog" "lambert11SG.dsm" -na;
 connectAttr "BuildingFloor_H400cmShape.iog" "lambert11SG.dsm" -na;
-connectAttr "file10.oc" "Misc04_grid_512.c";
+connectAttr "file10.oc" "Misc04_grid.c";
 connectAttr ":defaultColorMgtGlobals.cme" "file10.cme";
 connectAttr ":defaultColorMgtGlobals.cfe" "file10.cmcf";
 connectAttr ":defaultColorMgtGlobals.cfp" "file10.cmcp";
@@ -244,7 +244,7 @@ relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defau
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" "lambert11SG.message" ":defaultLightSet.message";
 connectAttr "lambert11SG.pa" ":renderPartition.st" -na;
-connectAttr "Misc04_grid_512.msg" ":defaultShaderList1.s" -na;
+connectAttr "Misc04_grid.msg" ":defaultShaderList1.s" -na;
 connectAttr "place2dTexture10.msg" ":defaultRenderUtilityList1.u" -na;
 connectAttr "file10.msg" ":defaultTextureList1.tx" -na;
 // End of FalseCeiling_H325cm.ma

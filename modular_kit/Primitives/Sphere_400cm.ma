@@ -1,18 +1,18 @@
 //Maya ASCII 2026 scene
 //Name: Sphere_400cm.ma
-//Last modified: Tue, Feb 17, 2026 05:01:00 PM
+//Last modified: Thu, Feb 19, 2026 01:04:37 PM
 //Codeset: 1252
 requires maya "2026";
 requires "stereoCamera" "10.0";
 requires "mtoa" "5.5.4.2";
-requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
 fileInfo "product" "Maya 2026";
 fileInfo "version" "2026";
 fileInfo "cutIdentifier" "202510291147-60ec9eda33";
-fileInfo "osv" "Windows 11 Home v2009 (Build: 26200)";
-fileInfo "UUID" "FADEA742-43C7-2449-29BF-94859C76287F";
+fileInfo "osv" "Windows 11 Education v2009 (Build: 26200)";
+fileInfo "UUID" "77717318-4D36-DC1F-CA2B-F5BB167F543A";
+fileInfo "license" "education";
 createNode transform -n "Sphere_400cm";
 	rename -uid "A77B856B-4261-BE42-BFC9-7C9ABF38E9BC";
 createNode mesh -n "Sphere_400cmShape" -p "Sphere_400cm";
@@ -2568,17 +2568,17 @@ createNode shadingEngine -n "standardSurface2SG";
 	setAttr -s 113 ".dsm";
 	setAttr ".ro" yes;
 	setAttr -s 2 ".gn";
-createNode standardSurface -n "Floor_grid_512";
+createNode standardSurface -n "Floor_grid";
 	rename -uid "63142EDA-46BE-7199-01B9-00888BAFB2B6";
 	setAttr ".sr" 1;
 createNode file -n "file1";
 	rename -uid "9D3E9B89-4A13-0729-43F3-0A8EA4BA652A";
-	setAttr ".ftn" -type "string" "X:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Floor_grid_512.tga";
-	setAttr ".cs" -type "string" "sRGB";
+	setAttr ".ftn" -type "string" "G:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Floor_grid.tga";
+	setAttr ".cs" -type "string" "sRGB Encoded Rec.709 (sRGB)";
 createNode place2dTexture -n "place2dTexture1";
 	rename -uid "A038A168-46D5-CDBF-23A0-97B788DBD080";
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "8E7BE03F-418C-0914-2F6F-1C9BACC5062E";
+	rename -uid "708644FF-42B6-1EAB-5FD4-0C8CCB38AB2C";
 	setAttr -s 32 ".lnk";
 	setAttr -s 32 ".slnk";
 select -ne :time1;
@@ -2635,9 +2635,9 @@ select -ne :hardwareRenderGlobals;
 	setAttr ".btrs" 512;
 select -ne :defaultHideFaceDataSet;
 connectAttr "standardSurface2SG.msg" "materialInfo2.sg";
-connectAttr "Floor_grid_512.msg" "materialInfo2.m";
+connectAttr "Floor_grid.msg" "materialInfo2.m";
 connectAttr "file1.msg" "materialInfo2.t" -na;
-connectAttr "Floor_grid_512.oc" "standardSurface2SG.ss";
+connectAttr "Floor_grid.oc" "standardSurface2SG.ss";
 connectAttr "Torus_50cmShape.iog" "standardSurface2SG.dsm" -na;
 connectAttr "Torus_100cmShape.iog" "standardSurface2SG.dsm" -na;
 connectAttr "Torus_200cmShape.iog" "standardSurface2SG.dsm" -na;
@@ -2754,7 +2754,7 @@ connectAttr "StairSecondFloor_Boolean_W525xH200cmShape.iog" "standardSurface2SG.
 connectAttr "Cube_25cmShape.iog" "standardSurface2SG.dsm" -na;
 connectAttr "groupId162.msg" "standardSurface2SG.gn" -na;
 connectAttr "groupId895.msg" "standardSurface2SG.gn" -na;
-connectAttr "file1.oc" "Floor_grid_512.bc";
+connectAttr "file1.oc" "Floor_grid.bc";
 connectAttr ":defaultColorMgtGlobals.cme" "file1.cme";
 connectAttr ":defaultColorMgtGlobals.cfe" "file1.cmcf";
 connectAttr ":defaultColorMgtGlobals.cfp" "file1.cmcp";
@@ -2784,7 +2784,7 @@ relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defau
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" "standardSurface2SG.message" ":defaultLightSet.message";
 connectAttr "standardSurface2SG.pa" ":renderPartition.st" -na;
-connectAttr "Floor_grid_512.msg" ":defaultShaderList1.s" -na;
+connectAttr "Floor_grid.msg" ":defaultShaderList1.s" -na;
 connectAttr "place2dTexture1.msg" ":defaultRenderUtilityList1.u" -na;
 connectAttr "file1.msg" ":defaultTextureList1.tx" -na;
 // End of Sphere_400cm.ma
