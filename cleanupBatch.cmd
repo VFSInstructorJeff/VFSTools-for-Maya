@@ -27,7 +27,7 @@ if exist "%USER_SETUP_DIR%" (
     del /q "%USER_SETUP_DIR%"
 )
 
-:: Purge old shelf, favs, and hotkeys
+:: Purge old shelf, favs, workspaces, and hotkeys
 set "SHELF_DIR_2026=%userprofile%\Documents\maya\2026\prefs\shelves\shelf_VFS_Tools.mel"
 set "SHELF_DIR_2025=%userprofile%\Documents\maya\2025\prefs\shelves\shelf_VFS_Tools.mel"
 set "SHELF_DIR_2024=%userprofile%\Documents\maya\2024\prefs\shelves\shelf_VFS_Tools.mel"
@@ -38,11 +38,38 @@ set "FAVS_DIR_2024=%userprofile%\Documents\maya\2024\prefs\favs.json"
 set "FAVS_DIR_2025=%userprofile%\Documents\maya\2025\prefs\favs.json"
 set "FAVS_DIR_2026=%userprofile%\Documents\maya\2026\prefs\favs.json"
 
-set "HKEYS_DIR_2023=%userprofile%\Documents\maya\2023\prefs\hotkeys\*"
-set "HKEYS_DIR_2024=%userprofile%\Documents\maya\2024\prefs\hotkeys\*"
-set "HKEYS_DIR_2025=%userprofile%\Documents\maya\2025\prefs\hotkeys\*"
-set "HKEYS_DIR_2026=%userprofile%\Documents\maya\2026\prefs\hotkeys\*"
+set "WORKSPACE_DIR_2023=%userprofile%\Documents\maya\2023\prefs\workspaces\*"
+set "WORKSPACE_DIR_2024=%userprofile%\Documents\maya\2024\prefs\workspaces\*"
+set "WORKSPACE_DIR_2025=%userprofile%\Documents\maya\2025\prefs\workspaces\*"
+set "WORKSPACE_DIR_2026=%userprofile%\Documents\maya\2026\prefs\workspaces\*"
 
+:: Delete all files in workspace directories
+if exist %WORKSPACE_DIR_2023% (
+    del /S /Q %WORKSPACE_DIR_2023%
+    echo Deleting workspaces from .../2023/prefs/workspaces/ folder
+) else (
+    echo No workspaces in .../2023/prefs/workspaces/ folder
+)
+if exist %WORKSPACE_DIR_2024% (
+    del /S /Q %WORKSPACE_DIR_2024%
+    echo Deleting workspaces from .../2024/prefs/workspaces/ folder
+) else (
+    echo No workspaces in .../2024/prefs/workspaces/ folder
+)
+if exist %WORKSPACE_DIR_2025% (
+    del /S /Q %WORKSPACE_DIR_2025%
+    echo Deleting workspaces from .../2025/prefs/workspaces/ folder
+) else (
+    echo No workspaces in .../2025/prefs/workspaces/ folder
+)
+if exist %WORKSPACE_DIR_2026% (
+    del /S /Q %WORKSPACE_DIR_2026%
+    echo Deleting workspaces from .../2026/prefs/workspaces/ folder
+) else (
+    echo No workspaces in .../2026/prefs/workspaces/ folder
+)
+
+:: Delete shelf files
 if exist "%SHELF_DIR_2026%" (
     echo Deleting shelf_VFS_Tools.mel from .../2026/prefs/shelves/ folder
     del /q %SHELF_DIR_2026%
