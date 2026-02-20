@@ -1,6 +1,6 @@
 //Maya ASCII 2026 scene
 //Name: InteriorDoor01.ma
-//Last modified: Thu, Feb 19, 2026 08:58:37 AM
+//Last modified: Thu, Feb 19, 2026 12:51:02 PM
 //Codeset: 1252
 requires maya "2026";
 requires "stereoCamera" "10.0";
@@ -11,20 +11,20 @@ fileInfo "product" "Maya 2026";
 fileInfo "version" "2026";
 fileInfo "cutIdentifier" "202510291147-60ec9eda33";
 fileInfo "osv" "Windows 11 Education v2009 (Build: 26200)";
-fileInfo "UUID" "9992E969-4E26-A857-102C-47878AC9A950";
+fileInfo "UUID" "74F881BE-4AFC-DADC-332D-B2AFFF7B9159";
 fileInfo "license" "education";
 createNode transform -n "InteriorDoor01_grp";
-	rename -uid "BF5C72AB-43D9-E5B7-2061-60B0FF1037F0";
+	rename -uid "685391F5-4DFE-12AC-D34C-3B85360B0D79";
 createNode transform -n "InteriorDoor01_grp" -p "|InteriorDoor01_grp";
-	rename -uid "09F82D72-430F-EFEA-8AA3-73BCF043E5CB";
+	rename -uid "4232D748-42FF-A292-3F78-58A41CDF2576";
 	setAttr ".rp" -type "double3" 6.33453369140625 135.93270874023438 1.3837280273438068 ;
 	setAttr ".sp" -type "double3" 6.33453369140625 135.93270874023438 1.3837280273438068 ;
 createNode transform -n "InteriorDoor01" -p "|InteriorDoor01_grp|InteriorDoor01_grp";
-	rename -uid "4DDD04B4-4541-1256-3493-40ACFADF3F87";
+	rename -uid "41DEC51E-47D1-A78E-7456-1D801CF75C3D";
 	setAttr ".rp" -type "double3" 6.33453369140625 47.881088256835938 1.3837280273438068 ;
 	setAttr ".sp" -type "double3" 6.33453369140625 47.881088256835938 1.3837280273438068 ;
 createNode mesh -n "InteriorDoor01Shape" -p "InteriorDoor01";
-	rename -uid "FE379793-4FA0-4914-6D75-6887DB8BB13A";
+	rename -uid "340D08E1-4D7A-3214-92DE-8C8B5288DC57";
 	setAttr -k off ".v";
 	setAttr -s 2 ".iog[0].og";
 	setAttr ".iog[0].og[0].gcl" -type "componentList" 1 "f[0:5]";
@@ -74,11 +74,11 @@ createNode mesh -n "InteriorDoor01Shape" -p "InteriorDoor01";
 		11 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "InteriorDoor01Hardware" -p "|InteriorDoor01_grp|InteriorDoor01_grp";
-	rename -uid "55EF7B53-4396-8C50-611B-B690F08C9687";
+	rename -uid "D57D782A-41A4-81B2-3A00-56920FE8319B";
 	setAttr ".rp" -type "double3" 6.33453369140625 47.881088256835938 1.3837280273438068 ;
 	setAttr ".sp" -type "double3" 6.33453369140625 47.881088256835938 1.3837280273438068 ;
 createNode mesh -n "InteriorDoor01HardwareShape" -p "InteriorDoor01Hardware";
-	rename -uid "AD99BCA6-4901-F7B6-053B-748BA4DDE9A5";
+	rename -uid "DCFD5CFD-4EAB-B03E-D12F-1EBFCB3A8A8F";
 	setAttr -k off ".v";
 	setAttr ".iog[0].og[1].gcl" -type "componentList" 2 "f[0:119]" "f[126:860]";
 	setAttr ".vir" yes;
@@ -11104,11 +11104,11 @@ createNode mesh -n "InteriorDoor01HardwareShape" -p "InteriorDoor01Hardware";
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "UCX_InteriorDoor01" -p "|InteriorDoor01_grp|InteriorDoor01_grp";
-	rename -uid "F88C7341-41EB-9157-6925-01BA563FA2EA";
+	rename -uid "56CBFD66-442B-8AD8-74DE-949838606C71";
 	setAttr ".rp" -type "double3" 6.33453369140625 47.881088256835938 1.3837280273438068 ;
 	setAttr ".sp" -type "double3" 6.33453369140625 47.881088256835938 1.3837280273438068 ;
 createNode mesh -n "UCX_InteriorDoorShape1" -p "UCX_InteriorDoor01";
-	rename -uid "062465D8-4869-A3E8-F62C-5190D76E8262";
+	rename -uid "697606BC-4892-1B9C-58F4-24A4E0946380";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
@@ -11165,15 +11165,15 @@ createNode mesh -n "UCX_InteriorDoorShape1" -p "UCX_InteriorDoor01";
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "InteriorDoorFrame01_grp" -p "|InteriorDoor01_grp";
-	rename -uid "A2F99AFB-4E84-D75A-8CD5-79B0FD6231C8";
+	rename -uid "DA7BB05D-4F00-E6E8-76BC-30A641FC2B4D";
 	setAttr ".rp" -type "double3" 6.33453369140625 47.881088256835938 1.38372802734375 ;
 	setAttr ".sp" -type "double3" 6.33453369140625 47.881088256835938 1.38372802734375 ;
 createNode transform -n "InteriorDoorFrame01" -p "InteriorDoorFrame01_grp";
-	rename -uid "A4125741-4509-E75E-7BDE-859F18C6642B";
+	rename -uid "7770A37A-46C7-02F1-2B03-7491EE71EED3";
 	setAttr ".rp" -type "double3" 68.8873291015625 129.5 12.500000000000028 ;
 	setAttr ".sp" -type "double3" 68.8873291015625 129.5 12.500000000000028 ;
 createNode mesh -n "InteriorDoorFrame01Shape" -p "InteriorDoorFrame01";
-	rename -uid "025233D9-4B06-EE7C-F526-83A3CFEC8504";
+	rename -uid "9CC059C3-4D61-CC56-6B52-DBAB90F612D9";
 	setAttr -k off ".v";
 	setAttr ".iog[0].og[1].gcl" -type "componentList" 2 "f[0:5]" "f[18:51]";
 	setAttr ".vir" yes;
@@ -11410,11 +11410,11 @@ createNode mesh -n "InteriorDoorFrame01Shape" -p "InteriorDoorFrame01";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 	setAttr ".dfgi" 392;
 createNode transform -n "InteriorDoorFrame01Hardware" -p "InteriorDoorFrame01_grp";
-	rename -uid "82B0B48A-4399-8303-5898-5E886CE24F2F";
+	rename -uid "535B7BB8-47B8-8A3E-52BA-2DBCCBF01E04";
 	setAttr ".rp" -type "double3" 393 0 -599 ;
 	setAttr ".sp" -type "double3" 393 0 -599 ;
 createNode mesh -n "InteriorDoorFrame01HardwareShape" -p "InteriorDoorFrame01Hardware";
-	rename -uid "93D2B4EE-4743-4C34-A6D6-6E85D1CA3E22";
+	rename -uid "84CB0ABE-4209-4FAB-23B9-FD9D9EB0F23E";
 	setAttr -k off ".v";
 	setAttr ".iog[0].og[1].gcl" -type "componentList" 3 "f[1278:1375]" "f[1379:1384]" "f[1387:1392]";
 	setAttr ".vir" yes;
@@ -16345,11 +16345,11 @@ createNode mesh -n "InteriorDoorFrame01HardwareShape" -p "InteriorDoorFrame01Har
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "UCX_InteriorDoorFrame01_01" -p "InteriorDoorFrame01_grp";
-	rename -uid "0586EFF8-4356-D89A-3C06-6E850A81C4E9";
+	rename -uid "6E8EFA02-4D3D-BBC0-B7DF-349201D72267";
 	setAttr ".rp" -type "double3" 137.77462768554688 259 28.000000000000057 ;
 	setAttr ".sp" -type "double3" 137.77462768554688 259 28.000000000000057 ;
 createNode mesh -n "UCX_InteriorDoorFrame01_Shape1" -p "UCX_InteriorDoorFrame01_01";
-	rename -uid "8464309A-4AA9-523E-BE35-49801E81EC8B";
+	rename -uid "0209F029-42F6-8EE3-F910-0EBC5BA7F1EC";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
@@ -16404,64 +16404,12 @@ createNode mesh -n "UCX_InteriorDoorFrame01_Shape1" -p "UCX_InteriorDoorFrame01_
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode mesh -n "polySurfaceShape94" -p "UCX_InteriorDoorFrame01_01";
-	rename -uid "8B1DC761-40D2-CD44-DC5C-E9B959C1F9DF";
-	setAttr -k off ".v";
-	setAttr ".io" yes;
-	setAttr ".vir" yes;
-	setAttr ".vif" yes;
-	setAttr -s 6 ".gtag";
-	setAttr ".gtag[0].gtagnm" -type "string" "back";
-	setAttr ".gtag[0].gtagcmp" -type "componentList" 1 "f[2]";
-	setAttr ".gtag[1].gtagnm" -type "string" "bottom";
-	setAttr ".gtag[1].gtagcmp" -type "componentList" 1 "f[3]";
-	setAttr ".gtag[2].gtagnm" -type "string" "front";
-	setAttr ".gtag[2].gtagcmp" -type "componentList" 1 "f[0]";
-	setAttr ".gtag[3].gtagnm" -type "string" "left";
-	setAttr ".gtag[3].gtagcmp" -type "componentList" 1 "f[5]";
-	setAttr ".gtag[4].gtagnm" -type "string" "right";
-	setAttr ".gtag[4].gtagcmp" -type "componentList" 1 "f[4]";
-	setAttr ".gtag[5].gtagnm" -type "string" "top";
-	setAttr ".gtag[5].gtagcmp" -type "componentList" 1 "f[1]";
-	setAttr ".pv" -type "double2" 0.25 0.5 ;
-	setAttr ".uvst[0].uvsn" -type "string" "map1";
-	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
-		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
-		 0.875 0.25 0.125 0 0.125 0.25;
-	setAttr ".cuvs" -type "string" "map1";
-	setAttr ".dcc" -type "string" "Ambient+Diffuse";
-	setAttr ".covm[0]"  0 1 1;
-	setAttr ".cdvm[0]"  0 1 1;
-	setAttr -s 8 ".pt[0:7]" -type "float3"  -255.72537 0.5 626.5 -255.72537 
-		0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5 -255.72537 
-		0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5;
-	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
-		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
-	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
-		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
-	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
-		f 4 0 5 -2 -5
-		mu 0 4 0 1 3 2
-		f 4 1 7 -3 -7
-		mu 0 4 2 3 5 4
-		f 4 2 9 -4 -9
-		mu 0 4 4 5 7 6
-		f 4 3 11 -1 -11
-		mu 0 4 6 7 9 8
-		f 4 -12 -10 -8 -6
-		mu 0 4 1 10 11 3
-		f 4 10 4 6 8
-		mu 0 4 12 0 2 13;
-	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
-	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
-	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
-	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "UCX_InteriorDoorFrame01_02" -p "InteriorDoorFrame01_grp";
-	rename -uid "AB35FD96-4D36-2BF1-D798-5AB411A7C35F";
+	rename -uid "D5FC73EF-48FC-77A5-E891-559EE5877270";
 	setAttr ".rp" -type "double3" 137.77462768554688 5 28.000000000000057 ;
 	setAttr ".sp" -type "double3" 137.77462768554688 5 28.000000000000057 ;
 createNode mesh -n "UCX_InteriorDoorFrame01_Shape2" -p "UCX_InteriorDoorFrame01_02";
-	rename -uid "D5E14499-469C-C071-2014-B4AEF4D78336";
+	rename -uid "1D571CB7-4276-5E73-5ED5-D9BEDEE8AA1D";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
@@ -16515,64 +16463,12 @@ createNode mesh -n "UCX_InteriorDoorFrame01_Shape2" -p "UCX_InteriorDoorFrame01_
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode mesh -n "polySurfaceShape94" -p "UCX_InteriorDoorFrame01_02";
-	rename -uid "28DD5684-49BB-5528-AC8F-A3BD7133855C";
-	setAttr -k off ".v";
-	setAttr ".io" yes;
-	setAttr ".vir" yes;
-	setAttr ".vif" yes;
-	setAttr -s 6 ".gtag";
-	setAttr ".gtag[0].gtagnm" -type "string" "back";
-	setAttr ".gtag[0].gtagcmp" -type "componentList" 1 "f[2]";
-	setAttr ".gtag[1].gtagnm" -type "string" "bottom";
-	setAttr ".gtag[1].gtagcmp" -type "componentList" 1 "f[3]";
-	setAttr ".gtag[2].gtagnm" -type "string" "front";
-	setAttr ".gtag[2].gtagcmp" -type "componentList" 1 "f[0]";
-	setAttr ".gtag[3].gtagnm" -type "string" "left";
-	setAttr ".gtag[3].gtagcmp" -type "componentList" 1 "f[5]";
-	setAttr ".gtag[4].gtagnm" -type "string" "right";
-	setAttr ".gtag[4].gtagcmp" -type "componentList" 1 "f[4]";
-	setAttr ".gtag[5].gtagnm" -type "string" "top";
-	setAttr ".gtag[5].gtagcmp" -type "componentList" 1 "f[1]";
-	setAttr ".pv" -type "double2" 0.25 0.5 ;
-	setAttr ".uvst[0].uvsn" -type "string" "map1";
-	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
-		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
-		 0.875 0.25 0.125 0 0.125 0.25;
-	setAttr ".cuvs" -type "string" "map1";
-	setAttr ".dcc" -type "string" "Ambient+Diffuse";
-	setAttr ".covm[0]"  0 1 1;
-	setAttr ".cdvm[0]"  0 1 1;
-	setAttr -s 8 ".pt[0:7]" -type "float3"  -255.72537 0.5 626.5 -255.72537 
-		0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5 -255.72537 
-		0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5;
-	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
-		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
-	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
-		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
-	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
-		f 4 0 5 -2 -5
-		mu 0 4 0 1 3 2
-		f 4 1 7 -3 -7
-		mu 0 4 2 3 5 4
-		f 4 2 9 -4 -9
-		mu 0 4 4 5 7 6
-		f 4 3 11 -1 -11
-		mu 0 4 6 7 9 8
-		f 4 -12 -10 -8 -6
-		mu 0 4 1 10 11 3
-		f 4 10 4 6 8
-		mu 0 4 12 0 2 13;
-	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
-	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
-	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
-	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "UCX_InteriorDoorFrame01_03" -p "InteriorDoorFrame01_grp";
-	rename -uid "C5718A87-4C09-C506-99D8-C78268A35D7A";
+	rename -uid "1365B99F-40AB-791C-78EC-768FFCC5F72F";
 	setAttr ".rp" -type "double3" 8 5.0000000000000568 28.000000000000057 ;
 	setAttr ".sp" -type "double3" 8 5.0000000000000568 28.000000000000057 ;
 createNode mesh -n "UCX_InteriorDoorFrame01_Shape3" -p "UCX_InteriorDoorFrame01_03";
-	rename -uid "B412C4AF-4B54-5480-3406-8CBF003445A0";
+	rename -uid "B85A4B60-4654-8110-B7AC-1FA9DF1CBDBF";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
@@ -16628,144 +16524,92 @@ createNode mesh -n "UCX_InteriorDoorFrame01_Shape3" -p "UCX_InteriorDoorFrame01_
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode mesh -n "polySurfaceShape94" -p "UCX_InteriorDoorFrame01_03";
-	rename -uid "2A66D1A4-4AD0-6087-B0FE-31936762A8F8";
-	setAttr -k off ".v";
-	setAttr ".io" yes;
-	setAttr ".vir" yes;
-	setAttr ".vif" yes;
-	setAttr -s 6 ".gtag";
-	setAttr ".gtag[0].gtagnm" -type "string" "back";
-	setAttr ".gtag[0].gtagcmp" -type "componentList" 1 "f[2]";
-	setAttr ".gtag[1].gtagnm" -type "string" "bottom";
-	setAttr ".gtag[1].gtagcmp" -type "componentList" 1 "f[3]";
-	setAttr ".gtag[2].gtagnm" -type "string" "front";
-	setAttr ".gtag[2].gtagcmp" -type "componentList" 1 "f[0]";
-	setAttr ".gtag[3].gtagnm" -type "string" "left";
-	setAttr ".gtag[3].gtagcmp" -type "componentList" 1 "f[5]";
-	setAttr ".gtag[4].gtagnm" -type "string" "right";
-	setAttr ".gtag[4].gtagcmp" -type "componentList" 1 "f[4]";
-	setAttr ".gtag[5].gtagnm" -type "string" "top";
-	setAttr ".gtag[5].gtagcmp" -type "componentList" 1 "f[1]";
-	setAttr ".pv" -type "double2" 0.25 0.5 ;
-	setAttr ".uvst[0].uvsn" -type "string" "map1";
-	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
-		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
-		 0.875 0.25 0.125 0 0.125 0.25;
-	setAttr ".cuvs" -type "string" "map1";
-	setAttr ".dcc" -type "string" "Ambient+Diffuse";
-	setAttr ".covm[0]"  0 1 1;
-	setAttr ".cdvm[0]"  0 1 1;
-	setAttr -s 8 ".pt[0:7]" -type "float3"  -255.72537 0.5 626.5 -255.72537 
-		0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5 -255.72537 
-		0.5 626.5 -255.72537 0.5 626.5 -255.72537 0.5 626.5;
-	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
-		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
-	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
-		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
-	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
-		f 4 0 5 -2 -5
-		mu 0 4 0 1 3 2
-		f 4 1 7 -3 -7
-		mu 0 4 2 3 5 4
-		f 4 2 9 -4 -9
-		mu 0 4 4 5 7 6
-		f 4 3 11 -1 -11
-		mu 0 4 6 7 9 8
-		f 4 -12 -10 -8 -6
-		mu 0 4 1 10 11 3
-		f 4 10 4 6 8
-		mu 0 4 12 0 2 13;
-	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
-	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
-	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
-	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode groupId -n "groupId850";
-	rename -uid "71858E64-4FD5-CAF8-7410-A1A8A995AFCC";
+	rename -uid "8E2EDC26-428C-4418-47DA-63BCB8562F59";
 	setAttr ".ihi" 0;
 createNode materialInfo -n "materialInfo23";
-	rename -uid "D07DFFA8-47AB-F6BD-9962-089BF049544F";
+	rename -uid "35531E99-4E36-AA90-AC05-DEAB3F0165AD";
 createNode shadingEngine -n "lambert16SG";
-	rename -uid "60F933D2-4442-43C2-B753-A78D62393F68";
-	setAttr ".ihi" 0;
-	setAttr ".ro" yes;
-createNode lambert -n "Misc09_grid_512";
-	rename -uid "A7B0544F-426B-13CF-D968-B2BED4D8C1AA";
-createNode file -n "file15";
-	rename -uid "C8D33A44-437A-4D44-0638-05ACB50F149D";
-	setAttr ".ftn" -type "string" "X:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc09_grid_512.tga";
-	setAttr ".cs" -type "string" "sRGB";
-createNode place2dTexture -n "place2dTexture15";
-	rename -uid "DBDCE457-4D9E-E048-B374-00A77BE26E84";
-createNode groupId -n "groupId852";
-	rename -uid "37F9A7D4-47AD-61A9-FFEA-6DBADD8FA070";
-	setAttr ".ihi" 0;
-createNode materialInfo -n "materialInfo22";
-	rename -uid "1381F38D-43A7-6093-5F7D-8B8B7B9CC84B";
-createNode shadingEngine -n "lambert15SG";
-	rename -uid "2C3B5434-4582-AB35-FDA2-06814AEF31A1";
+	rename -uid "7726EF7C-4264-40BC-2116-8EACAE82052B";
 	setAttr ".ihi" 0;
 	setAttr -s 2 ".dsm";
 	setAttr ".ro" yes;
-createNode lambert -n "Misc08_grid_512";
-	rename -uid "416F5B23-41AD-6B04-6560-C2A569F31D62";
+createNode lambert -n "Misc09_grid";
+	rename -uid "5550972F-4B54-8B4C-14D1-90ABA34D00F3";
+createNode file -n "file15";
+	rename -uid "21FAB96A-435B-E218-981B-2BAFB83DD63D";
+	setAttr ".ftn" -type "string" "G:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc09_grid.tga";
+	setAttr ".cs" -type "string" "sRGB Encoded Rec.709 (sRGB)";
+createNode place2dTexture -n "place2dTexture15";
+	rename -uid "AA2AEDC4-4010-9879-0378-6D8DB0CDEB24";
+createNode groupId -n "groupId852";
+	rename -uid "46CD76D0-4F6D-F6D8-66BB-F182970F01B6";
+	setAttr ".ihi" 0;
+createNode materialInfo -n "materialInfo22";
+	rename -uid "4FF33329-4EE7-EAEE-D6B6-389277D2C602";
+createNode shadingEngine -n "lambert15SG";
+	rename -uid "6AEC82AF-457B-7C7E-F7DD-54935AC19B64";
+	setAttr ".ihi" 0;
+	setAttr -s 2 ".dsm";
+	setAttr ".ro" yes;
+createNode lambert -n "Misc08_grid";
+	rename -uid "F7AC645B-4539-7952-157D-97A04DEFB2B7";
 createNode file -n "file14";
-	rename -uid "D746A512-4582-83BF-6E4F-BBB88DA5C238";
-	setAttr ".ftn" -type "string" "X:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc08_grid_512.tga";
-	setAttr ".cs" -type "string" "sRGB";
+	rename -uid "18421695-450F-85FE-1F50-1DA496E99D49";
+	setAttr ".ftn" -type "string" "G:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc08_grid.tga";
+	setAttr ".cs" -type "string" "sRGB Encoded Rec.709 (sRGB)";
 createNode place2dTexture -n "place2dTexture14";
-	rename -uid "5D2ED836-445B-00E2-F8F7-B794B399EFFD";
+	rename -uid "55E21F0A-4712-25B8-DBF0-DC921B442320";
 createNode displayLayer -n "UCX_GROUP";
-	rename -uid "1F0B34B6-4148-53EF-A378-868B4AC24009";
+	rename -uid "497AEEFB-498A-D37C-5528-FCA365D2C102";
 	setAttr ".v" no;
 	setAttr ".ufem" -type "stringArray" 0  ;
 	setAttr ".do" 2;
 createNode displayLayerManager -n "layerManager";
-	rename -uid "EF69192E-4B9B-480C-8E2C-CABCCDFBE768";
+	rename -uid "2C56AD6E-4FAD-80D2-51C5-64BAC80FF5D8";
 	setAttr -s 2 ".dli[1]"  2;
 	setAttr -s 2 ".dli";
 createNode materialInfo -n "materialInfo24";
-	rename -uid "F56A4ED1-4E4B-AB19-CDB5-29BDDE079BEC";
+	rename -uid "7A97A86B-4B9C-504D-F08F-0A959B04064B";
 createNode shadingEngine -n "lambert17SG";
-	rename -uid "FBACD0F1-4450-7545-99F2-98B4096378D4";
+	rename -uid "FF524102-4876-9072-89E5-56BB3E426989";
 	setAttr ".ihi" 0;
 	setAttr -s 4 ".dsm";
 	setAttr ".ro" yes;
 createNode lambert -n "M_UCX";
-	rename -uid "F75D1B2D-425D-5AD6-3015-C7A75DA77F45";
+	rename -uid "AD6E6DA3-404B-D098-C4B4-DD8574842850";
 	setAttr ".c" -type "float3" 1 0 0 ;
 	setAttr ".it" -type "float3" 0.68387097 0.68387097 0.68387097 ;
 createNode groupId -n "groupId1017";
-	rename -uid "47A5EF33-4E6E-501F-398A-6F9BB2F3135E";
+	rename -uid "1C452EDF-4C29-E13F-4DAF-D28B324987C2";
 	setAttr ".ihi" 0;
 createNode objectSet -n "textureEditorIsolateSelectSet";
-	rename -uid "001D5998-49B6-15D3-725A-7EA20B9BA35E";
+	rename -uid "5CEDDAF8-43F8-A623-2492-7D949008C88E";
 	setAttr ".ihi" 0;
 	setAttr ".fo" yes;
 createNode materialInfo -n "materialInfo21";
-	rename -uid "6E1FCA9C-4930-DD40-78FF-8588955EA136";
+	rename -uid "C332425E-4399-3E55-0770-D29485995804";
 createNode shadingEngine -n "lambert14SG";
-	rename -uid "CF9F8A1B-487B-F931-D482-CCAC018BC2C5";
+	rename -uid "1A955298-452A-A26A-61EC-EB8799E96648";
 	setAttr ".ihi" 0;
 	setAttr ".ro" yes;
-createNode lambert -n "Misc07_grid_512";
-	rename -uid "391DD827-424A-AC7E-B980-8A9FCC88E8ED";
+createNode lambert -n "Misc07_grid";
+	rename -uid "28704603-45E9-83F5-52AB-F1958F99A078";
 createNode file -n "file13";
-	rename -uid "3C5CB53A-4CB4-562B-BD3C-D79CEEC8CAA9";
-	setAttr ".ftn" -type "string" "X:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc07_grid_512.tga";
-	setAttr ".cs" -type "string" "sRGB";
+	rename -uid "3813CEF7-4CAC-97D1-029D-DF9D23620D14";
+	setAttr ".ftn" -type "string" "G:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc07_grid.tga";
+	setAttr ".cs" -type "string" "sRGB Encoded Rec.709 (sRGB)";
 createNode place2dTexture -n "place2dTexture13";
-	rename -uid "6C6F222C-4EC5-9B93-E2B5-4A8E759C7F80";
+	rename -uid "0CFC5A96-48A0-6BD9-4CE6-438819D332CA";
 createNode groupId -n "groupId855";
-	rename -uid "4C2D8EA7-4D04-5ED1-7C17-55BBFBDF38F1";
+	rename -uid "1BB6A826-4267-B7B8-7A03-F4BBAFD75246";
 	setAttr ".ihi" 0;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "32EBA3B8-4C5D-1811-101E-698259AD76D0";
+	rename -uid "F967B149-47B2-1036-72EA-A78545886BB8";
 	setAttr -s 8 ".lnk";
 	setAttr -s 8 ".slnk";
 select -ne :time1;
-	setAttr ".o" 1;
-	setAttr ".unw" 1;
+	setAttr ".o" 0;
 select -ne :hardwareRenderingGlobals;
 	setAttr ".otfna" -type "stringArray" 22 "NURBS Curves" "NURBS Surfaces" "Polygons" "Subdiv Surface" "Particles" "Particle Instance" "Fluids" "Strokes" "Image Planes" "UI" "Lights" "Cameras" "Locators" "Joints" "IK Handles" "Deformers" "Motion Trails" "Components" "Hair Systems" "Follicles" "Misc. UI" "Ornaments"  ;
 	setAttr ".otfva" -type "Int32Array" 22 0 1 1 1 1 1
@@ -16774,17 +16618,17 @@ select -ne :hardwareRenderingGlobals;
 	setAttr ".fprt" yes;
 	setAttr ".rtfm" 1;
 select -ne :renderPartition;
-	setAttr -s 8 ".st";
+	setAttr -s 6 ".st";
 select -ne :renderGlobalsList1;
 select -ne :defaultShaderList1;
-	setAttr -s 12 ".s";
+	setAttr -s 10 ".s";
 select -ne :postProcessList1;
 	setAttr -s 2 ".p";
 select -ne :defaultRenderUtilityList1;
-	setAttr -s 5 ".u";
+	setAttr -s 3 ".u";
 select -ne :defaultRenderingList1;
 select -ne :defaultTextureList1;
-	setAttr -s 5 ".tx";
+	setAttr -s 3 ".tx";
 select -ne :standardSurface1;
 	setAttr ".bc" -type "float3" 0.40000001 0.40000001 0.40000001 ;
 	setAttr ".sr" 0.5;
@@ -16822,11 +16666,11 @@ connectAttr "UCX_GROUP.di" "UCX_InteriorDoorFrame01_01.do";
 connectAttr "UCX_GROUP.di" "UCX_InteriorDoorFrame01_02.do";
 connectAttr "UCX_GROUP.di" "UCX_InteriorDoorFrame01_03.do";
 connectAttr "lambert16SG.msg" "materialInfo23.sg";
-connectAttr "Misc09_grid_512.msg" "materialInfo23.m";
+connectAttr "Misc09_grid.msg" "materialInfo23.m";
 connectAttr "file15.msg" "materialInfo23.t" -na;
-connectAttr "Misc09_grid_512.oc" "lambert16SG.ss";
+connectAttr "Misc09_grid.oc" "lambert16SG.ss";
 connectAttr "InteriorDoor01Shape.iog" "lambert16SG.dsm" -na;
-connectAttr "file15.oc" "Misc09_grid_512.c";
+connectAttr "file15.oc" "Misc09_grid.c";
 connectAttr ":defaultColorMgtGlobals.cme" "file15.cme";
 connectAttr ":defaultColorMgtGlobals.cfe" "file15.cmcf";
 connectAttr ":defaultColorMgtGlobals.cfp" "file15.cmcp";
@@ -16850,12 +16694,12 @@ connectAttr "place2dTexture15.vc1" "file15.vc1";
 connectAttr "place2dTexture15.o" "file15.uv";
 connectAttr "place2dTexture15.ofs" "file15.fs";
 connectAttr "lambert15SG.msg" "materialInfo22.sg";
-connectAttr "Misc08_grid_512.msg" "materialInfo22.m";
+connectAttr "Misc08_grid.msg" "materialInfo22.m";
 connectAttr "file14.msg" "materialInfo22.t" -na;
-connectAttr "Misc08_grid_512.oc" "lambert15SG.ss";
+connectAttr "Misc08_grid.oc" "lambert15SG.ss";
 connectAttr "InteriorDoor01HardwareShape.iog" "lambert15SG.dsm" -na;
 connectAttr "InteriorDoorFrame01HardwareShape.iog" "lambert15SG.dsm" -na;
-connectAttr "file14.oc" "Misc08_grid_512.c";
+connectAttr "file14.oc" "Misc08_grid.c";
 connectAttr ":defaultColorMgtGlobals.cme" "file14.cme";
 connectAttr ":defaultColorMgtGlobals.cfe" "file14.cmcf";
 connectAttr ":defaultColorMgtGlobals.cfp" "file14.cmcp";
@@ -16890,11 +16734,11 @@ connectAttr "groupId1017.msg" "textureEditorIsolateSelectSet.gn" -na;
 connectAttr "InteriorDoorFrame01Shape.iog.og[1]" "textureEditorIsolateSelectSet.dsm"
 		 -na;
 connectAttr "lambert14SG.msg" "materialInfo21.sg";
-connectAttr "Misc07_grid_512.msg" "materialInfo21.m";
+connectAttr "Misc07_grid.msg" "materialInfo21.m";
 connectAttr "file13.msg" "materialInfo21.t" -na;
-connectAttr "Misc07_grid_512.oc" "lambert14SG.ss";
+connectAttr "Misc07_grid.oc" "lambert14SG.ss";
 connectAttr "InteriorDoorFrame01Shape.iog" "lambert14SG.dsm" -na;
-connectAttr "file13.oc" "Misc07_grid_512.c";
+connectAttr "file13.oc" "Misc07_grid.c";
 connectAttr ":defaultColorMgtGlobals.cme" "file13.cme";
 connectAttr ":defaultColorMgtGlobals.cfe" "file13.cmcf";
 connectAttr ":defaultColorMgtGlobals.cfp" "file13.cmcp";
@@ -16933,9 +16777,9 @@ connectAttr "lambert14SG.pa" ":renderPartition.st" -na;
 connectAttr "lambert15SG.pa" ":renderPartition.st" -na;
 connectAttr "lambert16SG.pa" ":renderPartition.st" -na;
 connectAttr "lambert17SG.pa" ":renderPartition.st" -na;
-connectAttr "Misc07_grid_512.msg" ":defaultShaderList1.s" -na;
-connectAttr "Misc08_grid_512.msg" ":defaultShaderList1.s" -na;
-connectAttr "Misc09_grid_512.msg" ":defaultShaderList1.s" -na;
+connectAttr "Misc07_grid.msg" ":defaultShaderList1.s" -na;
+connectAttr "Misc08_grid.msg" ":defaultShaderList1.s" -na;
+connectAttr "Misc09_grid.msg" ":defaultShaderList1.s" -na;
 connectAttr "M_UCX.msg" ":defaultShaderList1.s" -na;
 connectAttr "place2dTexture13.msg" ":defaultRenderUtilityList1.u" -na;
 connectAttr "place2dTexture14.msg" ":defaultRenderUtilityList1.u" -na;
