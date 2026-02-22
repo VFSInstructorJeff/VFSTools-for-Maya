@@ -18,8 +18,10 @@ xcopy /s/y "%cd%\uv_tools" "%userprofile%\Documents\maya\VFSTools\uv_tools\"
 xcopy /s/y "%cd%\animation_tools" "%userprofile%\Documents\maya\VFSTools\animation_tools\"
 xcopy /s/y "%cd%\leveldesign_tools" "%userprofile%\Documents\maya\VFSTools\leveldesign_tools\"
 xcopy /s/y "%cd%\modular_kit" "%userprofile%\Documents\maya\VFSTools\modular_kit\"
+xcopy /s/y "%cd%\LD_MATS" "%userprofile%\Documents\maya\VFSTools\LD_MATS\"
+xcopy /s/y "%cd%\MayaLDToolsMaterials.ma" "%userprofile%\Documents\maya\VFSTools\"
 
-:: Fix workspaces absolute paths
+:: Fix workspaces and textures absolute paths
 call VFSLDWorkspaceEditor.exe
 
 :: Copy icons and workspaces (organizational/aesthetic stuff mostly)

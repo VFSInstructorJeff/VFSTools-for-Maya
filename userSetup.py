@@ -45,12 +45,26 @@ def import_workspaces(*args):
         workspace_str = workspaces_dir + r"/" + workspace
         cmds.workspaceLayoutManager(i=workspace_str)
 
+def import_LD_mats(*args):
+    # Get path to mat
+    if cmds.objExists("Floor_grid"):
+        print("VFS LD Materials already exist. Skipping import.")
+        return
+    else:
+        mats_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/MayaLDToolsMaterials.ma"
+        mats_dir = mats_dir.replace("\\", "/")
+        cmds.file(mats_dir, i=True)
+
 callbacks = []
 def create_callbacks():
     namespace_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterImport, merge_namespaces_on_import)
     mixamo_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterImport, reopen_mixamo_editor)
+    mats_new_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterNew, import_LD_mats)
+    mats_open_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterOpen, import_LD_mats)
     callbacks.append(namespace_callback)
     callbacks.append(mixamo_callback)
+    callbacks.append(mats_new_callback)
+    callbacks.append(mats_open_callback)
 
 def deferred_functions():
     create_script_jobs()
