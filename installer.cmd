@@ -24,13 +24,7 @@ xcopy /s/y "%cd%\animation_tools" "%userprofile%\Documents\maya\VFSTools\animati
 xcopy /s/y "%cd%\leveldesign_tools" "%userprofile%\Documents\maya\VFSTools\leveldesign_tools\"
 xcopy /s/y "%cd%\modular_kit" "%userprofile%\Documents\maya\VFSTools\modular_kit\"
 xcopy /s/y "%cd%\LD_MATS" "%userprofile%\Documents\maya\VFSTools\LD_MATS\"
-xcopy /s/y "%cd%\MayaLDToolsMaterials.ma" "%userprofile%\Documents\maya\VFSTools\"
 
-:: Copy icons and workspaces (organizational/aesthetic stuff mostly)
-xcopy /s/y "%cd%\icons" "%userprofile%\Documents\maya\VFSTools\icons\"
-xcopy /s/y "%cd%\workspaces" "%userprofile%\Documents\maya\VFSTools\workspaces\"
-
-:: Create favs.json with the relative path to add our Modular kit to the favorites tab in the Content Browser
 SET "FILEPATH=%userprofile%/Documents/maya/VFSTools/modular_kit"
 echo {> favs.json
 echo     "favorites": [>> favs.json
