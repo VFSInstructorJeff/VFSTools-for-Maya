@@ -184,7 +184,7 @@ createNode standardSurface -n "Floor_grid";
 	setAttr ".sr" 1;
 createNode file -n "file1";
 	rename -uid "4CBED53C-4592-35A8-92AB-54923749166F";
-	setAttr ".ftn" -type "string" "G:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Floor_grid.tga";
+Floor_grid.tga";
 	setAttr ".cs" -type "string" "sRGB Encoded Rec.709 (sRGB)";
 createNode place2dTexture -n "place2dTexture1";
 	rename -uid "A7F199BA-4D5A-A687-2442-F5B644037819";

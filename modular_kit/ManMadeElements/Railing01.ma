@@ -432,7 +432,7 @@ createNode lambert -n "Misc07_grid";
 	rename -uid "0A2BA336-4CA9-5CF5-5CC1-5D80B178929A";
 createNode file -n "file13";
 	rename -uid "383ECF4D-4C16-C45F-E733-0C865D315909";
-	setAttr ".ftn" -type "string" "G:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Misc07_grid.tga";
+Misc07_grid.tga";
 	setAttr ".cs" -type "string" "sRGB Encoded Rec.709 (sRGB)";
 createNode place2dTexture -n "place2dTexture13";
 	rename -uid "DA4E6B63-46A1-DADC-C083-DF80721A4FFC";
