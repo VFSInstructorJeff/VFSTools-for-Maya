@@ -232,7 +232,7 @@ def insert_knot(*args):
     cmds.InsertKnot()
 
 def sweep_mesh(*args):
-    cmds.CreateSweepMesh
+    cmds.CreateSweepMesh()
 
 
 # ---------- CREATE THE MAIN WINDOW ----------
