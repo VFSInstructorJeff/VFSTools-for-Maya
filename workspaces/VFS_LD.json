@@ -1,6 +1,6 @@
 {
     "autoSave": true,
-    "selectedShelf": "VFS_Tools",
+    "selectedShelf": "VFS_LD",
     "panels": [
         {
             "mainWindowPanel": true,
@@ -340,13 +340,22 @@
     ],
     "closedControls": [
         {
-            "objectName": "TimeSlider",
-            "posX": -290,
-            "posY": 355,
-            "controlHeight": 48,
-            "controlWidth": 1920,
+            "objectName": "HelpLine",
+            "posX": 436,
+            "posY": 411,
+            "controlHeight": 36,
+            "controlWidth": 815,
             "widthProperty": "free",
-            "heightProperty": "preferred"
+            "heightProperty": "fixed"
+        },
+        {
+            "objectName": "displayLayerWorkspaceControl",
+            "posX": 383,
+            "posY": 345,
+            "controlHeight": 262,
+            "controlWidth": 567,
+            "widthProperty": "free",
+            "heightProperty": "free"
         },
         {
             "objectName": "LDToolsWindowWorkspaceControl",
@@ -358,15 +367,6 @@
             "heightProperty": "free"
         },
         {
-            "objectName": "HelpLine",
-            "posX": 436,
-            "posY": 411,
-            "controlHeight": 36,
-            "controlWidth": 815,
-            "widthProperty": "free",
-            "heightProperty": "fixed"
-        },
-        {
             "objectName": "RangeSlider",
             "posX": -288,
             "posY": 377,
@@ -376,20 +376,20 @@
             "heightProperty": "fixed"
         },
         {
+            "objectName": "TimeSlider",
+            "posX": -290,
+            "posY": 355,
+            "controlHeight": 48,
+            "controlWidth": 1920,
+            "widthProperty": "free",
+            "heightProperty": "preferred"
+        },
+        {
             "objectName": "nodeEditorPanel1Window",
             "posX": 200,
             "posY": 250,
             "controlHeight": 600,
             "controlWidth": 1040,
-            "widthProperty": "free",
-            "heightProperty": "free"
-        },
-        {
-            "objectName": "displayLayerWorkspaceControl",
-            "posX": 383,
-            "posY": 345,
-            "controlHeight": 262,
-            "controlWidth": 567,
             "widthProperty": "free",
             "heightProperty": "free"
         }
