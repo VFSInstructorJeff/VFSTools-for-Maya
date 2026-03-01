@@ -11,7 +11,7 @@
                         "tabWidget": {
                             "selectedIndex": 0,
                             "controlWidth": 1916,
-                            "controlHeight": 23,
+                            "controlHeight": 27,
                             "collapsed": false,
                             "controls": [
                                 {
@@ -72,7 +72,7 @@
                                     "tabWidget": {
                                         "selectedIndex": 0,
                                         "controlWidth": 40,
-                                        "controlHeight": 877,
+                                        "controlHeight": 817,
                                         "collapsed": false,
                                         "controls": [
                                             {
@@ -91,7 +91,7 @@
                                                 "widthProperty": "fixed",
                                                 "heightProperty": "free",
                                                 "controlWidth": 40,
-                                                "controlHeight": 877
+                                                "controlHeight": 817
                                             }
                                         ]
                                     }
@@ -107,8 +107,8 @@
                                                         {
                                                             "tabWidget": {
                                                                 "selectedIndex": 0,
-                                                                "controlWidth": 261,
-                                                                "controlHeight": 555,
+                                                                "controlWidth": 295,
+                                                                "controlHeight": 781,
                                                                 "collapsed": false,
                                                                 "controls": [
                                                                     {
@@ -126,8 +126,8 @@
                                                                         "closed": false,
                                                                         "widthProperty": "preferred",
                                                                         "heightProperty": "free",
-                                                                        "controlWidth": 261,
-                                                                        "controlHeight": 555,
+                                                                        "controlWidth": 295,
+                                                                        "controlHeight": 781,
                                                                         "initCallback": "outlinerStateCallback",
                                                                         "stateString": "outlinerEditor -e -showShapes 0 -showAssignedMaterials 0 -showTimeEditor 1 -showReferenceNodes 1 -showReferenceMembers 1 -showAttributes 0 -showConnected 0 -showAnimCurvesOnly 0 -showMuteInfo 0 -organizeByLayer 1 -organizeByClip 1 -showAnimLayerWeight 1 -autoExpandLayers 1 -autoExpand 0 -showDagOnly 1 -showAssets 1 -showContainedOnly 1 -showPublishedAsConnected 0 -showParentContainers 0 -showContainerContents 1 -ignoreDagHierarchy 0 -expandConnections 0 -showUpstreamCurves 1 -showUnitlessCurves 1 -showCompounds 1 -showLeafs 1 -showNumericAttrsOnly 0 -highlightActive 1 -autoSelectNewObjects 0 -doNotSelectNewObjects 0 -dropIsParent 1 -transmitFilters 0 -setFilter \"defaultSetFilter\" -showSetMembers 1 -allowMultiSelection 1 -alwaysToggleSelect 0 -directSelect 0 -isSet 0 -isSetMember 0 -showUfeItems 1 -displayMode \"DAG\" -expandObjects 0 -setsIgnoreFilters 1 -containersIgnoreFilters 0 -editAttrName 0 -showAttrValues 0 -highlightSecondary 0 -showUVAttrsOnly 0 -showTextureNodesOnly 0 -attrAlphaOrder \"default\" -animLayerFilterOptions \"allAffecting\" -sortOrder \"none\" -longNames 0 -niceNames 1 -showNamespace 1 -showPinIcons 0 -mapMotionTrails 0 -ignoreHiddenAttribute 0 -ignoreOutlinerColor 0 -renderFilterVisible 0 -renderFilterIndex 0 -selectionOrder \"chronological\" -expandAttribute 0 $editorName"
                                                                     },
@@ -148,6 +148,24 @@
                                                                         "heightProperty": "free",
                                                                         "controlWidth": 548,
                                                                         "controlHeight": 733
+                                                                    },
+                                                                    {
+                                                                        "objectName": "ToolSettings",
+                                                                        "title": "Tool Settings",
+                                                                        "uiScript": "global string $gToolSettingsForm; formLayout $gToolSettingsForm;",
+                                                                        "retain": true,
+                                                                        "deleteLater": true,
+                                                                        "loadImmediately": true,
+                                                                        "checkPlugins": false,
+                                                                        "actLikeMayaUIElement": false,
+                                                                        "layoutDirectionCallback": "",
+                                                                        "layoutDirection": "horizontal",
+                                                                        "tabDirection": 0,
+                                                                        "closed": false,
+                                                                        "widthProperty": "preferred",
+                                                                        "heightProperty": "free",
+                                                                        "controlWidth": 460,
+                                                                        "controlHeight": 781
                                                                     }
                                                                 ]
                                                             }
@@ -155,8 +173,8 @@
                                                         {
                                                             "tabWidget": {
                                                                 "selectedIndex": 0,
-                                                                "controlWidth": 1030,
-                                                                "controlHeight": 572,
+                                                                "controlWidth": 1226,
+                                                                "controlHeight": 798,
                                                                 "collapsed": false,
                                                                 "controls": [
                                                                     {
@@ -174,8 +192,8 @@
                                                                         "closed": false,
                                                                         "widthProperty": "free",
                                                                         "heightProperty": "free",
-                                                                        "controlWidth": 1030,
-                                                                        "controlHeight": 572,
+                                                                        "controlWidth": 1226,
+                                                                        "controlHeight": 798,
                                                                         "initCallback": "mainPaneStateCallback",
                                                                         "stateString": "global string $gMainPane; paneLayout -edit -configuration single $gMainPane;if(`modelPanel -exists modelPanel4`){ modelPanel -edit -parent $gMainPane modelPanel4; paneLayout -edit -setPane modelPanel4 1 $gMainPane;}"
                                                                     }
@@ -188,9 +206,9 @@
                                             {
                                                 "tabWidget": {
                                                     "selectedIndex": 0,
-                                                    "controlWidth": 1297,
-                                                    "controlHeight": 282,
-                                                    "collapsed": false,
+                                                    "controlWidth": 1351,
+                                                    "controlHeight": 274,
+                                                    "collapsed": true,
                                                     "controls": [
                                                         {
                                                             "objectName": "contentBrowserPanel1Window",
@@ -207,8 +225,8 @@
                                                             "closed": false,
                                                             "widthProperty": "free",
                                                             "heightProperty": "free",
-                                                            "controlWidth": 1297,
-                                                            "controlHeight": 282,
+                                                            "controlWidth": 1351,
+                                                            "controlHeight": 274,
                                                             "initCallback": "contentBrowserInitCallback",
                                                             "stateString": "contentBrowserSetContext(\"WindowsMenu\", \"examples\", \"Examples/Modeling/Sculpting Base Meshes/Bipeds\");"
                                                         }
@@ -219,134 +237,99 @@
                                     }
                                 },
                                 {
-                                    "splitter": {
-                                        "orientation": "vertical",
-                                        "children": [
+                                    "tabWidget": {
+                                        "selectedIndex": 2,
+                                        "controlWidth": 320,
+                                        "controlHeight": 817,
+                                        "collapsed": false,
+                                        "controls": [
                                             {
-                                                "tabWidget": {
-                                                    "selectedIndex": 2,
-                                                    "controlWidth": 550,
-                                                    "controlHeight": 571,
-                                                    "collapsed": false,
-                                                    "controls": [
-                                                        {
-                                                            "objectName": "ChannelBoxLayerEditor",
-                                                            "title": "Channel Box / Layer Editor",
-                                                            "uiScript": "global string $gChannelsLayersForm; formLayout $gChannelsLayersForm;",
-                                                            "retain": true,
-                                                            "deleteLater": true,
-                                                            "loadImmediately": true,
-                                                            "checkPlugins": false,
-                                                            "actLikeMayaUIElement": false,
-                                                            "layoutDirectionCallback": "",
-                                                            "layoutDirection": "horizontal",
-                                                            "tabDirection": 3,
-                                                            "closed": false,
-                                                            "widthProperty": "preferred",
-                                                            "heightProperty": "free",
-                                                            "controlWidth": 550,
-                                                            "controlHeight": 838
-                                                        },
-                                                        {
-                                                            "objectName": "AttributeEditor",
-                                                            "title": "Attribute Editor",
-                                                            "uiScript": "global string $gAttributeEditorForm; formLayout $gAttributeEditorForm;",
-                                                            "retain": true,
-                                                            "deleteLater": true,
-                                                            "loadImmediately": true,
-                                                            "checkPlugins": false,
-                                                            "actLikeMayaUIElement": false,
-                                                            "layoutDirectionCallback": "",
-                                                            "layoutDirection": "horizontal",
-                                                            "tabDirection": 3,
-                                                            "closed": false,
-                                                            "widthProperty": "preferred",
-                                                            "heightProperty": "free",
-                                                            "controlWidth": 550,
-                                                            "controlHeight": 838
-                                                        },
-                                                        {
-                                                            "objectName": "NEXDockControl",
-                                                            "title": "Modeling Toolkit",
-                                                            "uiScript": "dR_createNEXDockControl();",
-                                                            "retain": true,
-                                                            "deleteLater": true,
-                                                            "loadImmediately": true,
-                                                            "checkPlugins": false,
-                                                            "actLikeMayaUIElement": false,
-                                                            "layoutDirectionCallback": "",
-                                                            "layoutDirection": "horizontal",
-                                                            "tabDirection": 3,
-                                                            "closed": false,
-                                                            "widthProperty": "preferred",
-                                                            "heightProperty": "free",
-                                                            "controlWidth": 550,
-                                                            "controlHeight": 571,
-                                                            "requiredPlugins": [
-                                                                "modelingToolkit"
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
+                                                "objectName": "ChannelBoxLayerEditor",
+                                                "title": "Channel Box / Layer Editor",
+                                                "uiScript": "global string $gChannelsLayersForm; formLayout $gChannelsLayersForm;",
+                                                "retain": true,
+                                                "deleteLater": true,
+                                                "loadImmediately": true,
+                                                "checkPlugins": false,
+                                                "actLikeMayaUIElement": false,
+                                                "layoutDirectionCallback": "",
+                                                "layoutDirection": "horizontal",
+                                                "tabDirection": 3,
+                                                "closed": false,
+                                                "widthProperty": "preferred",
+                                                "heightProperty": "free",
+                                                "controlWidth": 550,
+                                                "controlHeight": 838
                                             },
                                             {
-                                                "tabWidget": {
-                                                    "selectedIndex": 0,
-                                                    "controlWidth": 550,
-                                                    "controlHeight": 262,
-                                                    "collapsed": false,
-                                                    "controls": [
-                                                        {
-                                                            "objectName": "displayLayerWorkspaceControl",
-                                                            "title": "Display Layer Editor",
-                                                            "uiScript": "python(\"layer_editor_tools_ui.display_layer_ui().create_display_layer_ui()\");",
-                                                            "retain": false,
-                                                            "deleteLater": true,
-                                                            "loadImmediately": false,
-                                                            "checkPlugins": false,
-                                                            "actLikeMayaUIElement": false,
-                                                            "layoutDirectionCallback": "",
-                                                            "layoutDirection": "horizontal",
-                                                            "tabDirection": 3,
-                                                            "closed": false,
-                                                            "widthProperty": "free",
-                                                            "heightProperty": "free",
-                                                            "controlWidth": 550,
-                                                            "controlHeight": 262
-                                                        }
-                                                    ]
-                                                }
+                                                "objectName": "AttributeEditor",
+                                                "title": "Attribute Editor",
+                                                "uiScript": "global string $gAttributeEditorForm; formLayout $gAttributeEditorForm;",
+                                                "retain": true,
+                                                "deleteLater": true,
+                                                "loadImmediately": true,
+                                                "checkPlugins": false,
+                                                "actLikeMayaUIElement": false,
+                                                "layoutDirectionCallback": "",
+                                                "layoutDirection": "horizontal",
+                                                "tabDirection": 3,
+                                                "closed": false,
+                                                "widthProperty": "preferred",
+                                                "heightProperty": "free",
+                                                "controlWidth": 550,
+                                                "controlHeight": 838
                                             },
                                             {
-                                                "tabWidget": {
-                                                    "selectedIndex": 0,
-                                                    "controlWidth": 571,
-                                                    "controlHeight": 36,
-                                                    "collapsed": false,
-                                                    "controls": [
-                                                        {
-                                                            "objectName": "CommandLine",
-                                                            "title": "Command Line",
-                                                            "uiScript": "global string $gCommandLineForm; formLayout $gCommandLineForm;",
-                                                            "retain": true,
-                                                            "deleteLater": true,
-                                                            "loadImmediately": true,
-                                                            "checkPlugins": false,
-                                                            "actLikeMayaUIElement": false,
-                                                            "layoutDirectionCallback": "",
-                                                            "layoutDirection": "horizontal",
-                                                            "tabDirection": 0,
-                                                            "closed": false,
-                                                            "widthProperty": "free",
-                                                            "heightProperty": "fixed",
-                                                            "controlWidth": 571,
-                                                            "controlHeight": 36
-                                                        }
-                                                    ]
-                                                }
+                                                "objectName": "NEXDockControl",
+                                                "title": "Modeling Toolkit",
+                                                "uiScript": "dR_createNEXDockControl();",
+                                                "retain": true,
+                                                "deleteLater": true,
+                                                "loadImmediately": true,
+                                                "checkPlugins": false,
+                                                "actLikeMayaUIElement": false,
+                                                "layoutDirectionCallback": "",
+                                                "layoutDirection": "horizontal",
+                                                "tabDirection": 3,
+                                                "closed": false,
+                                                "widthProperty": "preferred",
+                                                "heightProperty": "free",
+                                                "controlWidth": 320,
+                                                "controlHeight": 817,
+                                                "requiredPlugins": [
+                                                    "modelingToolkit"
+                                                ]
                                             }
                                         ]
                                     }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 1920,
+                            "controlHeight": 36,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "CommandLine",
+                                    "title": "Command Line",
+                                    "uiScript": "global string $gCommandLineForm; formLayout $gCommandLineForm;",
+                                    "retain": true,
+                                    "deleteLater": true,
+                                    "loadImmediately": true,
+                                    "checkPlugins": false,
+                                    "actLikeMayaUIElement": false,
+                                    "layoutDirectionCallback": "",
+                                    "layoutDirection": "horizontal",
+                                    "tabDirection": 0,
+                                    "closed": false,
+                                    "widthProperty": "free",
+                                    "heightProperty": "fixed",
+                                    "controlWidth": 1920,
+                                    "controlHeight": 36
                                 }
                             ]
                         }
@@ -357,6 +340,15 @@
     ],
     "closedControls": [
         {
+            "objectName": "TimeSlider",
+            "posX": -290,
+            "posY": 355,
+            "controlHeight": 48,
+            "controlWidth": 1920,
+            "widthProperty": "free",
+            "heightProperty": "preferred"
+        },
+        {
             "objectName": "LDToolsWindowWorkspaceControl",
             "posX": 578,
             "posY": 266,
@@ -366,22 +358,13 @@
             "heightProperty": "free"
         },
         {
-            "objectName": "nodeEditorPanel1Window",
-            "posX": 200,
-            "posY": 250,
-            "controlHeight": 600,
-            "controlWidth": 1040,
+            "objectName": "HelpLine",
+            "posX": 436,
+            "posY": 411,
+            "controlHeight": 36,
+            "controlWidth": 815,
             "widthProperty": "free",
-            "heightProperty": "free"
-        },
-        {
-            "objectName": "TimeSlider",
-            "posX": -290,
-            "posY": 355,
-            "controlHeight": 48,
-            "controlWidth": 1920,
-            "widthProperty": "free",
-            "heightProperty": "preferred"
+            "heightProperty": "fixed"
         },
         {
             "objectName": "RangeSlider",
@@ -393,13 +376,22 @@
             "heightProperty": "fixed"
         },
         {
-            "objectName": "HelpLine",
-            "posX": 436,
-            "posY": 411,
-            "controlHeight": 36,
-            "controlWidth": 815,
+            "objectName": "nodeEditorPanel1Window",
+            "posX": 200,
+            "posY": 250,
+            "controlHeight": 600,
+            "controlWidth": 1040,
             "widthProperty": "free",
-            "heightProperty": "fixed"
+            "heightProperty": "free"
+        },
+        {
+            "objectName": "displayLayerWorkspaceControl",
+            "posX": 383,
+            "posY": 345,
+            "controlHeight": 262,
+            "controlWidth": 567,
+            "widthProperty": "free",
+            "heightProperty": "free"
         }
     ],
     "contentBrowserContexts": [
