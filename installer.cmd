@@ -6,7 +6,7 @@ setx MAYA_ENV_DIR "%userprofile%"\Documents\maya\VFSTools\
 :: Cleanup old tools (Deletes everything we've added and files we've modified. We're completely wiping it, so if any other installed tools also modified the file, they'll have to be reinstalled.)
 call cleanupBatch.cmd
 
-:: Fix workspaces absolute paths
+:: Fix workspaces and textures absolute paths
 call VFSLDWorkspaceEditor.exe
 
 :: Copy setup files
@@ -25,6 +25,14 @@ xcopy /s/y "%cd%\leveldesign_tools" "%userprofile%\Documents\maya\VFSTools\level
 xcopy /s/y "%cd%\modular_kit" "%userprofile%\Documents\maya\VFSTools\modular_kit\"
 xcopy /s/y "%cd%\LD_MATS" "%userprofile%\Documents\maya\VFSTools\LD_MATS\"
 
+:: Copy material setup
+xcopy /s/y "%cd%\MayaLDToolsMaterials.ma" "%userprofile%\Documents\maya\VFSTools\"
+
+:: Copy icons and workspaces (organizational/aesthetic stuff mostly)
+xcopy /s/y "%cd%\icons" "%userprofile%\Documents\maya\VFSTools\icons\"
+xcopy /s/y "%cd%\workspaces" "%userprofile%\Documents\maya\VFSTools\workspaces\"
+
+:: Create favs.json with the relative path to add our Modular kit to the favorites tab in the Content Browser
 SET "FILEPATH=%userprofile%/Documents/maya/VFSTools/modular_kit"
 echo {> favs.json
 echo     "favorites": [>> favs.json
