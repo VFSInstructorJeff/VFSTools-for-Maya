@@ -32,7 +32,7 @@ DARK_GRAY = (0.185, 0.185, 0.185) # Maya dark gray
 MAGENTA = (0.200, 0.076, 0.228) # For debugging
 
 # Directories
-CURRENT_DIR = Path(__file__).parent # (...\Documents\maya\scripts\vfs_leveldesign_tools\)
+CURRENT_DIR = Path(__file__).parent # (...\Documents\maya\VFSTools\leveldesign_tools\)
 ICON_DIR = str(CURRENT_DIR.parent) + r"\icons"
 
 # Maya Icons (Extract them from Maya and copy them to the custom icons folder as PySide requires a path)
@@ -233,6 +233,10 @@ def insert_knot(*args):
 
 def sweep_mesh(*args):
     cmds.CreateSweepMesh()
+
+def import_scale_man(*args):
+    scale_man_dir = str(CURRENT_DIR) + r"\SM_Manny.ma"
+    cmds.file(scale_man_dir, i=True)
 
 
 # ---------- CREATE THE MAIN WINDOW ----------
