@@ -1,13 +1,27 @@
 setlocal EnableDelayedExpansion
+
 :: ---------- CONSTANTS ----------
 :: Create constants for directories
 set "MAYA_SCRIPTS_DIR=%userprofile%\Documents\maya\scripts\"
 set "SCRIPT_DIRS=layer_editor_tools baking_tools uv_tools"
+set "VFS_SCRIPTS_DIR=%userprofile%\Documents\maya\VFSTools\"
+set "VFS_SCRIPT_DIRS=animation_tools baking_tools icons layer_editor_tools LD_MATS leveldesign_tools modular_kit uv_tools workspaces"
 
 :: ---------- FUNCTIONS ----------
 :: Purge old VFS tools
 FOR %%D in (%SCRIPT_DIRS%) do (
     set "TARGET_DIR=!MAYA_SCRIPTS_DIR!%%D"
+    if exist "!TARGET_DIR!" (
+        echo Deleting %%D folder...
+        rmdir /s /q "!TARGET_DIR!"
+    ) else (
+        echo !TARGET_DIR! does not exist.
+    )
+)
+
+:: Purge new VFS tools since we're replacing them anyway
+FOR %%D in (%VFS_SCRIPT_DIRS%) do (
+    set "TARGET_DIR=!VFS_SCRIPTS_DIR!%%D"
     if exist "!TARGET_DIR!" (
         echo Deleting %%D folder...
         rmdir /s /q "!TARGET_DIR!"
