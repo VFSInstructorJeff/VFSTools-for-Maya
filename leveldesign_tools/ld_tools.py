@@ -87,6 +87,8 @@ def get_main_window() -> QtWidgets.QWidget:
 # Defining Maya functions
 global primScale
 primScale = 100
+global current_grid_index
+current_grid_index = 3 # [3] is 1 subdivision (grid every 1m, biggest possible one)
 
 def set_prim_scale(primScaleRaw):
     global primScale # Fetch global var
@@ -238,7 +240,36 @@ def import_scale_man(*args):
     scale_man_dir = str(CURRENT_DIR) + r"\SM_Manny.ma"
     cmds.file(scale_man_dir, i=True)
 
+def scale_grid(*args):
+    # Fetch global var
+    global current_grid_index
+    
+    info[] = args
+    current_grid_index = int(info[0])
+    # Fix current_grid_index received so it doesn't get out of the array range
+    if (current_grid_index > 3):
+        print("Grid is already at max value.")
+        current_grid_index = 3
+    elif (current_grid_index < 0):
+        print("Grid is already at min value")
+        current_grid_index = 0
 
+    if (current_grid_index == 0):
+        cmds.grid(size = 10000, spacing = 100, divisions = 8) # 0.125m
+        cmds.displayColor('gridAxis', 4, dormant = True)
+    elif (current_grid_index == 1):
+        cmds.grid(size = 10000, spacing = 100, divisions = 4) # 0.25m
+        cmds.displayColor('gridAxis', 4, dormant = True)
+    elif (current_grid_index == 2):
+        cmds.grid(size = 10000, spacing = 100, divisions = 2) # 0.5m
+        cmds.displayColor('gridAxis', 4, dormant = True)
+    elif (current_grid_index == 3):
+        cmds.grid(size = 10000, spacing = 100, divisions = 1) # 1m
+        cmds.displayColor('gridAxis', 4, dormant = True)
+    else:
+        print("[!] Something went wrong with grid setup.")
+
+        
 # ---------- CREATE THE MAIN WINDOW ----------
 
 
