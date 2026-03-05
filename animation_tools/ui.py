@@ -46,8 +46,8 @@ def mixamo_anim_editor():
     
     cmds.separator(st = 'none', w = 11)
     
-    cmds.button(label='', w = 30, bgc=[0.0, 0.0, 0.1], command=lambda x: anim_tools_core.set_color_value(0))
     cmds.button(label='', w = 30, bgc=[0.0, 0.0, 0.0], command=lambda x: anim_tools_core.set_color_value(1))
+    cmds.button(label='', w = 30, bgc=[0.0, 0.0, 0.1], command=lambda x: anim_tools_core.set_color_value(0))
     cmds.button(label='', w = 30, bgc=[0.3, 0.3, 0.3], command=lambda x: anim_tools_core.set_color_value(2))
     cmds.button(label='', w = 30, bgc=[0.5, 0.5, 0.5], command=lambda x: anim_tools_core.set_color_value(3))
     cmds.button(label='', w = 30, bgc=[0.5, 0.0, 0.0], command=lambda x: anim_tools_core.set_color_value(4)) 
@@ -126,6 +126,16 @@ def mixamo_anim_editor():
     
     cmds.button(label="Save CTLS", w=170, bgc=[0.5, 0.5, 0.5], command=anim_tools_core.save_controller_layout)
     cmds.button(label="Load CTLS", w=170, bgc=[0.6, 0.6, 0.6], command=anim_tools_core.load_controller_layout)
+    
+    #####
+    
+    cmds.setParent( '..' )
+    
+    cmds.separator(st = 'none', h = 20)
+    
+    cmds.rowLayout(numberOfColumns=1)
+    
+    cmds.button(label="Delete CTLS", command=anim_tools_core.fk_controller_deconstructor, bgc=[0.50, 0, 0], w = 170, al = 'right')
     
     #####
     
