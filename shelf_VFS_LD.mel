@@ -26,6 +26,7 @@ global proc shelf_VFS_LD () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
+        -imageOverlayLabel "1.8m" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
         -image "np-head.png" 
@@ -38,6 +39,19 @@ global proc shelf_VFS_LD () {
         -commandRepeatable 1
         -flat 1
     ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
@@ -48,7 +62,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "0.25m³ Cube" 
+        -annotation "0.25m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -68,7 +82,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 25\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
+        -command "from maya import cmds\n\nsize = 25\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\nprint(\"FACE COUNT: \" + str(face_count))\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\nprint(\"OBJECT NAME: \" + only_obj_name)\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -83,7 +97,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "0.5m³ Cube" 
+        -annotation "0.5m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -103,7 +117,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 50\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
+        -command "from maya import cmds\n\nsize = 50\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\nprint(\"FACE COUNT: \" + str(face_count))\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\nprint(\"OBJECT NAME: \" + only_obj_name)\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -118,7 +132,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "1m³ Cube" 
+        -annotation "1m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -138,7 +152,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 100\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
+        -command "from maya import cmds\n\nsize = 100\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\nprint(\"FACE COUNT: \" + str(face_count))\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\nprint(\"OBJECT NAME: \" + only_obj_name)\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -153,7 +167,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "2m³ Cube" 
+        -annotation "2m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -173,7 +187,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 200\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
+        -command "from maya import cmds\n\nsize = 200\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\nprint(\"FACE COUNT: \" + str(face_count))\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\nprint(\"OBJECT NAME: \" + only_obj_name)\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -294,6 +308,19 @@ global proc shelf_VFS_LD () {
         -commandRepeatable 1
         -flat 1
     ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
@@ -362,142 +389,6 @@ global proc shelf_VFS_LD () {
         -commandRepeatable 1
         -flat 1
     ;
-    shelfButton
-        -enableCommandRepeat 1
-        -flexibleWidthType 3
-        -flexibleWidthValue 32
-        -enable 1
-        -width 35
-        -height 34
-        -manage 1
-        -visible 1
-        -preventOverride 0
-        -annotation "Boolean (A-B)" 
-        -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Boolean" 
-        -labelOffset 0
-        -rotation 0
-        -flipX 0
-        -flipY 0
-        -useAlpha 1
-        -font "plainLabelFont" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "polyBooleansDifference.png" 
-        -image1 "polyBooleansDifference.png" 
-        -style "iconOnly" 
-        -marginWidth 0
-        -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.boolean_difference()" 
-        -sourceType "python" 
-        -commandRepeatable 1
-        -flat 1
-    ;
-    shelfButton
-        -enableCommandRepeat 1
-        -flexibleWidthType 3
-        -flexibleWidthValue 32
-        -enable 1
-        -width 35
-        -height 34
-        -manage 1
-        -visible 1
-        -preventOverride 0
-        -annotation "Extract face(s) from mesh" 
-        -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Extract" 
-        -labelOffset 0
-        -rotation 0
-        -flipX 0
-        -flipY 0
-        -useAlpha 1
-        -font "plainLabelFont" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "polyChipOff.png" 
-        -image1 "polyChipOff.png" 
-        -style "iconOnly" 
-        -marginWidth 0
-        -marginHeight 1
-        -command "from maya import cmds\n\ncmds.ExtractFace()" 
-        -sourceType "python" 
-        -commandRepeatable 1
-        -flat 1
-    ;
-    shelfButton
-        -enableCommandRepeat 1
-        -flexibleWidthType 3
-        -flexibleWidthValue 32
-        -enable 1
-        -width 35
-        -height 34
-        -manage 1
-        -visible 1
-        -preventOverride 0
-        -annotation "Bridge between opposite edges" 
-        -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Bridge" 
-        -labelOffset 0
-        -rotation 0
-        -flipX 0
-        -flipY 0
-        -useAlpha 1
-        -font "plainLabelFont" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "polyBridge.png" 
-        -image1 "polyBridge.png" 
-        -style "iconOnly" 
-        -marginWidth 0
-        -marginHeight 1
-        -command "from maya import cmds\n\ncmds.BridgeOrFill()" 
-        -sourceType "python" 
-        -commandRepeatable 1
-        -flat 1
-    ;
-    shelfButton
-        -enableCommandRepeat 1
-        -flexibleWidthType 3
-        -flexibleWidthValue 32
-        -enable 1
-        -width 35
-        -height 34
-        -manage 1
-        -visible 1
-        -preventOverride 0
-        -annotation "Multicut Tool" 
-        -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Multicut" 
-        -labelOffset 0
-        -rotation 0
-        -flipX 0
-        -flipY 0
-        -useAlpha 1
-        -font "plainLabelFont" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "multiCut_NEX32.png" 
-        -image1 "multiCut_NEX32.png" 
-        -style "iconOnly" 
-        -marginWidth 0
-        -marginHeight 1
-        -command "from maya import cmds\n\ncmds.MultiCutTool()" 
-        -sourceType "python" 
-        -commandRepeatable 1
-        -flat 1
-    ;
     separator
         -enable 1
         -width 12
@@ -521,12 +412,12 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Curve Tool" 
+        -annotation "Creates a new camera from your current view" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
         -align "center" 
-        -label "CurveTool" 
+        -label "CreateCamFromView" 
         -labelOffset 0
         -rotation 0
         -flipX 0
@@ -535,12 +426,12 @@ global proc shelf_VFS_LD () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "curveEP.png" 
-        -image1 "curveEP.png" 
+        -image "camera.svg" 
+        -image1 "camera.svg" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.curve_tool()" 
+        -command "from maya import cmds\n\n# Create camera and pilot it\ncmds.CreateCameraFromView()\n\n# List everything in outliner\noutlinerList = cmds.ls(dag=True)\n\n# Find cameras, grab parents, scale them up\nfor cam in outlinerList:\n    if (cmds.objectType(cam, isType='camera')):\n        parentTransf = cmds.listRelatives(cam, parent=True)\n        cmds.setAttr(f'{parentTransf[0]}.scaleX', 100)\n        cmds.setAttr(f'{parentTransf[0]}.scaleY', 100)\n        cmds.setAttr(f'{parentTransf[0]}.scaleZ', 100)\n    else:\n        continue" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -555,63 +446,42 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Insert Knot" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
         -align "center" 
-        -label "Insert Knot" 
+        -label "separatoradd" 
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
+        -imageOverlayLabel "separatoradd" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "insertKnot.png" 
-        -image1 "insertKnot.png" 
+        -image "commandButton.png" 
+        -image1 "commandButton.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.insert_knot()" 
-        -sourceType "python" 
+        -command "addShelfSeparator();" 
+        -sourceType "mel" 
         -commandRepeatable 1
         -flat 1
     ;
-    shelfButton
-        -enableCommandRepeat 1
-        -flexibleWidthType 3
-        -flexibleWidthValue 32
+    separator
         -enable 1
-        -width 35
-        -height 34
+        -width 12
+        -height 35
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Sweep Mesh" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Sweep Mesh" 
-        -labelOffset 0
-        -rotation 0
-        -flipX 0
-        -flipY 0
-        -useAlpha 1
-        -font "plainLabelFont" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "polyHelix.png" 
-        -image1 "polyHelix.png" 
-        -style "iconOnly" 
-        -marginWidth 0
-        -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.sweep_mesh()" 
-        -sourceType "python" 
-        -commandRepeatable 1
-        -flat 1
+        -style "shelf" 
+        -horizontal 0
     ;
 
 } 
