@@ -4,6 +4,7 @@ import maya.OpenMaya as om
 import os
 from layer_editor_tools import ui as layer_editor_tools_ui
 from animation_tools import ui as anim_tools_ui
+from leveldesign_tools import ld_tools as ld
 
 def on_scene_change():
     print("Scene changed...")
