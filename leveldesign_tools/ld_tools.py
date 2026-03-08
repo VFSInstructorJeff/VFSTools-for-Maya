@@ -244,8 +244,8 @@ def scale_grid(*args):
     # Fetch global var
     global current_grid_index
     
-    info[] = args
-    current_grid_index = int(info[0])
+    info = args[0]
+    current_grid_index = int(info)
     # Fix current_grid_index received so it doesn't get out of the array range
     if (current_grid_index > 3):
         print("Grid is already at max value.")
@@ -255,17 +255,26 @@ def scale_grid(*args):
         current_grid_index = 0
 
     if (current_grid_index == 0):
-        cmds.grid(size = 10000, spacing = 100, divisions = 8) # 0.125m
-        cmds.displayColor('gridAxis', 4, dormant = True)
+        cmds.grid(spacing = 100, divisions = 8) # 0.125m
+        cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
+        cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
+        cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
+        
     elif (current_grid_index == 1):
-        cmds.grid(size = 10000, spacing = 100, divisions = 4) # 0.25m
-        cmds.displayColor('gridAxis', 4, dormant = True)
+        cmds.grid(spacing = 100, divisions = 4) # 0.25m
+        cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
+        cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
+        cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
     elif (current_grid_index == 2):
-        cmds.grid(size = 10000, spacing = 100, divisions = 2) # 0.5m
-        cmds.displayColor('gridAxis', 4, dormant = True)
+        cmds.grid(spacing = 100, divisions = 2) # 0.5m
+        cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
+        cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
+        cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
     elif (current_grid_index == 3):
-        cmds.grid(size = 10000, spacing = 100, divisions = 1) # 1m
-        cmds.displayColor('gridAxis', 4, dormant = True)
+        cmds.grid(spacing = 100, divisions = 1) # 1m
+        cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
+        cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
+        cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
     else:
         print("[!] Something went wrong with grid setup.")
 
