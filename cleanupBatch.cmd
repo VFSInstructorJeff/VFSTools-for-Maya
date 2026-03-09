@@ -1,4 +1,5 @@
 setlocal EnableDelayedExpansion
+
 :: ---------- CONSTANTS ----------
 :: Create constants for directories
 set "MAYA_SCRIPTS_DIR=%userprofile%\Documents\maya\scripts\"
@@ -26,7 +27,7 @@ if exist "%USER_SETUP_DIR%" (
     del /q "%USER_SETUP_DIR%"
 )
 
-:: Purge old shelf and favs
+:: Purge old shelf, favs, and hotkeys
 set "SHELF_DIR_2026=%userprofile%\Documents\maya\2026\prefs\shelves\shelf_VFS_Tools.mel"
 set "SHELF_DIR_2025=%userprofile%\Documents\maya\2025\prefs\shelves\shelf_VFS_Tools.mel"
 set "SHELF_DIR_2024=%userprofile%\Documents\maya\2024\prefs\shelves\shelf_VFS_Tools.mel"
@@ -36,6 +37,11 @@ set "FAVS_DIR_2023=%userprofile%\Documents\maya\2023\prefs\favs.json"
 set "FAVS_DIR_2024=%userprofile%\Documents\maya\2024\prefs\favs.json"
 set "FAVS_DIR_2025=%userprofile%\Documents\maya\2025\prefs\favs.json"
 set "FAVS_DIR_2026=%userprofile%\Documents\maya\2026\prefs\favs.json"
+
+set "HKEYS_DIR_2023=%userprofile%\Documents\maya\2023\prefs\hotkeys\*"
+set "HKEYS_DIR_2024=%userprofile%\Documents\maya\2024\prefs\hotkeys\*"
+set "HKEYS_DIR_2025=%userprofile%\Documents\maya\2025\prefs\hotkeys\*"
+set "HKEYS_DIR_2026=%userprofile%\Documents\maya\2026\prefs\hotkeys\*"
 
 if exist "%SHELF_DIR_2026%" (
     echo Deleting shelf_VFS_Tools.mel from .../2026/prefs/shelves/ folder
@@ -95,5 +101,34 @@ if exist "%FAVS_DIR_2026%" (
     echo favs.json does not exist in %FAVS_DIR_2026%.
 )
 
+:: Purging all hotkey folders
+
+if exist "%HKEYS_DIR_2023%" (
+    echo Deleting files from .../2023/prefs/hotkeys folder
+    del /F /S /Q "%HKEYS_DIR_2023%"
+) else (
+    echo 2023 hotkeys folder is empty.
+)
+
+if exist "%HKEYS_DIR_2024%" (
+    echo Deleting files from .../2024/prefs/hotkeys folder
+    del /F /S /Q "%HKEYS_DIR_2024%"
+) else (
+    echo 2024 hotkeys folder is empty.
+)
+
+if exist "%HKEYS_DIR_2025%" (
+    echo Deleting files from .../2025/prefs/hotkeys folder
+    del /F /S /Q "%HKEYS_DIR_2025%"
+) else (
+    echo 2025 hotkeys folder is empty.
+)
+
+if exist "%HKEYS_DIR_2026%" (
+    echo Deleting files from .../2026/prefs/hotkeys folder
+    del /F /S /Q "%HKEYS_DIR_2026%"
+) else (
+    echo 2026 hotkeys folder is empty.
+)
 :: We ignore Maya.env because we're setting MAYA_ENV_DIR
 :: So Maya will ignore all Maya.env files existing outside of the VFSTools folder

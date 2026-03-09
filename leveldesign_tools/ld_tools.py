@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 from maya import cmds
+from maya import mel
 from maya import OpenMayaUI as omui
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin as mixin
 
@@ -259,22 +260,25 @@ def scale_grid(*args):
         cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
         cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
         cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
-        
+  
     elif (current_grid_index == 1):
         cmds.grid(spacing = 100, divisions = 4) # 0.25m
         cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
         cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
         cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
+
     elif (current_grid_index == 2):
         cmds.grid(spacing = 100, divisions = 2) # 0.5m
         cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
         cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
         cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
+
     elif (current_grid_index == 3):
         cmds.grid(spacing = 100, divisions = 1) # 1m
         cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
         cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
         cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
+
     else:
         print("[!] Something went wrong with grid setup.")
 
