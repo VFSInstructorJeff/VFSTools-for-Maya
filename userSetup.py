@@ -6,10 +6,10 @@ from layer_editor_tools import ui as layer_editor_tools_ui
 from animation_tools import ui as anim_tools_ui
 from leveldesign_tools import ld_tools as ld
 
-def load_hotkeys():
+def load_hotkeys(*args):
     print("VFS Hotkeys loaded")
     hotkeys_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/VFS_Hotkeys.mel"
-    hotkeys_dir = workspaces_dir.replace("\\", "/")
+    hotkeys_dir = hotkeys_dir.replace("\\", "/")
     cmds.hotkeySet(e=True, ip=hotkeys_dir)
 
 def on_scene_change():
@@ -41,6 +41,7 @@ def reopen_mixamo_editor(*args):
 
 def import_workspaces(*args):
     # Create the absolute workspaces path to import from (.../VFSTools/)
+    print("Importing workspaces...")
     workspaces_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/workspaces"
     workspaces_dir = workspaces_dir.replace("\\", "/")
     
