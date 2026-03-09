@@ -1,5 +1,5 @@
 from maya import cmds
-import maya.utils
+from maya import utils
 import maya.OpenMaya as om
 import os
 from layer_editor_tools import ui as layer_editor_tools_ui
@@ -7,12 +7,19 @@ from animation_tools import ui as anim_tools_ui
 from leveldesign_tools import ld_tools as ld
 
 def load_hotkeys(*args):
-    print("VFS Hotkeys loaded")
-    hotkeys_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/VFS_Hotkeys.mel"
+    hotkeys_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/VFS_Hotkeys.mhk"
     hotkeys_dir = hotkeys_dir.replace("\\", "/")
-    cmds.hotkeySet(e=True, ip=hotkeys_dir)
+
+    hksets = cmds.hotkeySet(q=True, hsa=True)
+
+    if "VFS_Hotkeys" not in hksets:
+        print("Importing VFS_Hotkeys...")
+        cmds.hotkeySet(e=True, ip=hotkeys_dir)
+
+    cmds.hotkeySet("VFS_Hotkeys", current=True)
 
 def on_scene_change():
+    load_hotkeys()
     print("Scene changed...")
     if not cmds.workspaceControl(layer_editor_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
         return
@@ -64,7 +71,6 @@ def deferred_functions():
     create_script_jobs()
     create_callbacks()
     import_workspaces()
-    load_hotkeys()
 
 # Use executeDeferred to ensure Maya is fully loaded
-maya.utils.executeDeferred(deferred_functions())
+utils.executeDeferred(deferred_functions())
