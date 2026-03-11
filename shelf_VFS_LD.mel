@@ -62,7 +62,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "0.25m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
+        -annotation "0.25m³ Cube / Set pivot / Auto UV / Layout" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -82,7 +82,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 25\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\nprint(\"FACE COUNT: \" + str(face_count))\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\nprint(\"OBJECT NAME: \" + only_obj_name)\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -command "from maya import cmds\n\nsize = 25\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -97,7 +97,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "0.5m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
+        -annotation "0.5m³ Cube / Set pivot / Auto UV / Layout" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -117,7 +117,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 50\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\nprint(\"FACE COUNT: \" + str(face_count))\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\nprint(\"OBJECT NAME: \" + only_obj_name)\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -command "from maya import cmds\n\nsize = 50\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -132,7 +132,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "1m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
+        -annotation "1m³ Cube / Set pivot / Auto UV / Layout" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -152,7 +152,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 100\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\nprint(\"FACE COUNT: \" + str(face_count))\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\nprint(\"OBJECT NAME: \" + only_obj_name)\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -command "from maya import cmds\n\nsize = 100\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -167,7 +167,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "2m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
+        -annotation "2m³ Cube / Set pivot / Auto UV / Layout" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -187,7 +187,55 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 200\ncube = cmds.polyCube(w=size,h=size,d=size)\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(size/2, -(size/2), size/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move(-(size/2), size/2, -(size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\nprint(\"FACE COUNT: \" + str(face_count))\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\nprint(\"OBJECT NAME: \" + only_obj_name)\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -command "from maya import cmds\n\nsize = 200\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "0.25m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "UCX25" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "0.25m³ " 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "envCube.svg" 
+        -image1 "envCube.svg" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "from maya import cmds\n\nsize = 25\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -202,27 +250,97 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "1mx1mx8m Rectangle" 
+        -annotation "0.5m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
         -align "center" 
-        -label "Rectangle8" 
+        -label "UCX50" 
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
-        -imageOverlayLabel "1x8m" 
+        -imageOverlayLabel "0.5m³" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "cube.png" 
-        -image1 "cube.png" 
+        -image "envCube.svg" 
+        -image1 "envCube.svg" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsizeXY = 100\nsizeZ = 800\ncube = cmds.polyCube(w=sizeXY,h=sizeXY,d=sizeZ)\ncmds.select(cube, replace=True)\n# Move pivot to bottom corner (pos XZ)\ncmds.move(sizeXY/2, -(sizeXY/2), sizeZ/2, f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n# Move pivot to origin\ncmds.move(-(sizeXY/2), sizeXY/2, -(sizeZ/2), absolute=True)\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()" 
+        -command "from maya import cmds\n\nsize = 50\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "1m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "UCX100" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "1m³" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "envCube.svg" 
+        -image1 "envCube.svg" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "from maya import cmds\n\nsize = 100\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "2m³ Cube / Set pivot / Auto UV / Layout / UCX instance" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "UCX200" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "2m³" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "envCube.svg" 
+        -image1 "envCube.svg" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "from maya import cmds\n\nsize = 200\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -435,53 +553,6 @@ global proc shelf_VFS_LD () {
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
-    ;
-    shelfButton
-        -enableCommandRepeat 1
-        -flexibleWidthType 3
-        -flexibleWidthValue 32
-        -enable 1
-        -width 35
-        -height 34
-        -manage 1
-        -visible 1
-        -preventOverride 0
-        -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "separatoradd" 
-        -labelOffset 0
-        -rotation 0
-        -flipX 0
-        -flipY 0
-        -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "separatoradd" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "commandButton.png" 
-        -image1 "commandButton.png" 
-        -style "iconOnly" 
-        -marginWidth 0
-        -marginHeight 1
-        -command "addShelfSeparator();" 
-        -sourceType "mel" 
-        -commandRepeatable 1
-        -flat 1
-    ;
-    separator
-        -enable 1
-        -width 12
-        -height 35
-        -manage 1
-        -visible 1
-        -preventOverride 0
-        -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -style "shelf" 
-        -horizontal 0
     ;
 
 } 
