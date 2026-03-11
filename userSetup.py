@@ -30,6 +30,28 @@ def create_script_jobs():
     cmds.scriptJob(event=["NewSceneOpened", on_scene_change], protected=True)
     cmds.scriptJob(event=["SceneOpened", on_scene_change], protected=True)
     cmds.scriptJob(event=["SceneSaved", on_scene_change], protected=True)
+    cmds.scriptJob( e=["DagObjectCreated", UCX_name_fix], protected=True)
+
+def UCX_name_fix():
+    str_ucx = "UCX_"
+    suffix_str = 'None'
+    # Select object created
+    selection_name = cmds.ls(sl=True)[0]
+    children = cmds.listRelatives(children=True, type='transform', fullPath=True)
+    if (children == None):
+        return
+    if (len(children) == 1):
+        new_child_name = (str_ucx + selection_name)
+        cmds.rename(str(children[0]), new_child_name)
+    else:
+        for index, child in enumerate(children):
+            if str_ucx in child:
+                if ((index + 1) < 10):
+                    suffix_str = f"_0{index + 1}"
+                else:
+                    suffix_str = f"_{index + 1}"
+                new_child_name = (str_ucx + selection_name + suffix_str)
+                cmds.rename(str(child), new_child_name)
 
 def merge_namespaces_on_import(*args):
     print("Merging namespaces...")
