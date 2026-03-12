@@ -88,8 +88,8 @@ def get_main_window() -> QtWidgets.QWidget:
 # Defining Maya functions
 global primScale
 primScale = 100
-global current_grid_index
-current_grid_index = 3 # [3] is 1 subdivision (grid every 1m, biggest possible one)
+global current_step_index
+current_step_index = 3 # [3] is 1m
 
 def set_prim_scale(primScaleRaw):
     global primScale # Fetch global var
@@ -241,46 +241,38 @@ def import_scale_man(*args):
     scale_man_dir = str(CURRENT_DIR) + r"\SM_Manny.ma"
     cmds.file(scale_man_dir, i=True)
 
-def scale_grid(*args):
+def scale_step_snap(*args):
     # Fetch global var
-    global current_grid_index
+    global current_step_index
     
     info = args[0]
-    current_grid_index = int(info)
-    # Fix current_grid_index received so it doesn't get out of the array range
-    if (current_grid_index > 3):
-        print("Grid is already at max value.")
-        current_grid_index = 3
-    elif (current_grid_index < 0):
-        print("Grid is already at min value")
-        current_grid_index = 0
+    current_step_index = int(info)
+    # Fix current_step_index received so it doesn't get out of the array range
+    if (current_step_index > 3):
+        print("Step Snap is already at max value.")
+        current_step_index = 3
+    elif (current_step_index < 0):
+        print("Step Snap is already at min value")
+        current_step_index = 0
 
-    if (current_grid_index == 0):
-        cmds.grid(spacing = 100, divisions = 8) # 0.125m
-        cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
-        cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
-        cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
+    if (current_step_index == 0):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=12.5)
+        cmds.inViewMessage(amg='Step Snap set to <hl>12.5cm</hl>.', pos='topCenter', fade=True)
   
-    elif (current_grid_index == 1):
-        cmds.grid(spacing = 100, divisions = 4) # 0.25m
-        cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
-        cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
-        cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
+    elif (current_step_index == 1):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=25)
+        cmds.inViewMessage(amg='Step Snap set to <hl>25cm</hl>.', pos='topCenter', fade=True)
 
-    elif (current_grid_index == 2):
-        cmds.grid(spacing = 100, divisions = 2) # 0.5m
-        cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
-        cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
-        cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
+    elif (current_step_index == 2):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=50)
+        cmds.inViewMessage(amg='Step Snap set to <hl>50cm</hl>.', pos='topCenter', fade=True)
 
-    elif (current_grid_index == 3):
-        cmds.grid(spacing = 100, divisions = 1) # 1m
-        cmds.displayColor('gridAxis', 4, dormant = True) # Main axis (RED)
-        cmds.displayColor('gridHighlight', 16, dormant = True) # Divisions (WHITE)
-        cmds.displayColor('grid', 2, dormant = True) # Subvisions (GREY)
+    elif (current_step_index == 3):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=100)
+        cmds.inViewMessage(amg='Step Snap set to <hl>1m</hl>.', pos='topCenter', fade=True)
 
     else:
-        print("[!] Something went wrong with grid setup.")
+        print("[!] Something went wrong with step snap setup.")
 
         
 # ---------- CREATE THE MAIN WINDOW ----------

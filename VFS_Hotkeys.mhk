@@ -7,7 +7,7 @@
 //
 runTimeCommand
 	-label ""
-	-annotation "Makes the grid bigger (less subdivisions)"
+	-annotation "Makes the step snap bigger"
 	-longAnnotation ""
 	-category "Custom Scripts"
 	-image ""
@@ -17,12 +17,12 @@ runTimeCommand
 	-helpUrl ""
 	-hotkeyCtx ""
 	-commandLanguage "python"
-	-command ("size = ld.current_grid_index + 1\nld.scale_grid(size)")
-	GridScaleUp;
+	-command ("step = ld.current_step_index + 1\nld.scale_step_snap(step)")
+	IncreaseStepSnap;
 
 runTimeCommand
 	-label ""
-	-annotation "Makes the grid smaller (more subdivisions)"
+	-annotation "Makes the step snap smaller"
 	-longAnnotation ""
 	-category "Custom Scripts"
 	-image ""
@@ -32,8 +32,8 @@ runTimeCommand
 	-helpUrl ""
 	-hotkeyCtx ""
 	-commandLanguage "python"
-	-command ("size = ld.current_grid_index - 1\nld.scale_grid(size)")
-	GridScaleDown;
+	-command ("step = ld.current_step_index - 1\nld.scale_step_snap(step)")
+	DecreaseStepSnap;
 
 //
 // The name commands referenced by the hotkeys
@@ -41,13 +41,13 @@ runTimeCommand
 nameCommand
 	-annotation "GridScaleUpNameCommand"
 	-sourceType "mel"
-	-command ("GridScaleUp")
+	-command ("IncreaseStepSnap")
 	GridScaleUpNameCommand;
 
 nameCommand
 	-annotation "GridScaleDownNameCommand"
 	-sourceType "mel"
-	-command ("GridScaleDown")
+	-command ("DecreaseStepSnap")
 	GridScaleDownNameCommand;
 
 //
@@ -62,24 +62,24 @@ hotkeySet -source "Maya_Default" -current VFS_Hotkeys;
 //
 hotkey -keyShortcut "]" -ctl -name ("GridScaleUpNameCommand");
 hotkey -keyShortcut "[" -ctl -name ("GridScaleDownNameCommand");
-hotkeyCtx -type "Editor" -addClient "hyperShadePanel";
-hotkeyCtx -type "Editor" -addClient "outlinerPanel";
-hotkeyCtx -type "Editor" -addClient "renderWindowPanel";
-hotkeyCtx -type "Editor" -addClient "profilerPanel";
 hotkeyCtx -type "Editor" -addClient "dopeSheetPanel";
-hotkeyCtx -type "Editor" -addClient "hyperGraphPanel";
+hotkeyCtx -type "Editor" -addClient "renderWindowPanel";
 hotkeyCtx -type "Editor" -addClient "shapePanel";
 hotkeyCtx -type "Editor" -addClient "graphEditor";
-hotkeyCtx -type "Editor" -addClient "polyTexturePlacementPanel";
-hotkeyCtx -type "Editor" -addClient "nodeEditorPanel";
-hotkeyCtx -type "Editor" -addClient "posePanel";
-hotkeyCtx -type "Editor" -addClient "motionMakerEditor";
 hotkeyCtx -type "Editor" -addClient "timeEditorPanel";
-hotkeyCtx -type "Tool" -addClient "sculptMeshCache";
+hotkeyCtx -type "Editor" -addClient "profilerPanel";
+hotkeyCtx -type "Editor" -addClient "motionMakerEditor";
+hotkeyCtx -type "Editor" -addClient "nodeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "outlinerPanel";
+hotkeyCtx -type "Editor" -addClient "hyperShadePanel";
+hotkeyCtx -type "Editor" -addClient "polyTexturePlacementPanel";
+hotkeyCtx -type "Editor" -addClient "hyperGraphPanel";
+hotkeyCtx -type "Editor" -addClient "posePanel";
 hotkeyCtx -type "Tool" -addClient "xgmIGBrush";
 hotkeyCtx -type "Tool" -addClient "SymmetrizeUVBrush";
-hotkeyCtx -type "Tool" -addClient "polyCutUV";
 hotkeyCtx -type "Tool" -addClient "bpDraw";
-hotkeyCtx -type "Tool" -addClient "texCutContext";
 hotkeyCtx -type "Tool" -addClient "Unfold3DBrush";
+hotkeyCtx -type "Tool" -addClient "polyCutUV";
 hotkeyCtx -type "Tool" -addClient "texSculptCacheContext";
+hotkeyCtx -type "Tool" -addClient "sculptMeshCache";
+hotkeyCtx -type "Tool" -addClient "texCutContext";
