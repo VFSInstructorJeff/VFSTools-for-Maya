@@ -14,12 +14,47 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
+        -annotation "Import 1m scale man" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "ScaleMan100" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "1m" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "np-head.png" 
+        -image1 "np-head.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "# Define new Scale Man scale by dividing the goal scale by his height\nnewScale = 1/1.8\n\n# Get list of all objs in the scene before importing Scale Man\npre_import = set(cmds.ls(dag=True, transforms=True))\n\nld.import_scale_man()\n\n# Get list of all objs after importing him\npost_import = set(cmds.ls(dag=True, transforms=True))\n\n# Subtract one from another\nimported_objs = list(after_import - before_import)\n\n# Select imported objs\nif imported_objs:\n    cmds.select(imported_objs)\n    selection_name = cmds.ls(sl=True)[0]\n    cmds.rename(selection_name, (selection_name + \"_100cm\"))\n    print(f\"Selected {len(imported_objs)} new objects.\")\nelse:\n    print(\"No new objects found or selected.\")\n\ncmds.xform(scale=(newScale, newScale, newScale))\n\ncmds.FreezeTransformations()\ncmds.DeleteHistory()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
         -annotation "Import 6ft/1.8m scale man" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
         -align "center" 
-        -label "ScaleMan" 
+        -label "ScaleMan180" 
         -labelOffset 0
         -rotation 0
         -flipX 0
@@ -34,7 +69,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.import_scale_man()" 
+        -command "# Get list of all objs in the scene before importing Scale Man\npre_import = set(cmds.ls(dag=True, transforms=True))\n\nld.import_scale_man()\n\n# Get list of all objs after importing him\npost_import = set(cmds.ls(dag=True, transforms=True))\n\n# Subtract one from another\nimported_objs = list(after_import - before_import)\n\n# Select imported objs\nif imported_objs:\n    cmds.select(imported_objs)\n    selection_name = cmds.ls(sl=True)[0]\n    cmds.rename(selection_name, (selection_name + \"_180cm\"))\n    print(f\"Selected {len(imported_objs)} new objects.\")\nelse:\n    print(\"No new objects found or selected.\")\n\ncmds.FreezeTransformations()\ncmds.DeleteHistory()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -387,7 +422,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.freeze_transformations()" 
+        -command "ld.freeze_transformations()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -421,7 +456,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.delete_history()" 
+        -command "ld.delete_history()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -468,7 +503,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.combine()" 
+        -command "ld.combine()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -502,7 +537,143 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.separate()" 
+        -command "ld.separate()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Boolean (A - B)" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Boolean" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyBooleansDifference.png" 
+        -image1 "polyBooleansDifference.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "ld.boolean_difference()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Curve Tool" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "CurveTool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "curveEP.png" 
+        -image1 "curveEP.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "ld.curve_tool()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Insert Knot" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "InsertKnot" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "insertKnot.png" 
+        -image1 "insertKnot.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "ld.insert_knot()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Sweep Mesh" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "SweepMesh" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyHelix.png" 
+        -image1 "polyHelix.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "ld.sweep_mesh()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1

@@ -89,7 +89,7 @@ def get_main_window() -> QtWidgets.QWidget:
 global primScale
 primScale = 100
 global current_step_index
-current_step_index = 3 # [3] is 1m
+current_step_index = 4 # [4] is 1m
 
 def set_prim_scale(primScaleRaw):
     global primScale # Fetch global var
@@ -248,28 +248,32 @@ def scale_step_snap(*args):
     info = args[0]
     current_step_index = int(info)
     # Fix current_step_index received so it doesn't get out of the array range
-    if (current_step_index > 3):
+    if (current_step_index > 4):
         print("Step Snap is already at max value.")
-        current_step_index = 3
+        current_step_index = 4
     elif (current_step_index < 0):
         print("Step Snap is already at min value")
         current_step_index = 0
 
     if (current_step_index == 0):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=12.5)
-        cmds.inViewMessage(amg='Step Snap set to <hl>12.5cm</hl>.', pos='topCenter', fade=True)
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=1, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>1cm</hl>.', pos='topCenter', fade=True)
   
     elif (current_step_index == 1):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=25)
-        cmds.inViewMessage(amg='Step Snap set to <hl>25cm</hl>.', pos='topCenter', fade=True)
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=12.5, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>12.5cm</hl>.', pos='topCenter', fade=True)
 
     elif (current_step_index == 2):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=50)
-        cmds.inViewMessage(amg='Step Snap set to <hl>50cm</hl>.', pos='topCenter', fade=True)
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=25, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>25cm</hl>.', pos='topCenter', fade=True)
 
     elif (current_step_index == 3):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=100)
-        cmds.inViewMessage(amg='Step Snap set to <hl>1m</hl>.', pos='topCenter', fade=True)
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=50, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>50cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 4):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=100, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>100cm</hl>.', pos='topCenter', fade=True)
 
     else:
         print("[!] Something went wrong with step snap setup.")
