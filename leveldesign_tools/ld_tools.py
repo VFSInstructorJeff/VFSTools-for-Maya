@@ -90,6 +90,8 @@ global primScale
 primScale = 100
 global current_step_index
 current_step_index = 4 # [4] is 1m
+global currentCamPreview
+currentCamPreview = 'Null'
 
 def set_prim_scale(primScaleRaw):
     global primScale # Fetch global var
@@ -256,8 +258,8 @@ def scale_step_snap(*args):
         current_step_index = 0
 
     if (current_step_index == 0):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=1, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>1cm</hl>.', pos='topCenter', fade=True)
+        cmds.manipMoveContext('Move', edit=True, snap=False, constrainAlongNormal=True)
+        cmds.inViewMessage(amg='Step Snap is <hl>OFF</hl>.', pos='topCenter', fade=True)
   
     elif (current_step_index == 1):
         cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=12.5, constrainAlongNormal=False)
@@ -285,6 +287,28 @@ def scale_step_snap(*args):
 
     else:
         print("[!] Something went wrong with step snap setup.")
+
+def auto_camera_preview():
+    # Find Camera Preview panel
+    camPreviewName = 'Camera Preview'
+    allPanels = cmds.getPanel(all=True)
+    camPreviewPanel = 'Null'
+
+    for p in allPanels:
+        if camPreviewName in cmds.panel(p, q=True, label=True):
+            camPreviewPanel = p
+
+    # Get selected camera
+    selection = cmds.ls(sl=True)[0]
+    children = cmds.listRelatives(selection, children=True, type='camera')
+    if not children:
+        return
+    else:
+        global currentCamPreview
+        currentCamPreview = children[0]
+        
+    # Look through selected camera in Camera Preview panel
+    cmds.lookThru(currentCamPreview, camPreviewPanel)
 
         
 # ---------- CREATE THE MAIN WINDOW ----------
