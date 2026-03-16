@@ -248,9 +248,9 @@ def scale_step_snap(*args):
     info = args[0]
     current_step_index = int(info)
     # Fix current_step_index received so it doesn't get out of the array range
-    if (current_step_index > 4):
+    if (current_step_index > 6):
         print("Step Snap is already at max value.")
-        current_step_index = 4
+        current_step_index = 6
     elif (current_step_index < 0):
         print("Step Snap is already at min value")
         current_step_index = 0
@@ -273,7 +273,15 @@ def scale_step_snap(*args):
 
     elif (current_step_index == 4):
         cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=100, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>100cm</hl>.', pos='topCenter', fade=True)
+        cmds.inViewMessage(amg='Step Snap set to <hl>1m</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 5):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=500, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>5m</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 6):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=1000, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>10m</hl>.', pos='topCenter', fade=True)
 
     else:
         print("[!] Something went wrong with step snap setup.")

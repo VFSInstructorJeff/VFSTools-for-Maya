@@ -61,9 +61,10 @@ def UCX_name_fix():
         if ((grandchild_type != 'mesh') and (grandchild_type != 'transform')):
             print("Not a mesh. Ignoring UCX rename function.")
             return
-        # Rename the child so it matches its parent
-        new_child_name = (str_ucx + selection_name)
-        cmds.rename(str(children_ls[0]), new_child_name)
+        if str_ucx in str(children_ls[0]):
+            # Rename the child so it matches its parent
+            new_child_name = (str_ucx + selection_name)
+            cmds.rename(str(children_ls[0]), new_child_name)
     else:
         for index, child in enumerate(children_ls):
             # Check if children have UCX_ prefix

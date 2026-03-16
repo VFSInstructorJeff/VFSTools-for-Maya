@@ -34,7 +34,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "# Define new Scale Man scale by dividing the goal scale by his height\nnewScale = 1/1.8\n\n# Get list of all objs in the scene before importing Scale Man\npre_import = set(cmds.ls(dag=True, transforms=True))\n\nld.import_scale_man()\n\n# Get list of all objs after importing him\npost_import = set(cmds.ls(dag=True, transforms=True))\n\n# Subtract one from another\nimported_objs = list(after_import - before_import)\n\n# Select imported objs\nif imported_objs:\n    cmds.select(imported_objs)\n    selection_name = cmds.ls(sl=True)[0]\n    cmds.rename(selection_name, (selection_name + \"_100cm\"))\n    print(f\"Selected {len(imported_objs)} new objects.\")\nelse:\n    print(\"No new objects found or selected.\")\n\ncmds.xform(scale=(newScale, newScale, newScale))\n\ncmds.FreezeTransformations()\ncmds.DeleteHistory()" 
+        -command "# Define new Scale Man scale by dividing the goal scale by his height\nnewScale = 1/1.8\n\n# Get list of all objs in the scene before importing Scale Man\npre_import = set(cmds.ls(dag=True, transforms=True))\n\nld.import_scale_man()\n\n# Get list of all objs after importing him\npost_import = set(cmds.ls(dag=True, transforms=True))\n\n# Subtract one from another\nimported_objs = list(post_import - pre_import)\n\n# Select imported objs\nif imported_objs:\n    cmds.select(imported_objs)\n    selection_name = cmds.ls(sl=True)[0]\n    cmds.rename(selection_name, (selection_name + \"_100cm\"))\n    print(f\"Selected {len(imported_objs)} new objects.\")\nelse:\n    print(\"No new objects found or selected.\")\n\ncmds.xform(scale=(newScale, newScale, newScale))\n\ncmds.FreezeTransformations()\ncmds.DeleteHistory()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -49,7 +49,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Import 6ft/1.8m scale man" 
+        -annotation "Import 1.8m scale man" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -69,7 +69,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "# Get list of all objs in the scene before importing Scale Man\npre_import = set(cmds.ls(dag=True, transforms=True))\n\nld.import_scale_man()\n\n# Get list of all objs after importing him\npost_import = set(cmds.ls(dag=True, transforms=True))\n\n# Subtract one from another\nimported_objs = list(after_import - before_import)\n\n# Select imported objs\nif imported_objs:\n    cmds.select(imported_objs)\n    selection_name = cmds.ls(sl=True)[0]\n    cmds.rename(selection_name, (selection_name + \"_180cm\"))\n    print(f\"Selected {len(imported_objs)} new objects.\")\nelse:\n    print(\"No new objects found or selected.\")\n\ncmds.FreezeTransformations()\ncmds.DeleteHistory()" 
+        -command "# Get list of all objs in the scene before importing Scale Man\npre_import = set(cmds.ls(dag=True, transforms=True))\n\nld.import_scale_man()\n\n# Get list of all objs after importing him\npost_import = set(cmds.ls(dag=True, transforms=True))\n\n# Subtract one from another\nimported_objs = list(post_import - pre_import)\n\n# Select imported objs\nif imported_objs:\n    cmds.select(imported_objs)\n    selection_name = cmds.ls(sl=True)[0]\n    cmds.rename(selection_name, (selection_name + \"_180cm\"))\n    print(f\"Selected {len(imported_objs)} new objects.\")\nelse:\n    print(\"No new objects found or selected.\")\n\ncmds.FreezeTransformations()\ncmds.DeleteHistory()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -270,7 +270,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 25\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -command "from maya import cmds\n\nsize = 25\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)\n\n# Select parent instead of UCX\ncmds.select(only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -305,7 +305,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 50\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -command "from maya import cmds\n\nsize = 50\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)\n\n# Select parent instead of UCX\ncmds.select(only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -340,7 +340,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 100\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -command "from maya import cmds\n\nsize = 100\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)\n\n# Select parent instead of UCX\ncmds.select(only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -375,7 +375,7 @@ global proc shelf_VFS_LD () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from maya import cmds\n\nsize = 200\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)" 
+        -command "from maya import cmds\n\nsize = 200\ncube = cmds.polyCube(w=size,h=size,d=size, name='Cube')\ncmds.select(cube, replace=True)\n\n# Move pivot to bottom corner (pos XZ)\ncmds.move(-(size/2), -(size/2), -(size/2), f\"{cube[0]}.scalePivot\",f\"{cube[0]}.rotatePivot\", absolute=True)\n\n# Move pivot to origin\ncmds.move((size/2), size/2, (size/2), absolute=True)\n\n# Delete history and numbers\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Auto Unwrap\ncmds.UVAutomaticProjection()\n\n# Get all faces\nface_count = cmds.polyEvaluate(f=True)\n\n# Get obj name\nobj_name_ls = cmds.ls(sl=True)\nobj_name = obj_name_ls[0]\nonly_obj_name = obj_name.split(\".\")[0]\n\n# For each face, layout\nfor i in range(0, (face_count + 1)):\n    cmds.select(f'{only_obj_name}.f[{i}]')\n    cmds.LayoutUV()\n\n# Select entire obj again\ncmds.select(only_obj_name)\n\n# Delete history and numbers again\ncmds.DeleteHistory()\ncmds.FreezeTransformations()\n\n# Create UCX and parent it to obj\ncmds.select(only_obj_name)\nucx_instance = cmds.instance()\nucx_renamed = cmds.rename(ucx_instance, f\"UCX_{only_obj_name}\")\ncmds.parent(ucx_renamed, only_obj_name)\n\n# Select parent instead of UCX\ncmds.select(only_obj_name)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -484,7 +484,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Combines meshes, centers pivot, clears history, and freezes transforms" 
+        -annotation "Combine meshes / Center pivot / Clears history / Freeze transforms" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -518,7 +518,7 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Separates meshes, centers pivots, clears history, and freezes transforms" 
+        -annotation "Separate meshes / Center pivot / Clears history / Freeze transforms" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
