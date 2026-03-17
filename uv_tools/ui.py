@@ -180,5 +180,3 @@ def get_texel_density(*args):
     map_size=cmds.intField(CUSTOM_MAP_SIZE_INTBOX_NAME,query=True,value=True)
     texel_density=mm.eval("texGetTexelDensity(%i);" % map_size)
     cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME,edit=True,value=texel_density)
-
-uv_tool_window().show_ui()
