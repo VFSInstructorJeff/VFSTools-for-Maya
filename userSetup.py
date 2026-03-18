@@ -1,6 +1,6 @@
 from maya import cmds
-import maya.mel as mel
-import maya.utils
+from maya import mel
+from maya import utils
 import maya.OpenMaya as om
 import os
 from layer_editor_tools import ui as layer_editor_tools_ui
@@ -110,7 +110,7 @@ def import_workspaces(*args):
 
 def import_LD_mats(*args):
     # Set import settings
-    mel.eval('optionVar -cat "Files/Projects" -iv "removeDuplicateShadingNetworksOnImport" 1');
+    mel.eval('optionVar -cat "Files/Projects" -iv "removeDuplicateShadingNetworksOnImport" 1')
     # Get path to mat
     if cmds.objExists("Floor_grid"):
         print("VFS LD Materials already exist. Skipping import.")
