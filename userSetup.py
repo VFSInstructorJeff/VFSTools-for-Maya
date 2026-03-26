@@ -31,7 +31,7 @@ def create_script_jobs():
     cmds.scriptJob(event=["NewSceneOpened", on_scene_change], protected=True)
     cmds.scriptJob(event=["SceneOpened", on_scene_change], protected=True)
     cmds.scriptJob(event=["SceneSaved", on_scene_change], protected=True)
-    cmds.scriptJob( e=["DagObjectCreated", UCX_name_fix], protected=True)
+    #cmds.scriptJob( e=["DagObjectCreated", UCX_name_fix], protected=True)
 
 def UCX_name_fix():
     # Define prefix and suffix
