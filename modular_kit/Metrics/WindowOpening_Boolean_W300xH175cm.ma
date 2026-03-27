@@ -1,18 +1,18 @@
 //Maya ASCII 2026 scene
 //Name: WindowOpening_Boolean_W300xH175cm.ma
-//Last modified: Tue, Feb 17, 2026 05:02:20 PM
+//Last modified: Thu, Feb 19, 2026 01:08:27 PM
 //Codeset: 1252
 requires maya "2026";
 requires "stereoCamera" "10.0";
 requires "mtoa" "5.5.4.2";
-requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
 fileInfo "product" "Maya 2026";
 fileInfo "version" "2026";
 fileInfo "cutIdentifier" "202510291147-60ec9eda33";
-fileInfo "osv" "Windows 11 Home v2009 (Build: 26200)";
-fileInfo "UUID" "C4BBC4C1-4D8D-2118-E2CC-ED961C0316E1";
+fileInfo "osv" "Windows 11 Education v2009 (Build: 26200)";
+fileInfo "UUID" "8132C2DE-4374-132F-59C7-93B0CA014BC3";
+fileInfo "license" "education";
 createNode transform -n "WindowOpening_Boolean_W300xH175cm";
 	rename -uid "599AE336-466D-CBB7-C19F-DF90196B43AC";
 	setAttr ".t" -type "double3" -225 -100 -625.00000000000011 ;
@@ -143,16 +143,16 @@ createNode shadingEngine -n "lambert3SG";
 	setAttr -s 45 ".dsm";
 	setAttr ".ro" yes;
 	setAttr -s 14 ".gn";
-createNode lambert -n "Wall01_grid_512";
+createNode lambert -n "Wall01_grid";
 	rename -uid "AE3A189D-4F96-2065-6BC4-0A9AADBFC678";
 createNode file -n "file2";
 	rename -uid "131E93D5-491E-FCE0-51A0-50A6640F57CD";
-	setAttr ".ftn" -type "string" "X:/My Drive/[03] CURRICULUM/[XX] ART ASSETS/[3] ENVIRONMENTS/LD_Tools/RaysGridTextures/Shaders/LD_MATS/Wall01_grid_512.tga";
-	setAttr ".cs" -type "string" "sRGB";
+Wall01_grid.tga";
+	setAttr ".cs" -type "string" "sRGB Encoded Rec.709 (sRGB)";
 createNode place2dTexture -n "place2dTexture2";
 	rename -uid "B4955959-4D60-C5AD-147E-F69CDCB2E43D";
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "8E7BE03F-418C-0914-2F6F-1C9BACC5062E";
+	rename -uid "708644FF-42B6-1EAB-5FD4-0C8CCB38AB2C";
 	setAttr -s 32 ".lnk";
 	setAttr -s 32 ".slnk";
 select -ne :time1;
@@ -209,9 +209,9 @@ select -ne :hardwareRenderGlobals;
 	setAttr ".btrs" 512;
 select -ne :defaultHideFaceDataSet;
 connectAttr "lambert3SG.msg" "materialInfo10.sg";
-connectAttr "Wall01_grid_512.msg" "materialInfo10.m";
+connectAttr "Wall01_grid.msg" "materialInfo10.m";
 connectAttr "file2.msg" "materialInfo10.t" -na;
-connectAttr "Wall01_grid_512.oc" "lambert3SG.ss";
+connectAttr "Wall01_grid.oc" "lambert3SG.ss";
 connectAttr "|Wall03Shape.iog" "lambert3SG.dsm" -na;
 connectAttr "WindowOpening_Boolean_W300xH175cmShape.iog" "lambert3SG.dsm" -na;
 connectAttr "|WallShape1.ciog.cog[1]" "lambert3SG.dsm" -na;
@@ -271,7 +271,7 @@ connectAttr "groupId215.msg" "lambert3SG.gn" -na;
 connectAttr "groupId216.msg" "lambert3SG.gn" -na;
 connectAttr "groupId865.msg" "lambert3SG.gn" -na;
 connectAttr "groupId866.msg" "lambert3SG.gn" -na;
-connectAttr "file2.oc" "Wall01_grid_512.c";
+connectAttr "file2.oc" "Wall01_grid.c";
 connectAttr ":defaultColorMgtGlobals.cme" "file2.cme";
 connectAttr ":defaultColorMgtGlobals.cfe" "file2.cmcf";
 connectAttr ":defaultColorMgtGlobals.cfp" "file2.cmcp";
@@ -301,7 +301,7 @@ relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defau
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" "lambert3SG.message" ":defaultLightSet.message";
 connectAttr "lambert3SG.pa" ":renderPartition.st" -na;
-connectAttr "Wall01_grid_512.msg" ":defaultShaderList1.s" -na;
+connectAttr "Wall01_grid.msg" ":defaultShaderList1.s" -na;
 connectAttr "place2dTexture2.msg" ":defaultRenderUtilityList1.u" -na;
 connectAttr "file2.msg" ":defaultTextureList1.tx" -na;
 // End of WindowOpening_Boolean_W300xH175cm.ma

@@ -74,6 +74,19 @@ global proc shelf_VFS_Tools () {
         -commandRepeatable 1
         -flat 1
     ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
@@ -84,7 +97,7 @@ global proc shelf_VFS_Tools () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "User Script" 
+        -annotation "Path Fix" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -119,7 +132,7 @@ global proc shelf_VFS_Tools () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "User Script" 
+        -annotation "Rename Tool" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -131,6 +144,7 @@ global proc shelf_VFS_Tools () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
+        -imageOverlayLabel "Rename" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
         -image "rename.png" 
@@ -153,7 +167,7 @@ global proc shelf_VFS_Tools () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "User Script" 
+        -annotation "Layer Editor [IN PROGRESS]" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -177,75 +191,18 @@ global proc shelf_VFS_Tools () {
         -commandRepeatable 1
         -flat 1
     ;
-    shelfButton
-        -enableCommandRepeat 1
-        -flexibleWidthType 3
-        -flexibleWidthValue 32
+    separator
         -enable 1
-        -width 35
-        -height 34
+        -width 12
+        -height 35
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Mixamo Autorig" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Mixamo Autorig" 
-        -labelOffset 0
-        -rotation 0
-        -flipX 0
-        -flipY 0
-        -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "Mixamo Autorig" 
-        -overlayLabelColor 0.682 0.616 0.851 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "kinJoint.png" 
-        -image1 "kinJoint.png" 
-        -style "iconOnly" 
-        -marginWidth 0
-        -marginHeight 1
-        -command "from animation_tools import ui as animation_ui\nimport importlib\nimportlib.reload(animation_ui)\n\nanimation_ui.mixamo_anim_editor()" 
-        -sourceType "python" 
-        -commandRepeatable 1
-        -flat 1
-    ;
-    shelfButton
-        -enableCommandRepeat 1
-        -flexibleWidthType 3
-        -flexibleWidthValue 32
-        -enable 1
-        -width 35
-        -height 34
-        -manage 1
-        -visible 1
-        -preventOverride 0
-        -annotation "LD Tools" 
-        -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "LD_Tools" 
-        -labelOffset 0
-        -rotation 0
-        -flipX 0
-        -flipY 0
-        -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "LD Tools" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "vfs_ld.png" 
-        -image1 "vfs_ld.png" 
-        -style "iconOnly" 
-        -marginWidth 0
-        -marginHeight 1
-        -command "from leveldesign_tools import ld_tools as ld\nimport importlib\nimportlib.reload(ld)\n\nld.main()" 
-        -sourceType "python" 
-        -commandRepeatable 1
-        -flat 1
+        -style "shelf" 
+        -horizontal 0
     ;
     shelfButton
         -enableCommandRepeat 1
@@ -316,6 +273,169 @@ global proc shelf_VFS_Tools () {
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Mixamo Autorig" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Mixamo Autorig" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "Mixamo Autorig" 
+        -overlayLabelColor 0.682 0.616 0.851 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "kinJoint.png" 
+        -image1 "kinJoint.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "from animation_tools import ui as animation_ui\nimport importlib\nimportlib.reload(animation_ui)\n\nanimation_ui.mixamo_anim_editor()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 36
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "FK Single Mirror: FK Single controller mirror\n(Select animated controller then target controller)\n" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "FKSingle" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "FKSingle.png" 
+        -image1 "FKSingle.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "import maya.cmds as cmds \n\nsel = cmds.ls(sl=True)\n\nkeyTransData = cmds.copyKey(sel[0], at = 'translate', o = 'keys')\n        \nif keyTransData:\n    pasteKeyData = cmds.pasteKey(sel[1])\n                    \nkeyRotData = cmds.copyKey(sel[0], at = 'rotate', o = 'keys')\n        \nif keyRotData:\n    pasteKeyData = cmds.pasteKey(sel[1])\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 36
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "FK Children Mirror: FK All children controller mirror\n(Select animated controller then target controller)\n[!!!] ONLY WORKS IF CONTROLLER HIERARCHY IS PERFECT MIRROR" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "FKAllChildren" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "FKAllChildren.png" 
+        -image1 "FKAllChildren.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "import maya.cmds as cmds \n\n## FK ALL CHILDREN CONTROLLER MIRROR ##\n    \nsel = cmds.ls(sl=True)\n\nselControllersHier = cmds.listRelatives(sel[0], ad=True, type='transform')\nselControllersHier.reverse()\n\ndestControllersHier = cmds.listRelatives(sel[1], ad=True, type='transform')\ndestControllersHier.reverse()\n\nselControllers = [sel[0]] + selControllersHier\ndestControllers = [sel[1]] + destControllersHier\n\ncmds.copyKey(selControllers, hi='none')\n\ncmds.pasteKey(destControllers, option='replace')" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 36
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "IK Single Mirror: IK Single controller mirror\n(Select animated controller then target controller)" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "IKSingle" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "IKSingle.png" 
+        -image1 "IKSingle.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "import maya.cmds as cmds \n\n## IK SINGLE CONTROLLER MIRROR ##\n\nsel = cmds.ls(sl=True)\n\nkeyTransData = cmds.copyKey(sel[0], at = 'translate', o = 'keys')\n\n        \nif keyTransData:\n    pasteKeyData = cmds.pasteKey(sel[1])\n    scaleKeyTrxX = cmds.scaleKey(sel[1], at = 'translateX', valueScale = -1)\n    \nkeyRotData = cmds.copyKey(sel[0], at = 'rotate', o = 'keys')\n        \nif keyRotData:\n    pasteKeyData = cmds.pasteKey(sel[1])\n    scaleKeyRotX = cmds.scaleKey(sel[1], at = 'rotateY', valueScale = -1)\n    scaleKeyRotX = cmds.scaleKey(sel[1], at = 'rotateZ', valueScale = -1)\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
     ;
 
 } 
