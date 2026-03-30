@@ -112,13 +112,46 @@ def import_LD_mats(*args):
     # Set import settings
     mel.eval('optionVar -cat "Files/Projects" -iv "removeDuplicateShadingNetworksOnImport" 1')
     # Get path to mat
-    if cmds.objExists("Floor_grid"):
-        print("VFS LD Materials already exist. Skipping import.")
+    all_mats = ["Floor_grid", "Misc01_grid", "Misc02_grid", "Misc03_grid", "Misc04_grid", "Misc05_grid", "Misc06_grid",
+                "Misc07_grid", "Misc08_grid", "Misc09_grid", "Wall01_grid", "Wall02_grid", "Wall03_grid", "Wall04_grid"]
+    mat_count = 0
+    for material in all_mats:
+        if cmds.objExists(material):
+            print(f"{material} already exist.")
+            mat_count = mat_count + 1
+    
+    if (mat_count == 14):
+        print("VFS Materials already exist. Skipping import.")
+        check_mat_duplicates()
         return
     else:
         mats_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/MayaLDToolsMaterials.ma"
         mats_dir = mats_dir.replace("\\", "/")
         cmds.file(mats_dir, i=True)
+        check_mat_duplicates()
+
+        
+
+def check_mat_duplicates():
+    # Cleanup any repeated mats, 2dplacements, textures, and shading groups
+        repeated_mat_indicator = "MayaLDToolsMaterials"
+        
+        post_import_mats = cmds.ls(materials=True)
+        for mat in post_import_mats:
+            if repeated_mat_indicator in mat:
+                cmds.delete(mat)
+        all_2d_textures = cmds.ls(type='place2dTexture')
+        for tex2d in all_2d_textures:
+            if repeated_mat_indicator in tex2d:
+                cmds.delete(tex2d)
+        all_textures = cmds.ls(type='file')
+        for tex in all_textures:
+            if repeated_mat_indicator in tex:
+                cmds.delete(tex)
+        all_sgs = cmds.ls(type='shadingEngine')
+        for sg in all_sgs:
+            if repeated_mat_indicator in sg:
+                cmds.delete(sg)
 
 callbacks = []
 def create_callbacks():
