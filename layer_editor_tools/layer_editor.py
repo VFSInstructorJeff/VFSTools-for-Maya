@@ -13,25 +13,91 @@ import shiboken6 as shib
 from shiboken6 import wrapInstance # Wraps C++ in Python wrapper
 
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget,
                                QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
                                QPushButton, QRadioButton, QButtonGroup, QCheckBox,
-                               QMenu, QToolBar, QComboBox, QSizePolicy, QFrame, QSpacerItem)
+                               QMenu, QToolBar, QComboBox, QSizePolicy, QFrame, QSpacerItem,
+                               QColorDialog, QLineEdit, QFileDialog)
 from PySide6.QtGui import QIcon, QFont, QPixmap
 
 # ---------- SETUP CONSTANTS ----------
 
 # ---------- SETUP METHODS ----------
+
 # Shiboken MainWindow Wrapper
 def get_main_window() -> QtWidgets.QWidget:
     ptr = omui.MQtUtil.mainWindow() # Pointer to the Maya main window (Swig Object of type 'QWidget *' at 0x000002244EC30FF0)
     return wrapInstance(int(ptr), QtWidgets.QWidget) # Convert the pointer to an int (get only the address), feed the Python type for the C++ obj
 
+def call_color_picker(*args):
+    # When clicking on the color button, open QColorDialog on a new window that always stays on top
+    # When clicking ok on the QColorDialg, set the color of the button to the selected color
+    # Change the color of the objs in Maya to that color too (set the color in Maya)
+    pass
+
+def edit_layer_name(*args):
+    # Allow user to double click the Layer Name to edit it
+    # Make it a QLabel that can't be edited
+    # On double click, make it a QLineEdit (?)
+    # On Enter or on click outside, make that a QLabel again with the new value
+    # call rename_objs()
+    pass
+
+def rename_objs(*args):
+    # Rename all objs if layer has been renamed
+    pass
+
+def select_all(*args):
+    # Select all meshes in layer (can probably steal the Maya command for this)
+    pass
+
+def set_visibility(*args):
+    # hide/unhide, can prob steal from Maya
+    pass
+
+def select_static_meshes(*args):
+    # select all meshes in the layer that dont contain the UCX prefix
+    pass
+
+def select_ucx(*args):
+    # select all meshes in the layer that contain the UCX prefix
+    pass
+
+def export_single_file(*args):
+    # export everything in the layer as a single FBX file.
+    # Check move to origin? If so, move the entire thing to origin?
+    # remember to unparent stuff from parent group so parent doesn't get exported with selection
+    pass
+
+def export_multiple_files(*args):
+    # export everything individually in FBX files
+    # Check move to origin
+    # remember to unparent stuff from parent group so parent doesn't get exported with selection
+    pass
+
+def set_up_axis(*args):
+    # Set up axis Y or Z (maybe use Unity vs Unreal language instead of Y/Z?)
+    pass
+
+def move_to_origin(*args):
+    # move rotation and transf to 0
+    pass
+
+def browser_file_dialog(*args):
+    # open new window with file dialog for that layer
+    pass
+
+def save_layer_path_to_file(*args):
+    # save the file dialog path to file
+    # will probably save it to the userPrefs. Alternatively, save it to the maya file but make it user specific?.
+    pass
+
+
 # ---------- CREATE THE MAIN WINDOW ----------
 
 
-class MainWindow(mixin, QtWidgets.QDialog):
+class MainWindow(mixin, QtWidgets.QWidget):
     # Setup unique identifier as it is required by workspaceControl 
     UI_OBJECT_NAME = "LayerToolsWindow"
 
@@ -44,19 +110,18 @@ class MainWindow(mixin, QtWidgets.QDialog):
         super().__init__(get_main_window() if not parent else parent)
 
         self.setObjectName(self.UI_OBJECT_NAME)
-        self.setWindowTitle("LD Tools")
+        self.setWindowTitle("Layer Tools")
 
-        # Create the tab widget (pass self as parent so the widget is shown)
-        self.tabs_layout = QTabWidget(self)
-        # Create widgets to be the tabs
-        self.ldworkflow_tab = QWidget()
-        self.modularkit_tab = QWidget()
-        # Add the widgets as tabs
-        self.tabs_layout.addTab(self.ldworkflow_tab, "LD Workflow")
-        self.tabs_layout.addTab(self.modularkit_tab, "Modular Kit")
-        # Setup each tab
-        self.ldworkflow_tab_setup()
-        self.modularkit_tab_setup()
+        # Create the vertical widget (pass self as parent so the widget is shown)
+        self.window_layout = QVBoxLayout(self)   
+        # Add a widget to be the top menu, and one to be the Master Layer
+        self.top_menu = QWidget()
+        self.master_layer = QWidget()
+        self.window_layout.addWidget(self.top_menu)
+        self.window_layout.addWidget(self.master_layer)
+        # Setup each one of those
+        self.top_menu_setup()
+        self.master_layer_setup()
 
         self.initUI()
 
@@ -64,130 +129,41 @@ class MainWindow(mixin, QtWidgets.QDialog):
         super(MainWindow, self).show(dockable=True)
         cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
 
-
-    def ldworkflow_tab_setup(self):
+    def top_menu_setup(self):
         # Create the tab layout and parent it to the tab widget
-        ldworkflow_tab_layout = QVBoxLayout(self.ldworkflow_tab)
+        top_menu_layout = QHBoxLayout(self.top_menu)
 
-        # Primitives Layout
-        primitives_layout = QGridLayout()
-        ldworkflow_tab_layout.addLayout(primitives_layout)
+        # Make some stuff
+        color_display = QPushButton()
+        #color_display.setStyleSheet("background-color: %c;" %current_color)
 
-        # Primitives widgets (label, dropdown menu, buttons)
-        size_dropdown_label = QLabel("Primitive Scale:")
-        size_dropdown = QComboBox()
-        size_dropdown.addItems(['50cm', '100cm', '200cm', '400cm'])
-        size_dropdown.setCurrentIndex(1)
-        button_cube = QPushButton(icon=QIcon(CUBE), text="Cube")
-        button_cylinder = QPushButton(icon=QIcon(CYLINDER), text="Cylinder")
-        button_sphere = QPushButton(icon=QIcon(SPHERE), text="Sphere")
-        button_cone = QPushButton(icon=QIcon(CONE), text="Cone")
-        button_torus = QPushButton(icon=QIcon(TORUS), text="Torus")
-        button_type = QPushButton(icon=QIcon(TYPE), text="Type")
+        QColorDialog()
+        layer_name = QLineEdit(text="LayerName")
+        select_all_button = QPushButton(text="SelectAll")
+        visibility_checkbox = QCheckBox(text="Vis")
+        sm_checkbox = QCheckBox(text="SM")
+        ucx_checkbox = QCheckBox(text="UCX")
+        sf_mf_dropdown = QComboBox()
+        sf_mf_dropdown.addItems(['Single File', 'Multiple File'])
+        origin_checkbox = QCheckBox(text="Origin")
+        path_browser = QFileDialog()
+        export_button = QPushButton(text="Export")
 
-        # Set icon and button sizes
-        primitives_btnarray = {button_cube, button_cylinder, button_sphere,
-                               button_cone, button_torus, button_type}
-        for btn in primitives_btnarray:
-            btn.setIconSize(QSize(64, 64))
+        # Add stuff to layout
+        top_menu_layout.addWidget(color_display)
+        top_menu_layout.addWidget(layer_name)
+        top_menu_layout.addWidget(select_all_button)   
+        top_menu_layout.addWidget(visibility_checkbox)   
+        top_menu_layout.addWidget(sm_checkbox)   
+        top_menu_layout.addWidget(ucx_checkbox)   
+        top_menu_layout.addWidget(sf_mf_dropdown)   
+        top_menu_layout.addWidget(origin_checkbox)   
+        top_menu_layout.addWidget(path_browser)   
+        top_menu_layout.addWidget(export_button)   
 
-        # Connect widgets and methods
-        button_cube.clicked.connect(lambda: create_primitive('cube'))
-        button_cylinder.clicked.connect(lambda: create_primitive('cylinder'))
-        button_sphere.clicked.connect(lambda: create_primitive('sphere'))
-        button_cone.clicked.connect(lambda: create_primitive('cone'))
-        button_torus.clicked.connect(lambda: create_primitive('torus'))
-        button_type.clicked.connect(lambda: create_primitive('type'))
-        size_dropdown.currentTextChanged.connect(set_prim_scale)   
-        
-        # Parent the buttons to the layout
-        primitives_layout.addWidget(size_dropdown_label, 0, 0) # widget, row, column
-        primitives_layout.addWidget(size_dropdown, 0, 1) 
-        primitives_layout.addWidget(button_cube, 1, 0)      
-        primitives_layout.addWidget(button_cylinder, 1, 1)
-        primitives_layout.addWidget(button_sphere, 1, 2)
-        primitives_layout.addWidget(button_cone, 2, 0)
-        primitives_layout.addWidget(button_torus, 2, 1)
-        primitives_layout.addWidget(button_type, 2, 2)
+    def master_layer_setup(self):
+        pass
 
-        # Separator Primitives/Tools
-        separator2_layout = QVBoxLayout()
-        ldworkflow_tab_layout.addLayout(separator2_layout)
-        separator2 = QFrame()
-        separator2.setFrameShape(QFrame.Shape.HLine)
-        separator2.setFrameShadow(QFrame.Shadow.Sunken)
-        separator2_layout.addWidget(separator2)
-
-        # Tools layout
-        curve_tools_layout = QHBoxLayout()
-        ldworkflow_tab_layout.addLayout(curve_tools_layout)
-        curve_tools_layout.setSpacing(BUTTON_SPACING)
-
-        # Tools buttons
-        button_combine = QPushButton(icon=QIcon(COMBINE))
-        button_separate = QPushButton(icon=QIcon(SEPARATE))
-        button_centerpivot = QPushButton(icon=QIcon(CENTER_PIVOT))
-        button_killhistory = QPushButton(icon=QIcon(KILL_HIST))
-        button_freeze = QPushButton(icon=QIcon(FREEZE))
-        button_booldiff = QPushButton(icon=QIcon(BOOL_DIFF))
-        button_circlecurve = QPushButton(icon=QIcon(CIRCLE_CURVE))
-        button_curvetool = QPushButton(icon=QIcon(CURVE_TOOL))
-        button_addknot = QPushButton(icon=QIcon(INSERT_KNOT))
-        button_sweepmesh = QPushButton(icon=QIcon(SWEEP_MESH))
-
-        # Set icon and button sizes
-        tools_btnarray = [button_combine, button_separate, button_centerpivot,
-                        button_killhistory, button_freeze, button_booldiff,
-                        button_circlecurve, button_curvetool, button_addknot, button_sweepmesh]
-        for btn in tools_btnarray:
-            btn.setIconSize(QSize(64, 64))
-            btn.setMaximumSize(40, 40)
-
-        # Connect buttons and methods
-        button_combine.clicked.connect(combine)
-        button_separate.clicked.connect(separate)
-        button_centerpivot.clicked.connect(center_pivot)
-        button_killhistory.clicked.connect(delete_history)
-        button_freeze.clicked.connect(freeze_transformations)
-        button_booldiff.clicked.connect(boolean_difference)
-        button_circlecurve.clicked.connect(circle_curve)
-        button_curvetool.clicked.connect(curve_tool)
-        button_addknot.clicked.connect(insert_knot)
-        button_sweepmesh.clicked.connect(sweep_mesh)
-       
-        # Parenting widgets to layout (adding it with a for loop randomizes the position everytime the tool is started)
-        for button in tools_btnarray:
-            curve_tools_layout.addWidget(button)
-
-        # Separator Tools/Grid
-        separator2_layout = QVBoxLayout()
-        ldworkflow_tab_layout.addLayout(separator2_layout)
-        separator2 = QFrame()
-        separator2.setFrameShape(QFrame.Shape.HLine)
-        separator2.setFrameShadow(QFrame.Shadow.Sunken)
-        separator2_layout.addWidget(separator2)
-
-        # Grid Options layout
-        grid_layout = QHBoxLayout()
-        ldworkflow_tab_layout.addLayout(grid_layout)
-        grid_layout.setContentsMargins(0, 0, 300, 0) # left, top, right, bottom
-
-        # Grid widgets
-        grid_pixmap = QPixmap(GRID)
-        grid_icon = QLabel()
-        grid_icon.setPixmap(grid_pixmap)
-        grid_dropdown_label = QLabel("Grid Division: ")
-        grid_dropdown = QComboBox()
-        grid_dropdown.addItems(['50cm', '100cm', '200cm', '400cm', 'Custom'])
-        grid_dropdown.setCurrentIndex(1)
-
-        # Connect widgets and methods
-        grid_dropdown.currentTextChanged.connect(grid_setup)
-
-        # Add widget to layout
-        grid_layout.addWidget(grid_icon)
-        grid_layout.addWidget(grid_dropdown_label)
-        grid_layout.addWidget(grid_dropdown)
 
 def main():
     MainWindow()
