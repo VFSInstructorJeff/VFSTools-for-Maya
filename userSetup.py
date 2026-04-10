@@ -1,9 +1,26 @@
 from maya import cmds
+from maya import mel
+from maya import utils
 import maya.OpenMaya as om
+import os
 from layer_editor_tools import ui as layer_editor_tools_ui
 from animation_tools import ui as anim_tools_ui
+from leveldesign_tools import ld_tools as ld
+
+def load_hotkeys(*args):
+    hotkeys_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/VFS_Hotkeys.mhk"
+    hotkeys_dir = hotkeys_dir.replace("\\", "/")
+
+    hksets = cmds.hotkeySet(q=True, hsa=True)
+
+    if "VFS_Hotkeys" not in hksets:
+        print("Importing VFS_Hotkeys...")
+        cmds.hotkeySet(e=True, ip=hotkeys_dir)
+
+    cmds.hotkeySet("VFS_Hotkeys", current=True)
 
 def on_scene_change():
+    load_hotkeys()
     print("Scene changed...")
     if not cmds.workspaceControl(layer_editor_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
         return
@@ -14,6 +31,53 @@ def create_script_jobs():
     cmds.scriptJob(event=["NewSceneOpened", on_scene_change], protected=True)
     cmds.scriptJob(event=["SceneOpened", on_scene_change], protected=True)
     cmds.scriptJob(event=["SceneSaved", on_scene_change], protected=True)
+    #cmds.scriptJob( e=["DagObjectCreated", UCX_name_fix], protected=True)
+
+def UCX_name_fix():
+    # Define prefix and suffix
+    str_ucx = "UCX_"
+    suffix_str = 'None'
+
+    # Select object created
+    selection_name = cmds.ls(sl=True)
+    # Check selection isn't null (.e.g: creating a camera)
+    if not selection_name:
+        return
+    else:
+        # Select only the first index so we have an actual obj instead of a list with a single value in it
+        selection_name = selection_name[0]
+    
+    # Get the obj's children
+    children_ls = cmds.listRelatives(children=True, type='transform', fullPath=True)
+    # Check if children are null (e.g.: creating a regular polyCube)
+    if (children_ls == None):
+        return
+    
+    # Check if there's only a single child    
+    if (len(children_ls) == 1):
+        # Get grandchild from child to check what type it is
+        grandchild = cmds.listRelatives(children_ls, children=True, fullPath=True)
+        grandchild_type = cmds.objectType(grandchild[0])
+        # If it's not a mesh or a transform, ignore it (e.g.: creating a camera, grandchild will be 'camera' type)
+        if ((grandchild_type != 'mesh') and (grandchild_type != 'transform')):
+            print("Not a mesh. Ignoring UCX rename function.")
+            return
+        if str_ucx in str(children_ls[0]):
+            # Rename the child so it matches its parent
+            new_child_name = (str_ucx + selection_name)
+            cmds.rename(str(children_ls[0]), new_child_name)
+    else:
+        for index, child in enumerate(children_ls):
+            # Check if children have UCX_ prefix
+            if str_ucx in child:
+                # Check if children index is less than 10, if so append a 0 before the suffix
+                if ((index + 1) < 10):
+                    suffix_str = f"_0{index + 1}"
+                else:
+                    suffix_str = f"_{index + 1}"
+                # Rename each child in children to prefix + parentName + suffix
+                new_child_name = (str_ucx + selection_name + suffix_str)
+                cmds.rename(str(child), new_child_name)
 
 def merge_namespaces_on_import(*args):
     print("Merging namespaces...")
@@ -30,16 +94,47 @@ def reopen_mixamo_editor(*args):
     else:
         print("Mixamo Editor is closed, no need to restart it.")
 
+def import_workspaces(*args):
+    # Create the absolute workspaces path to import from (.../VFSTools/)
+    print("Importing workspaces...")
+    workspaces_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/workspaces"
+    workspaces_dir = workspaces_dir.replace("\\", "/")
+    
+    # Add all files in workspaces folder to a list
+    workspaces = os.listdir(workspaces_dir)
+
+    # For each workspace item in the workspaces folder list, import it 
+    for workspace in workspaces:
+        workspace_str = workspaces_dir + r"/" + workspace
+        cmds.workspaceLayoutManager(i=workspace_str)
+
+def import_LD_mats(*args):
+    # Set import settings
+    mel.eval('optionVar -cat "Files/Projects" -iv "removeDuplicateShadingNetworksOnImport" 1')
+    # Get path to mat
+    if cmds.objExists("Floor_grid"):
+        print("VFS LD Materials already exist. Skipping import.")
+        return
+    else:
+        mats_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/MayaLDToolsMaterials.ma"
+        mats_dir = mats_dir.replace("\\", "/")
+        cmds.file(mats_dir, i=True)
+
 callbacks = []
 def create_callbacks():
     namespace_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterImport, merge_namespaces_on_import)
     mixamo_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterImport, reopen_mixamo_editor)
+    mats_new_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterNew, import_LD_mats)
+    mats_open_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterOpen, import_LD_mats)
     callbacks.append(namespace_callback)
     callbacks.append(mixamo_callback)
+    callbacks.append(mats_new_callback)
+    callbacks.append(mats_open_callback)
 
 def deferred_functions():
     create_script_jobs()
     create_callbacks()
+    import_workspaces()
 
 # Use executeDeferred to ensure Maya is fully loaded
-maya.utils.executeDeferred(deferred_functions())
+utils.executeDeferred(deferred_functions())

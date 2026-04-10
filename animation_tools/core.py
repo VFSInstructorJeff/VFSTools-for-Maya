@@ -89,6 +89,55 @@ DEFAULT_CONTROLLER_DATA = {
     }
 }
 
+######## RIG DETECTION ########
+
+# Mixamo joints
+mixamo_joints = ['Head', 'HeadTop_End', 'Hips', 'LeftArm', 'LeftFoot', 'LeftForeArm', 'LeftHand', 
+                 'LeftHandIndex1', 'LeftHandIndex2', 'LeftHandIndex3', 'LeftHandIndex4', 
+                 'LeftHandMiddle1', 'LeftHandMiddle2', 'LeftHandMiddle3', 'LeftHandMiddle4', 
+                 'LeftHandPinky1', 'LeftHandPinky2', 'LeftHandPinky3', 'LeftHandPinky4', 
+                 'LeftHandRing1', 'LeftHandRing2', 'LeftHandRing3', 'LeftHandRing4', 
+                 'LeftHandThumb1', 'LeftHandThumb2', 'LeftHandThumb3', 'LeftHandThumb4', 
+                 'LeftLeg', 'LeftShoulder', 'LeftToeBase', 'LeftToe_End', 'LeftUpLeg', 
+                 'Neck', 'RightArm', 'RightFoot', 'RightForeArm', 'RightHand', 
+                 'RightHandIndex1', 'RightHandIndex2', 'RightHandIndex3', 'RightHandIndex4', 
+                 'RightHandMiddle1', 'RightHandMiddle2', 'RightHandMiddle3', 'RightHandMiddle4', 
+                 'RightHandPinky1', 'RightHandPinky2', 'RightHandPinky3', 'RightHandPinky4', 
+                 'RightHandRing1', 'RightHandRing2', 'RightHandRing3', 'RightHandRing4', 
+                 'RightHandThumb1', 'RightHandThumb2', 'RightHandThumb3', 'RightHandThumb4', 
+                 'RightLeg', 'RightShoulder', 'RightToeBase', 'RightToe_End', 'RightUpLeg', 
+                 'Spine', 'Spine1', 'Spine2']
+
+# MotionBuilder joints (normalize '_Head' to 'Head')
+motionBuilder_joints = ['Hips', 'LeftArm', 'LeftFoot', 'LeftForeArm', 'LeftHand', 
+                        'LeftHandIndex1', 'LeftHandIndex2', 'LeftHandIndex3', 'LeftHandIndex4',
+                        'LeftHandMiddle1', 'LeftHandMiddle2', 'LeftHandMiddle3', 'LeftHandMiddle4',
+                        'LeftHandPinky1', 'LeftHandPinky2', 'LeftHandPinky3', 'LeftHandPinky4',
+                        'LeftHandRing1', 'LeftHandRing2', 'LeftHandRing3', 'LeftHandRing4',
+                        'LeftHandThumb1', 'LeftHandThumb2', 'LeftHandThumb3', 'LeftHandThumb4',
+                        'LeftLeg', 'LeftShoulder', 'LeftToeBase', 'LeftUpLeg', 'Neck', 
+                        'RightArm', 'RightFoot', 'RightForeArm', 'RightHand',
+                        'RightHandIndex1', 'RightHandIndex2', 'RightHandIndex3', 'RightHandIndex4',
+                        'RightHandMiddle1', 'RightHandMiddle2', 'RightHandMiddle3', 'RightHandMiddle4',
+                        'RightHandPinky1', 'RightHandPinky2', 'RightHandPinky3', 'RightHandPinky4',
+                        'RightHandRing1', 'RightHandRing2', 'RightHandRing3', 'RightHandRing4',
+                        'RightHandThumb1', 'RightHandThumb2', 'RightHandThumb3', 'RightHandThumb4',
+                        'RightLeg', 'RightShoulder', 'RightToeBase', 'RightUpLeg', 
+                        'Spine', 'Spine1', 'Spine2', 'Head']
+
+# Get joints from scene
+scene_joints = cmds.ls(type='joint')
+
+scene_set = set(scene_joints)
+
+if scene_set == set(mixamo_joints):
+    print("Scene matches Mixamo joints.")
+elif scene_set == set(motionBuilder_joints):
+    print("Scene matches MotionBuilder joints.")
+else:
+    print("!!! Scene joints do not match either Mixamo or MotionBuilder sets !!!")
+
+
 ######## SAVING ########
 
 def set_controllers_to_default(*args):
@@ -398,7 +447,122 @@ def fk_controller_builder(*args):
         
         cmds.parentConstraint(ctl, joint, mo = True)
         
+    ####### MOTION BUILDER OPTIONS #######
+        
     set_controllers_to_default()
+    
+    if scene_set == set(motionBuilder_joints):
+
+        arm_joints = [
+        # Left arm
+        "LeftShoulder_ctl", "LeftArm_ctl", "LeftForeArm_ctl", "LeftHand_ctl",
+        "LeftHandIndex1_ctl", "LeftHandIndex2_ctl", "LeftHandIndex3_ctl", "LeftHandIndex4_ctl",
+        "LeftHandMiddle1_ctl", "LeftHandMiddle2_ctl", "LeftHandMiddle3_ctl", "LeftHandMiddle4_ctl",
+        "LeftHandPinky1_ctl", "LeftHandPinky2_ctl", "LeftHandPinky3_ctl", "LeftHandPinky4_ctl",
+        "LeftHandRing1_ctl", "LeftHandRing2_ctl", "LeftHandRing3_ctl", "LeftHandRing4_ctl",
+        "LeftHandThumb1_ctl", "LeftHandThumb2_ctl", "LeftHandThumb3_ctl", "LeftHandThumb4_ctl",
+        
+        # Right arm
+        "RightShoulder_ctl", "RightArm_ctl", "RightForeArm_ctl", "RightHand_ctl",
+        "RightHandIndex1_ctl", "RightHandIndex2_ctl", "RightHandIndex3_ctl", "RightHandIndex4_ctl",
+        "RightHandMiddle1_ctl", "RightHandMiddle2_ctl", "RightHandMiddle3_ctl", "RightHandMiddle4_ctl",
+        "RightHandPinky1_ctl", "RightHandPinky2_ctl", "RightHandPinky3_ctl", "RightHandPinky4_ctl",
+        "RightHandRing1_ctl", "RightHandRing2_ctl", "RightHandRing3_ctl", "RightHandRing4_ctl",
+        "RightHandThumb1_ctl", "RightHandThumb2_ctl", "RightHandThumb3_ctl", "RightHandThumb4_ctl"
+    ]
+        for curve in arm_joints:
+    # Rotate Y by 90 degrees
+            cmds.rotate(90, 90, 0, curve + ".cv[*]", r=True)
+    
+####### CONTROLLER DECONSTRUCT & ANIMATION KEYFRAME COPYING ########
+
+def fk_controller_deconstructor(*args):
+    """
+    Deletes FK controllers and restores animation back to joints.
+    Assumes naming convention from fk_controller_builder().
+    """
+    
+    controllers = cmds.ls("*_ctl", type="transform")
+    
+    for ctl in controllers:
+        
+        if not cmds.objExists(ctl):
+            continue
+        
+        cmds.lockNode(ctl, lock=False)
+        
+        
+        cmds.setAttr(ctl + '.translate', lock = False)
+        cmds.setAttr(ctl + '.rotate', lock = False)
+        cmds.setAttr(ctl + '.scale', lock = False)
+        cmds.setAttr(ctl + '.visibility', lock = False)
+        
+        # Derive joint name
+        joint = ctl.replace("_ctl", "")
+        
+        if not cmds.objExists(joint):
+            continue
+        
+        anim_grp = joint + "_animOffset"
+        
+        cmds.lockNode(anim_grp, lock=False)
+        
+        cmds.setAttr(anim_grp + '.translate', lock=False)
+        cmds.setAttr(anim_grp + '.rotate', lock=False)
+        cmds.setAttr(anim_grp + '.scale', lock=False)
+        cmds.setAttr(anim_grp + '.visibility', lock=False)
+            
+            
+        correction_grp = joint + "_correctionOffset"
+        
+        cmds.lockNode(correction_grp, lock=False)
+        
+        cmds.setAttr(correction_grp + '.translate', lock=False)
+        cmds.setAttr(correction_grp + '.rotate', lock=False)
+        cmds.setAttr(correction_grp + '.scale', lock=False)
+        cmds.setAttr(correction_grp + '.visibility', lock=False)
+            
+        constraints = cmds.listConnections(joint, type="parentConstraint")
+        if constraints:
+            cmds.delete(constraints)
+        
+        keyTransData = cmds.copyKey(correction_grp, at = 'translate', o = 'keys')
+        
+        if keyTransData:
+            pasteKeyData = cmds.pasteKey(joint)
+            
+        keyRotData = cmds.copyKey(anim_grp, at = 'rotate', o = 'keys')
+        
+        if keyRotData:
+            pasteKeyData = cmds.pasteKey(joint)
+        
+    
+    all_joints = cmds.ls(type="joint")    
+
+    root_joints = []
+
+    for jnt in all_joints:
+        parent = cmds.listRelatives(jnt, parent=True)
+
+        # If no parent OR parent is not a joint → this is a skeleton root
+        if not parent or cmds.nodeType(parent[0]) != "joint":
+            root_joints.append(jnt)
+
+    print(root_joints)
+    
+    root_joint = root_joints[0]  # assuming single root
+    correction_root = root_joint + "_correctionOffset"
+
+    
+    cmds.delete(correction_root)
+    
+    
+    cmds.inViewMessage(
+        amg="Controllers <hl>removed</hl> and animation restored to joints.",
+        pos="topCenter",
+        fade=True
+    )
+
 
 ######## LOADING DEFAULT CONTROLLERS ########
 

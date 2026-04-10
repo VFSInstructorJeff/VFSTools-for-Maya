@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 from maya import cmds
+from maya import mel
 from maya import OpenMayaUI as omui
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin as mixin
 
@@ -16,7 +17,7 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget,
                                QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
                                QPushButton, QRadioButton, QButtonGroup, QCheckBox,
-                               QMenu, QToolBar, QComboBox, QSizePolicy)
+                               QMenu, QToolBar, QComboBox, QSizePolicy, QFrame, QSpacerItem)
 from PySide6.QtGui import QIcon, QFont, QPixmap
 
 
@@ -32,7 +33,7 @@ DARK_GRAY = (0.185, 0.185, 0.185) # Maya dark gray
 MAGENTA = (0.200, 0.076, 0.228) # For debugging
 
 # Directories
-CURRENT_DIR = Path(__file__).parent # (...\Documents\maya\scripts\vfs_leveldesign_tools\)
+CURRENT_DIR = Path(__file__).parent # (...\Documents\maya\VFSTools\leveldesign_tools\)
 ICON_DIR = str(CURRENT_DIR.parent) + r"\icons"
 
 # Maya Icons (Extract them from Maya and copy them to the custom icons folder as PySide requires a path)
@@ -72,6 +73,9 @@ MAT_MISC7 = ICON_DIR + r'\Misc07_grid_32.png'
 MAT_MISC8 = ICON_DIR + r'\Misc08_grid_32.png'
 MAT_MISC9 = ICON_DIR + r'\Misc09_grid_32.png'
 
+# MISC
+BUTTON_SPACING = 6
+
 
 # ---------- SETUP METHODS ----------
 
@@ -84,6 +88,10 @@ def get_main_window() -> QtWidgets.QWidget:
 # Defining Maya functions
 global primScale
 primScale = 100
+global current_step_index
+current_step_index = 6 # [6] is 1m
+global currentCamPreview
+currentCamPreview = 'Null'
 
 def set_prim_scale(primScaleRaw):
     global primScale # Fetch global var
@@ -112,21 +120,30 @@ def create_primitive(primTypeRaw):
     else:
         print("Ruh-roh, something went wrong with create_primitive!")
 
+def grid_options(*args):
+    cmds.GridOptions()
+
 def grid_setup(gridRaw):
     cmds.setAttr('perspShape.farClipPlane', 500000) # 5km
     cmds.setAttr('perspShape.nearClipPlane', 10) # 10cm
 
-    if gridRaw == .5:
-        cmds.grid(size = 10000, spacing = 50, divisions = 1) # 100m, grid every 0.5m
+    try:
+        newGrid = int(gridRaw[:-2])
+    except ValueError:
+        grid_options()
+        return
+
+    if newGrid == 50:
+        cmds.grid(size = 10000, spacing = 50, divisions = 1) # 100m, grid every 50cm
         cmds.displayColor('gridAxis', 4, dormant = True)
-    if gridRaw == 1:
-        cmds.grid(size = 10000, spacing = 100, divisions = 1) # 100m, grid every 1m
+    elif newGrid == 100:
+        cmds.grid(size = 10000, spacing = 100, divisions = 1) # 100m, grid every 100cm
         cmds.displayColor('gridAxis', 4, dormant = True)
-    if gridRaw == 2:
-        cmds.grid(size = 10000, spacing = 200, divisions = 1) # 100m, grid every 2m
+    elif newGrid == 200:
+        cmds.grid(size = 10000, spacing = 200, divisions = 1) # 100m, grid every 200cm
         cmds.displayColor('gridAxis', 4, dormant = True)
-    if gridRaw == 4:
-        cmds.grid(size = 10000, spacing = 400, divisions = 1) # 100m, grid every 4m
+    elif newGrid == 400:
+        cmds.grid(size = 10000, spacing = 400, divisions = 1) # 100m, grid every 400cm
         cmds.displayColor('gridAxis', 4, dormant = True)
     else:
         print("Ruh-roh, something went wrong with grid_setup!")
@@ -220,9 +237,96 @@ def insert_knot(*args):
     cmds.InsertKnot()
 
 def sweep_mesh(*args):
-    cmds.CreateSweepMesh
+    cmds.CreateSweepMesh()
 
+def import_scale_man(*args):
+    scale_man_dir = str(CURRENT_DIR) + r"\SM_Manny.ma"
+    cmds.file(scale_man_dir, i=True)
 
+def scale_step_snap(*args):
+    # Fetch global var
+    global current_step_index
+    
+    info = args[0]
+    current_step_index = int(info)
+    # Fix current_step_index received so it doesn't get out of the array range
+    if (current_step_index > 10):
+        print("Step Snap is already at max value.")
+        current_step_index = 10
+    elif (current_step_index < 0):
+        print("Step Snap is already at min value")
+        current_step_index = 0
+
+    if (current_step_index == 0):
+        cmds.manipMoveContext('Move', edit=True, snap=False, constrainAlongNormal=True)
+        cmds.inViewMessage(amg='Step Snap is <hl>OFF</hl>.', pos='topCenter', fade=True)
+  
+    elif (current_step_index == 1):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=5, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>5cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 2):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=10, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>10cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 3):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=20, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>20cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 4):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=25, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>25cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 5):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=50, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>50cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 6):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=100, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>100cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 7):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=200, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>200cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 8):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=300, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>300cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 9):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=400, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>400cm</hl>.', pos='topCenter', fade=True)
+
+    elif (current_step_index == 10):
+        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=500, constrainAlongNormal=False)
+        cmds.inViewMessage(amg='Step Snap set to <hl>500cm</hl>.', pos='topCenter', fade=True)
+
+    else:
+        print("[!] Something went wrong with step snap setup.")
+
+def auto_camera_preview():
+    # Find Camera Preview panel
+    camPreviewName = 'Camera Preview'
+    allPanels = cmds.getPanel(all=True)
+    camPreviewPanel = 'Null'
+
+    for p in allPanels:
+        if camPreviewName in cmds.panel(p, q=True, label=True):
+            camPreviewPanel = p
+
+    # Get selected camera
+    selection = cmds.ls(sl=True)[0]
+    children = cmds.listRelatives(selection, children=True, type='camera')
+    if not children:
+        return
+    else:
+        global currentCamPreview
+        currentCamPreview = children[0]
+        
+    # Look through selected camera in Camera Preview panel
+    cmds.lookThru(currentCamPreview, camPreviewPanel)
+
+        
 # ---------- CREATE THE MAIN WINDOW ----------
 
 
@@ -240,7 +344,6 @@ class MainWindow(mixin, QtWidgets.QDialog):
 
         self.setObjectName(self.UI_OBJECT_NAME)
         self.setWindowTitle("LD Tools")
-        self.setFixedSize(500, 500)
 
         # Create the tab widget (pass self as parent so the widget is shown)
         self.tabs_layout = QTabWidget(self)
@@ -259,8 +362,6 @@ class MainWindow(mixin, QtWidgets.QDialog):
     def initUI(self):
         super(MainWindow, self).show(dockable=True)
         cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
-
-        self.tabs_layout.setFixedSize(500,500)
 
 
     def ldworkflow_tab_setup(self):
@@ -308,9 +409,18 @@ class MainWindow(mixin, QtWidgets.QDialog):
         primitives_layout.addWidget(button_torus, 2, 1)
         primitives_layout.addWidget(button_type, 2, 2)
 
+        # Separator Primitives/Tools
+        separator2_layout = QVBoxLayout()
+        ldworkflow_tab_layout.addLayout(separator2_layout)
+        separator2 = QFrame()
+        separator2.setFrameShape(QFrame.Shape.HLine)
+        separator2.setFrameShadow(QFrame.Shadow.Sunken)
+        separator2_layout.addWidget(separator2)
+
         # Tools layout
         curve_tools_layout = QHBoxLayout()
         ldworkflow_tab_layout.addLayout(curve_tools_layout)
+        curve_tools_layout.setSpacing(BUTTON_SPACING)
 
         # Tools buttons
         button_combine = QPushButton(icon=QIcon(COMBINE))
@@ -325,12 +435,12 @@ class MainWindow(mixin, QtWidgets.QDialog):
         button_sweepmesh = QPushButton(icon=QIcon(SWEEP_MESH))
 
         # Set icon and button sizes
-        tools_btnarray = {button_combine, button_separate, button_centerpivot,
+        tools_btnarray = [button_combine, button_separate, button_centerpivot,
                         button_killhistory, button_freeze, button_booldiff,
-                        button_circlecurve, button_curvetool, button_addknot, button_sweepmesh}
+                        button_circlecurve, button_curvetool, button_addknot, button_sweepmesh]
         for btn in tools_btnarray:
             btn.setIconSize(QSize(64, 64))
-            btn.setMaximumSize(50, 40)
+            btn.setMaximumSize(40, 40)
 
         # Connect buttons and methods
         button_combine.clicked.connect(combine)
@@ -344,11 +454,41 @@ class MainWindow(mixin, QtWidgets.QDialog):
         button_addknot.clicked.connect(insert_knot)
         button_sweepmesh.clicked.connect(sweep_mesh)
        
-        # Parenting widgets to layout
-        for btn in tools_btnarray:
-            curve_tools_layout.addWidget(btn)
+        # Parenting widgets to layout (adding it with a for loop randomizes the position everytime the tool is started)
+        for button in tools_btnarray:
+            curve_tools_layout.addWidget(button)
 
-        # Grid Options
+        # Separator Tools/Grid
+        separator2_layout = QVBoxLayout()
+        ldworkflow_tab_layout.addLayout(separator2_layout)
+        separator2 = QFrame()
+        separator2.setFrameShape(QFrame.Shape.HLine)
+        separator2.setFrameShadow(QFrame.Shadow.Sunken)
+        separator2_layout.addWidget(separator2)
+
+        # Grid Options layout
+        grid_layout = QHBoxLayout()
+        ldworkflow_tab_layout.addLayout(grid_layout)
+        grid_layout.setContentsMargins(0, 0, 300, 0) # left, top, right, bottom
+
+        # Grid widgets
+        grid_pixmap = QPixmap(GRID)
+        grid_icon = QLabel()
+        grid_icon.setPixmap(grid_pixmap)
+        grid_dropdown_label = QLabel("Grid Division: ")
+        grid_dropdown = QComboBox()
+        grid_dropdown.addItems(['50cm', '100cm', '200cm', '400cm', 'Custom'])
+        grid_dropdown.setCurrentIndex(1)
+
+        # Connect widgets and methods
+        grid_dropdown.currentTextChanged.connect(grid_setup)
+
+        # Add widget to layout
+        grid_layout.addWidget(grid_icon)
+        grid_layout.addWidget(grid_dropdown_label)
+        grid_layout.addWidget(grid_dropdown)
+
+
         
 
 
