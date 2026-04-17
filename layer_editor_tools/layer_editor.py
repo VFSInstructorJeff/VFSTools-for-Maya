@@ -86,6 +86,13 @@ def save_layer_path_to_file(*args):
     # save the file dialog path to file
     # will probably save it to the userPrefs. Alternatively, save it to the maya file but make it user specific?.
     pass
+    
+def hex_to_rgb(value):
+    # Remove the '#' if it exists
+    value = value.lstrip('#')
+    rgb_255 = tuple(int(value[i:i+2], 16) for i in (0, 2, 4))
+    rgb_01 = tuple(v / 255.0 for v in rgb_255)
+    return rgb_01
 
 
 # ---------- CREATE THE MAIN WINDOW ----------
@@ -125,15 +132,36 @@ class MainWindow(mixin, QtWidgets.QWidget):
 
     def call_color_picker(self):
         new_color = QColorDialog.getColor(parent=self)
-        
+    
         if new_color.isValid():
-            new_color = new_color.name()
-            self.color_display.setStyleSheet("background-color: %s;" %new_color)
+            # Get hex string (for UI)
+            hex_color = new_color.name()
+
+            # Set button color
+            self.color_display.setStyleSheet("background-color: %s;" %hex_color)
+
+            # Convert to RGB (0–1)
+            rgb_color = hex_to_rgb(hex_color)
+
+            # Apply to Maya layer
+            self.change_layer_color(rgb_color)
+
         else:
             print("Invalid Color!")
-        # When clicking on the color button, open QColorDialog on a new window that always stays on top
-        # When clicking ok on the QColorDialog, set the color of the button to the selected color
-        # Change the color of the objs in Maya to that color too (set the color in Maya)
+
+    def change_layer_color(self, rgb_color):
+        # TODO: Replace with actual UI value later
+        layer_name = "layer1"
+
+        if not cmds.objExists(layer_name):
+            print("Layer does not exist:", layer_name)
+            return
+
+        # Enable RGB mode
+        cmds.setAttr("%s.overrideRGBColors" %layer_name, 1)
+
+        # Apply color (0–1 range)
+        cmds.setAttr("%s.overrideColorRGB" %layer_name, rgb_color[0], rgb_color[1], rgb_color[2])
 
     def top_menu_setup(self):
         # Create the tab layout and parent it to the tab widget
@@ -167,6 +195,7 @@ class MainWindow(mixin, QtWidgets.QWidget):
 
     def master_layer_setup(self):
         pass
+
 
 def main():
     MainWindow()
