@@ -30,12 +30,6 @@ def get_main_window() -> QtWidgets.QWidget:
     ptr = omui.MQtUtil.mainWindow() # Pointer to the Maya main window (Swig Object of type 'QWidget *' at 0x000002244EC30FF0)
     return wrapInstance(int(ptr), QtWidgets.QWidget) # Convert the pointer to an int (get only the address), feed the Python type for the C++ obj
 
-def call_color_picker(*args):
-    # When clicking on the color button, open QColorDialog on a new window that always stays on top
-    # When clicking ok on the QColorDialg, set the color of the button to the selected color
-    # Change the color of the objs in Maya to that color too (set the color in Maya)
-    pass
-
 def edit_layer_name(*args):
     # Allow user to double click the Layer Name to edit it
     # Make it a QLabel that can't be edited
@@ -129,15 +123,25 @@ class MainWindow(mixin, QtWidgets.QWidget):
         super(MainWindow, self).show(dockable=True)
         cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
 
+    def call_color_picker(self):
+        new_color = QColorDialog.getColor(parent=self)
+        
+        if new_color.isValid():
+            new_color = new_color.name()
+            self.color_display.setStyleSheet("background-color: %s;" %new_color)
+        else:
+            print("Invalid Color!")
+        # When clicking on the color button, open QColorDialog on a new window that always stays on top
+        # When clicking ok on the QColorDialog, set the color of the button to the selected color
+        # Change the color of the objs in Maya to that color too (set the color in Maya)
+
     def top_menu_setup(self):
         # Create the tab layout and parent it to the tab widget
         top_menu_layout = QHBoxLayout(self.top_menu)
 
         # Make some stuff
-        color_display = QPushButton()
-        #color_display.setStyleSheet("background-color: %c;" %current_color)
-
-        QColorDialog()
+        self.color_display = QPushButton()
+        self.color_display.clicked.connect(self.call_color_picker)
         layer_name = QLineEdit(text="LayerName")
         select_all_button = QPushButton(text="SelectAll")
         visibility_checkbox = QCheckBox(text="Vis")
@@ -150,7 +154,7 @@ class MainWindow(mixin, QtWidgets.QWidget):
         export_button = QPushButton(text="Export")
 
         # Add stuff to layout
-        top_menu_layout.addWidget(color_display)
+        top_menu_layout.addWidget(self.color_display)
         top_menu_layout.addWidget(layer_name)
         top_menu_layout.addWidget(select_all_button)   
         top_menu_layout.addWidget(visibility_checkbox)   
@@ -163,7 +167,6 @@ class MainWindow(mixin, QtWidgets.QWidget):
 
     def master_layer_setup(self):
         pass
-
 
 def main():
     MainWindow()
