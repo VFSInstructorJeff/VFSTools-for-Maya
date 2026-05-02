@@ -18,10 +18,22 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget,
                                QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
                                QPushButton, QRadioButton, QButtonGroup, QCheckBox,
                                QMenu, QToolBar, QComboBox, QSizePolicy, QFrame, QSpacerItem,
-                               QColorDialog, QLineEdit, QFileDialog)
+                               QColorDialog, QLineEdit, QFileDialog, QToolButton)
 from PySide6.QtGui import QIcon, QFont, QPixmap
 
 # ---------- SETUP CONSTANTS ----------
+
+# Directories
+ICON_DIR = r"C:\Users\Public\Repos\VFSTools-for-Maya\icons"
+
+# Maya Icons (Extract them from Maya and copy them to the custom icons folder as PySide requires a path)
+LAYER_UP = ICON_DIR + r'\moveLayerUp.png'
+LAYER_DOWN = ICON_DIR + r'\moveLayerDown.png'
+LAYER_NEW = ICON_DIR + r'\newLayerEmpty.png'
+LAYER_ADD = ICON_DIR + r'\newLayerSelected.png'
+LAYER_DELETE = ICON_DIR + r'\delete.png' # Could also use deleteActive.png (seems bigger)
+LAYER_VISIBLE = ICON_DIR + r'\visible.png'
+GONK = ICON_DIR + r'\gonk.png'
 
 # ---------- SETUP METHODS ----------
 
@@ -80,7 +92,7 @@ def move_to_origin(*args):
 
 def browser_file_dialog(*args):
     # open new window with file dialog for that layer
-    pass
+    cmds.fileDialog2(dialogStyle=2, fileMode=3, okCaption="Select Folder")
 
 def save_layer_path_to_file(*args):
     # save the file dialog path to file
@@ -111,12 +123,12 @@ class MainWindow(mixin, QtWidgets.QWidget):
         super().__init__(get_main_window() if not parent else parent)
 
         self.setObjectName(self.UI_OBJECT_NAME)
-        self.setWindowTitle("Layer Tools")
+        self.setWindowTitle("VFS Layer Tools")
 
         # Create the vertical widget (pass self as parent so the widget is shown)
         self.window_layout = QVBoxLayout(self)   
         # Add a widget to be the top menu, and one to be the Master Layer
-        self.top_menu = QWidget()
+        self.top_menu = QToolBar()
         self.master_layer = QWidget()
         self.window_layout.addWidget(self.top_menu)
         self.window_layout.addWidget(self.master_layer)
@@ -131,19 +143,20 @@ class MainWindow(mixin, QtWidgets.QWidget):
         cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
 
     def call_color_picker(self):
+        # Use preexisting QColorDialog's getColor() method
         new_color = QColorDialog.getColor(parent=self)
     
         if new_color.isValid():
-            # Get hex string (for UI)
+            # Get hex string (#X0X0X0)
             hex_color = new_color.name()
 
-            # Set button color
+            # Set button BG color
             self.color_display.setStyleSheet("background-color: %s;" %hex_color)
 
-            # Convert to RGB (0–1)
+            # Convert the hex to RGB (0–1 range) to set the layer outlines color in Maya
             rgb_color = hex_to_rgb(hex_color)
 
-            # Apply to Maya layer
+            # Apply the RBG color to Maya layer
             self.change_layer_color(rgb_color)
 
         else:
@@ -164,8 +177,43 @@ class MainWindow(mixin, QtWidgets.QWidget):
         cmds.setAttr("%s.overrideColorRGB" %layer_name, rgb_color[0], rgb_color[1], rgb_color[2])
 
     def top_menu_setup(self):
+        # create local object toolbar and make it the same as the self.top_menu QToolBar widget
+        toolbar = self.top_menu
+        toolbar.setIconSize(QSize(20, 20))
+        # TODO: CHANGE THIS DISGUSTING COLOR LATER
+        toolbar.setStyleSheet("background-color: #fcba03")
+
+        # Spacer so all menu buttons are on the top right instead of top left
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        toolbar.addWidget(spacer)
+
+        move_layer_up = toolbar.addAction(QIcon(LAYER_UP), "")
+        move_layer_down = toolbar.addAction(QIcon(LAYER_DOWN), "")
+        new_layer = toolbar.addAction(QIcon(LAYER_NEW), "")
+        add_layer = toolbar.addAction(QIcon(LAYER_ADD), "")
+        delete_layer = toolbar.addAction(QIcon(LAYER_DELETE), "")
+
+        move_layer_up.triggered.connect(lambda: mel.eval("layerEditorMoveDisplayLayer 1;"))
+        move_layer_down.triggered.connect(lambda: mel.eval("layerEditorMoveDisplayLayer 0;"))
+        new_layer.triggered.connect(lambda: mel.eval("layerEditorCreateLayer 1;"))
+        add_layer.triggered.connect(lambda: mel.eval("layerEditorCreateLayer 2;"))
+        delete_layer.triggered.connect(lambda: print("DELETING WHATEVER LAYER THIS IS!!!!!"))
+
+
+        # UPDATING SELECTED LAYERS
+        # layerEditorDisplayLayerManagerChange;
+        # updateCurrentDisplayLayer layerManager.currentDisplayLayer;
+        
+        # DELETING LAYERS
+        # layerEditorDeleteLayer layer11;
+        # delete layer11; 
+
+    def master_layer_setup(self):
         # Create the tab layout and parent it to the tab widget
-        top_menu_layout = QHBoxLayout(self.top_menu)
+        master_layer_layout = QHBoxLayout(self.master_layer)
+        self.master_layer.setStyleSheet("background-color: #03fca1")
+        self.master_layer.setFixedHeight(40)
 
         # Make some stuff
         self.color_display = QPushButton()
@@ -178,23 +226,21 @@ class MainWindow(mixin, QtWidgets.QWidget):
         sf_mf_dropdown = QComboBox()
         sf_mf_dropdown.addItems(['Single File', 'Multiple File'])
         origin_checkbox = QCheckBox(text="Origin")
-        path_browser = QFileDialog()
+        path_browser = QPushButton(text="...")
+        path_browser.clicked.connect(browser_file_dialog)
         export_button = QPushButton(text="Export")
 
         # Add stuff to layout
-        top_menu_layout.addWidget(self.color_display)
-        top_menu_layout.addWidget(layer_name)
-        top_menu_layout.addWidget(select_all_button)   
-        top_menu_layout.addWidget(visibility_checkbox)   
-        top_menu_layout.addWidget(sm_checkbox)   
-        top_menu_layout.addWidget(ucx_checkbox)   
-        top_menu_layout.addWidget(sf_mf_dropdown)   
-        top_menu_layout.addWidget(origin_checkbox)   
-        top_menu_layout.addWidget(path_browser)   
-        top_menu_layout.addWidget(export_button)   
-
-    def master_layer_setup(self):
-        pass
+        master_layer_layout.addWidget(self.color_display)
+        master_layer_layout.addWidget(layer_name)
+        master_layer_layout.addWidget(select_all_button)   
+        master_layer_layout.addWidget(visibility_checkbox)   
+        master_layer_layout.addWidget(sm_checkbox)   
+        master_layer_layout.addWidget(ucx_checkbox)   
+        master_layer_layout.addWidget(sf_mf_dropdown)   
+        master_layer_layout.addWidget(origin_checkbox)   
+        master_layer_layout.addWidget(path_browser)   
+        master_layer_layout.addWidget(export_button) 
 
 
 def main():
