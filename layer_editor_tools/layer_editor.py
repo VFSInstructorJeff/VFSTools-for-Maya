@@ -151,31 +151,51 @@ class MainWindow(mixin, QtWidgets.QWidget):
         new_color = QColorDialog.getColor(parent=self)
     
         if new_color.isValid():
-            # Get hex string (#X0X0X0)
+            # Get hex string (#X0X0X0) to set the StyleSheet
             hex_color = new_color.name()
 
-            # Set button BG color
+            # Set button BG color using the hext string
             self.color_display.setStyleSheet("background-color: %s;" %hex_color)
 
             # Convert the hex to RGB (0–1 range) to set the layer outlines color in Maya
             rgb_color = hex_to_rgb(hex_color)
 
-            hsv_color = colorsys.rgb_to_hsv(rgb_color)
+            # Apply the RBG color to Maya layer outlines
+            self.change_layer_color(rgb_color)
 
-            if (hsv[2] > .5):
-                for value in rbg_color:
+            # Convert the RGB01 to HSV to check the value to see if we can set the widget bg color to a slightly different shade
+            hsv_color = colorsys.rgb_to_hsv(rgb_color[0], rgb_color[1], rgb_color[2])
+
+            # Do the value check (doing it at 50% value)
+            shifted_rgb = []
+            if (hsv_color[2] > .5):
+                for value in rgb_color:
                     value = value * 0.5
                     if (value < 0):
                         value = 0
+                    shifted_rgb.append(value)
             else:
-                for value in rbg_color:
+                for value in rgb_color:
+                    if (value <= 0):
+                        value = .075
                     value = value * 1.5
                     if (value > 1):
                         value = 1
+                    shifted_rgb.append(value)
 
+            shifted_hex = []
+            for value in shifted_rgb:
+                value = int(value * 255)
+                shifted_hex.append(value)
+                
+            shifted_hex = '#{:02x}{:02x}{:02x}'.format(shifted_hex[0], shifted_hex[1], shifted_hex[2])
+            print("HEX: " + str(hex_color))
+            print("RGB: " + str(rgb_color))
+            print("HSV: " + str(hsv_color))
+            print("SHIFTED RGB: " + str(shifted_rgb))
+            print("SHIFTED HEX: " + str(shifted_hex))
 
-            # Apply the RBG color to Maya layer
-            self.change_layer_color(rgb_color)
+            self.top_layer.setStyleSheet("background-color: %s;" %shifted_hex)
 
         else:
             print("Invalid Color!")
@@ -199,7 +219,7 @@ class MainWindow(mixin, QtWidgets.QWidget):
         toolbar = self.top_menu
         toolbar.setIconSize(QSize(20, 20))
         # TODO: CHANGE THIS DISGUSTING COLOR LATER
-        #toolbar.setStyleSheet("background-color: #a10000")
+        #toolbar.setStyleSheet("background-color: #373737")
 
         # Spacer so all menu buttons are on the top right instead of top left
         spacer = QWidget()
@@ -233,9 +253,9 @@ class MainWindow(mixin, QtWidgets.QWidget):
         # TODO: CHANGE THIS DISGUSTING COLOR LATER TOO
         self.master_layer.setStyleSheet("background-color: #2B2B2B")
 
-        top_layer = QWidget()
-        top_layer_layout = QHBoxLayout(top_layer)
-        top_layer.setStyleSheet("background-color: #0a6ac9")
+        self.top_layer = QWidget()
+        top_layer_layout = QHBoxLayout(self.top_layer)
+        #self.top_layer.setStyleSheet("background-color: #0a6ac9")
 
         # Make some stuff
         self.color_display = QPushButton()
@@ -253,7 +273,7 @@ class MainWindow(mixin, QtWidgets.QWidget):
         export_button = QPushButton(text="Export")
 
         # Add stuff to layout
-        master_layer_layout.addWidget(top_layer)
+        master_layer_layout.addWidget(self.top_layer)
         top_layer_layout.addWidget(self.color_display)
         top_layer_layout.addWidget(layer_name)
         top_layer_layout.addWidget(select_all_button)   
