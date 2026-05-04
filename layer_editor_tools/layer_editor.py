@@ -2,6 +2,7 @@
 
 from typing import Optional, Union
 from pathlib import Path
+import colorsys
 import sys
 
 from maya import cmds
@@ -126,12 +127,15 @@ class MainWindow(mixin, QtWidgets.QWidget):
         self.setWindowTitle("VFS Layer Tools")
 
         # Create the vertical widget (pass self as parent so the widget is shown)
-        self.window_layout = QVBoxLayout(self)   
+        self.window_layout = QVBoxLayout(self)
+        self.window_layout.setSpacing(0)
+
         # Add a widget to be the top menu, and one to be the Master Layer
         self.top_menu = QToolBar()
         self.master_layer = QWidget()
         self.window_layout.addWidget(self.top_menu)
         self.window_layout.addWidget(self.master_layer)
+        
         # Setup each one of those
         self.top_menu_setup()
         self.master_layer_setup()
@@ -155,6 +159,20 @@ class MainWindow(mixin, QtWidgets.QWidget):
 
             # Convert the hex to RGB (0–1 range) to set the layer outlines color in Maya
             rgb_color = hex_to_rgb(hex_color)
+
+            hsv_color = colorsys.rgb_to_hsv(rgb_color)
+
+            if (hsv[2] > .5):
+                for value in rbg_color:
+                    value = value * 0.5
+                    if (value < 0):
+                        value = 0
+            else:
+                for value in rbg_color:
+                    value = value * 1.5
+                    if (value > 1):
+                        value = 1
+
 
             # Apply the RBG color to Maya layer
             self.change_layer_color(rgb_color)
@@ -181,7 +199,7 @@ class MainWindow(mixin, QtWidgets.QWidget):
         toolbar = self.top_menu
         toolbar.setIconSize(QSize(20, 20))
         # TODO: CHANGE THIS DISGUSTING COLOR LATER
-        toolbar.setStyleSheet("background-color: #fcba03")
+        #toolbar.setStyleSheet("background-color: #a10000")
 
         # Spacer so all menu buttons are on the top right instead of top left
         spacer = QWidget()
@@ -210,10 +228,14 @@ class MainWindow(mixin, QtWidgets.QWidget):
         # delete layer11; 
 
     def master_layer_setup(self):
-        # Create the tab layout and parent it to the tab widget
-        master_layer_layout = QHBoxLayout(self.master_layer)
-        self.master_layer.setStyleSheet("background-color: #03fca1")
-        self.master_layer.setFixedHeight(40)
+        # Create the horizontal layout and parent it to the tab widget
+        master_layer_layout = QVBoxLayout(self.master_layer)
+        # TODO: CHANGE THIS DISGUSTING COLOR LATER TOO
+        self.master_layer.setStyleSheet("background-color: #2B2B2B")
+
+        top_layer = QWidget()
+        top_layer_layout = QHBoxLayout(top_layer)
+        top_layer.setStyleSheet("background-color: #0a6ac9")
 
         # Make some stuff
         self.color_display = QPushButton()
@@ -231,16 +253,17 @@ class MainWindow(mixin, QtWidgets.QWidget):
         export_button = QPushButton(text="Export")
 
         # Add stuff to layout
-        master_layer_layout.addWidget(self.color_display)
-        master_layer_layout.addWidget(layer_name)
-        master_layer_layout.addWidget(select_all_button)   
-        master_layer_layout.addWidget(visibility_checkbox)   
-        master_layer_layout.addWidget(sm_checkbox)   
-        master_layer_layout.addWidget(ucx_checkbox)   
-        master_layer_layout.addWidget(sf_mf_dropdown)   
-        master_layer_layout.addWidget(origin_checkbox)   
-        master_layer_layout.addWidget(path_browser)   
-        master_layer_layout.addWidget(export_button) 
+        master_layer_layout.addWidget(top_layer)
+        top_layer_layout.addWidget(self.color_display)
+        top_layer_layout.addWidget(layer_name)
+        top_layer_layout.addWidget(select_all_button)   
+        top_layer_layout.addWidget(visibility_checkbox)   
+        top_layer_layout.addWidget(sm_checkbox)   
+        top_layer_layout.addWidget(ucx_checkbox)   
+        top_layer_layout.addWidget(sf_mf_dropdown)   
+        top_layer_layout.addWidget(origin_checkbox)   
+        top_layer_layout.addWidget(path_browser)   
+        top_layer_layout.addWidget(export_button) 
 
 
 def main():
