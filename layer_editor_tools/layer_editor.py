@@ -113,6 +113,7 @@ def hex_to_rgb(value):
 class BaseLayer(QWidget):
     def __init__(self):
         super().__init__()
+        self.setFixedHeight(45)
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.layerLayout = QHBoxLayout(self)
         self.layerColorButton = QPushButton()
@@ -139,6 +140,13 @@ class BaseLayer(QWidget):
         self.layerLayout.addWidget(self.layerOriginCheckbox)
         self.layerLayout.addWidget(self.layerPathBrowser)
         self.layerLayout.addWidget(self.layerExportButton)
+    
+    def mouseMoveEvent(self, e):
+        if e.buttons() == Qt.MouseButton.LeftButton:
+            drag = QDrag(self)
+            mime = QMimeData()
+            drag.setMimeData(mime)
+            drag.exec(Qt.DropAction.MoveAction)
     
     def change_layer_color(self, rgb_color):
         # TODO: Replace with actual UI value later
@@ -204,7 +212,7 @@ class BaseLayer(QWidget):
             print("SHIFTED HEX: " + str(shifted_hex))
 
             self.setStyleSheet("background-color: %s;" %shifted_hex)
-            self.layerExportDropdown.setStyleSheet("border: 1px solid %s;" %shifted_hex)
+            self.layerExportDropdown.setStyleSheet("border: 1px solid lightgray;")
 
         else:
             print("Invalid Color!")
@@ -223,6 +231,8 @@ class MainWindow(mixin, QtWidgets.QWidget):
             cmds.deleteUI(self.UI_OBJECT_NAME + "WorkspaceControl")
         
         super().__init__(get_main_window() if not parent else parent)
+
+        self.setAcceptDrops(True)
 
         self.setObjectName(self.UI_OBJECT_NAME)
         self.setWindowTitle("VFS Layer Tools")
@@ -246,6 +256,30 @@ class MainWindow(mixin, QtWidgets.QWidget):
     def initUI(self):
         super(MainWindow, self).show(dockable=True)
         cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
+
+    def dragEnterEvent(self, e):
+        e.accept()
+
+    def dropEvent(self, e):
+        pos = e.position()
+        widget = e.source()
+        self.master_layer_layout.removeWidget(widget)
+
+        for n in range(self.master_layer_layout.count()):
+            # Get the widget at each index in turn.
+            w = self.master_layer_layout.itemAt(n).widget()
+            if pos.x() < w.x() + w.size().width() // 2:
+                # We didn't drag past this widget.
+                # insert to the left of it.
+                break
+        else:
+            # We aren't on the left hand side of any widget,
+            # so we're at the end. Increment 1 to insert after.
+            n += 1
+
+        self.master_layer_layout.insertWidget(n, widget)
+
+        e.accept()
 
     def top_menu_setup(self):
         # create local object toolbar and make it the same as the self.top_menu QToolBar widget
@@ -282,14 +316,23 @@ class MainWindow(mixin, QtWidgets.QWidget):
 
     def layer_setup(self):
         # Create the horizontal layout and parent it to the tab widget
-        master_layer_layout = QVBoxLayout(self.master_layer)
+        self.master_layer_layout = QVBoxLayout(self.master_layer)
         # TODO: CHANGE THIS DISGUSTING COLOR LATER TOO
         self.master_layer.setStyleSheet("background-color: #2B2B2B")
         
         top_layer = BaseLayer()
         second_layer = BaseLayer()
-        master_layer_layout.addWidget(top_layer)
-        master_layer_layout.addWidget(second_layer)
+
+        # Create the separator
+        layerSeparator = QFrame()
+        layerSeparator.setFrameShape(QFrame.HLine)
+        layerSeparator.setFrameShadow(QFrame.Sunken)
+        layerSeparator.setLineWidth(5)
+        
+        self.master_layer_layout.addWidget(top_layer, alignment=Qt.AlignmentFlag.AlignTop)
+        self.master_layer_layout.addWidget(layerSeparator, alignment=Qt.AlignmentFlag.AlignTop)
+        self.master_layer_layout.addWidget(second_layer, alignment=Qt.AlignmentFlag.AlignTop)
+        self.master_layer_layout.addStretch()
 
 
 def main():
