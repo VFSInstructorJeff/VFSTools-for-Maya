@@ -14,13 +14,13 @@ import shiboken6 as shib
 from shiboken6 import wrapInstance # Wraps C++ in Python wrapper
 
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import Qt, QSize, Signal
+from PySide6.QtCore import Qt, QSize, Signal, QMimeData
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget,
                                QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
                                QPushButton, QRadioButton, QButtonGroup, QCheckBox,
                                QMenu, QToolBar, QComboBox, QSizePolicy, QFrame, QSpacerItem,
                                QColorDialog, QLineEdit, QFileDialog, QToolButton)
-from PySide6.QtGui import QIcon, QFont, QPixmap
+from PySide6.QtGui import QIcon, QFont, QPixmap, QDrag
 
 # ---------- SETUP CONSTANTS ----------
 
@@ -108,43 +108,51 @@ def hex_to_rgb(value):
     return rgb_01
 
 
-# ---------- CREATE THE MAIN WINDOW ----------
+# ---------- CREATE DRAGGABLE QWIDGET FOR LAYERS ----------
 
+class BaseLayer(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.layerLayout = QHBoxLayout(self)
+        self.layerColorButton = QPushButton()
+        self.layerColorButton.clicked.connect(self.call_color_picker)
+        self.layerNameEdit = QLineEdit(text="Layer Name")
+        self.layerSelectAllButton = QPushButton(text="Select All")
+        self.layerVisibilityCheckbox = QCheckBox(text="Vis")
+        self.layerSMCheckbox = QCheckBox(text="SM")
+        self.layerUCXCheckbox = QCheckBox(text="UCX")
+        self.layerExportDropdown = QComboBox()
+        self.layerExportDropdown.addItems(['Single File', 'Multiple File'])
+        self.layerOriginCheckbox = QCheckBox(text="Origin")
+        self.layerPathBrowser = QPushButton(text="...")
+        self.layerPathBrowser.clicked.connect(browser_file_dialog)
+        self.layerExportButton = QPushButton(text="Export")
 
-class MainWindow(mixin, QtWidgets.QWidget):
-    # Setup unique identifier as it is required by workspaceControl 
-    UI_OBJECT_NAME = "LayerToolsWindow"
+        self.layerLayout.addWidget(self.layerColorButton)
+        self.layerLayout.addWidget(self.layerNameEdit)
+        self.layerLayout.addWidget(self.layerSelectAllButton)
+        self.layerLayout.addWidget(self.layerVisibilityCheckbox)
+        self.layerLayout.addWidget(self.layerSMCheckbox)
+        self.layerLayout.addWidget(self.layerUCXCheckbox)
+        self.layerLayout.addWidget(self.layerExportDropdown)
+        self.layerLayout.addWidget(self.layerOriginCheckbox)
+        self.layerLayout.addWidget(self.layerPathBrowser)
+        self.layerLayout.addWidget(self.layerExportButton)
+    
+    def change_layer_color(self, rgb_color):
+        # TODO: Replace with actual UI value later
+        layer_name = "layer1"
 
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+        if not cmds.objExists(layer_name):
+            print("Layer does not exist:", layer_name)
+            return
 
-        # Delete any existing instances to avoid conflict
-        if cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", exists=True):
-            cmds.deleteUI(self.UI_OBJECT_NAME + "WorkspaceControl")
-        
-        super().__init__(get_main_window() if not parent else parent)
+        # Enable RGB mode
+        cmds.setAttr("%s.overrideRGBColors" %layer_name, 1)
 
-        self.setObjectName(self.UI_OBJECT_NAME)
-        self.setWindowTitle("VFS Layer Tools")
-
-        # Create the vertical widget (pass self as parent so the widget is shown)
-        self.window_layout = QVBoxLayout(self)
-        self.window_layout.setSpacing(0)
-
-        # Add a widget to be the top menu, and one to be the Master Layer
-        self.top_menu = QToolBar()
-        self.master_layer = QWidget()
-        self.window_layout.addWidget(self.top_menu)
-        self.window_layout.addWidget(self.master_layer)
-        
-        # Setup each one of those
-        self.top_menu_setup()
-        self.master_layer_setup()
-
-        self.initUI()
-
-    def initUI(self):
-        super(MainWindow, self).show(dockable=True)
-        cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
+        # Apply color (0–1 range)
+        cmds.setAttr("%s.overrideColorRGB" %layer_name, rgb_color[0], rgb_color[1], rgb_color[2])
 
     def call_color_picker(self):
         # Use preexisting QColorDialog's getColor() method
@@ -155,8 +163,8 @@ class MainWindow(mixin, QtWidgets.QWidget):
             hex_color = new_color.name()
 
             # Set button BG color using the hext string
-            self.color_display.setStyleSheet("background-color: %s;" %hex_color)
-
+            self.layerColorButton.setStyleSheet("background-color: %s;" %hex_color)
+            
             # Convert the hex to RGB (0–1 range) to set the layer outlines color in Maya
             rgb_color = hex_to_rgb(hex_color)
 
@@ -195,24 +203,49 @@ class MainWindow(mixin, QtWidgets.QWidget):
             print("SHIFTED RGB: " + str(shifted_rgb))
             print("SHIFTED HEX: " + str(shifted_hex))
 
-            self.top_layer.setStyleSheet("background-color: %s;" %shifted_hex)
+            self.setStyleSheet("background-color: %s;" %shifted_hex)
+            self.layerExportDropdown.setStyleSheet("border: 1px solid %s;" %shifted_hex)
 
         else:
             print("Invalid Color!")
 
-    def change_layer_color(self, rgb_color):
-        # TODO: Replace with actual UI value later
-        layer_name = "layer1"
+# ---------- CREATE THE MAIN WINDOW ----------
 
-        if not cmds.objExists(layer_name):
-            print("Layer does not exist:", layer_name)
-            return
 
-        # Enable RGB mode
-        cmds.setAttr("%s.overrideRGBColors" %layer_name, 1)
+class MainWindow(mixin, QtWidgets.QWidget):
+    # Setup unique identifier as it is required by workspaceControl 
+    UI_OBJECT_NAME = "LayerToolsWindow"
 
-        # Apply color (0–1 range)
-        cmds.setAttr("%s.overrideColorRGB" %layer_name, rgb_color[0], rgb_color[1], rgb_color[2])
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+
+        # Delete any existing instances to avoid conflict
+        if cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", exists=True):
+            cmds.deleteUI(self.UI_OBJECT_NAME + "WorkspaceControl")
+        
+        super().__init__(get_main_window() if not parent else parent)
+
+        self.setObjectName(self.UI_OBJECT_NAME)
+        self.setWindowTitle("VFS Layer Tools")
+
+        # Create the vertical widget (pass self as parent so the widget is shown)
+        self.window_layout = QVBoxLayout(self)
+        self.window_layout.setSpacing(0)
+
+        # Add a widget to be the top menu, and one to be the Master Layer
+        self.top_menu = QToolBar()
+        self.master_layer = QWidget()
+        self.window_layout.addWidget(self.top_menu)
+        self.window_layout.addWidget(self.master_layer)
+        
+        # Setup each one of those
+        self.top_menu_setup()
+        self.layer_setup()
+
+        self.initUI()
+
+    def initUI(self):
+        super(MainWindow, self).show(dockable=True)
+        cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", e=True)
 
     def top_menu_setup(self):
         # create local object toolbar and make it the same as the self.top_menu QToolBar widget
@@ -247,43 +280,16 @@ class MainWindow(mixin, QtWidgets.QWidget):
         # layerEditorDeleteLayer layer11;
         # delete layer11; 
 
-    def master_layer_setup(self):
+    def layer_setup(self):
         # Create the horizontal layout and parent it to the tab widget
         master_layer_layout = QVBoxLayout(self.master_layer)
         # TODO: CHANGE THIS DISGUSTING COLOR LATER TOO
         self.master_layer.setStyleSheet("background-color: #2B2B2B")
-
-        self.top_layer = QWidget()
-        top_layer_layout = QHBoxLayout(self.top_layer)
-        #self.top_layer.setStyleSheet("background-color: #0a6ac9")
-
-        # Make some stuff
-        self.color_display = QPushButton()
-        self.color_display.clicked.connect(self.call_color_picker)
-        layer_name = QLineEdit(text="LayerName")
-        select_all_button = QPushButton(text="SelectAll")
-        visibility_checkbox = QCheckBox(text="Vis")
-        sm_checkbox = QCheckBox(text="SM")
-        ucx_checkbox = QCheckBox(text="UCX")
-        sf_mf_dropdown = QComboBox()
-        sf_mf_dropdown.addItems(['Single File', 'Multiple File'])
-        origin_checkbox = QCheckBox(text="Origin")
-        path_browser = QPushButton(text="...")
-        path_browser.clicked.connect(browser_file_dialog)
-        export_button = QPushButton(text="Export")
-
-        # Add stuff to layout
-        master_layer_layout.addWidget(self.top_layer)
-        top_layer_layout.addWidget(self.color_display)
-        top_layer_layout.addWidget(layer_name)
-        top_layer_layout.addWidget(select_all_button)   
-        top_layer_layout.addWidget(visibility_checkbox)   
-        top_layer_layout.addWidget(sm_checkbox)   
-        top_layer_layout.addWidget(ucx_checkbox)   
-        top_layer_layout.addWidget(sf_mf_dropdown)   
-        top_layer_layout.addWidget(origin_checkbox)   
-        top_layer_layout.addWidget(path_browser)   
-        top_layer_layout.addWidget(export_button) 
+        
+        top_layer = BaseLayer()
+        second_layer = BaseLayer()
+        master_layer_layout.addWidget(top_layer)
+        master_layer_layout.addWidget(second_layer)
 
 
 def main():
