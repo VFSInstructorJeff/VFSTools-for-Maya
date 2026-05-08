@@ -43,54 +43,6 @@ def get_main_window() -> QtWidgets.QWidget:
     ptr = omui.MQtUtil.mainWindow() # Pointer to the Maya main window (Swig Object of type 'QWidget *' at 0x000002244EC30FF0)
     return wrapInstance(int(ptr), QtWidgets.QWidget) # Convert the pointer to an int (get only the address), feed the Python type for the C++ obj
 
-def edit_layer_name(*args):
-    # Allow user to double click the Layer Name to edit it
-    # Make it a QLabel that can't be edited
-    # On double click, make it a QLineEdit (?)
-    # On Enter or on click outside, make that a QLabel again with the new value
-    # call rename_objs()
-    pass
-
-def rename_objs(*args):
-    # Rename all objs if layer has been renamed
-    pass
-
-def select_all(*args):
-    # Select all meshes in layer (can probably steal the Maya command for this)
-    pass
-
-def set_visibility(*args):
-    # hide/unhide, can prob steal from Maya
-    pass
-
-def select_static_meshes(*args):
-    # select all meshes in the layer that dont contain the UCX prefix
-    pass
-
-def select_ucx(*args):
-    # select all meshes in the layer that contain the UCX prefix
-    pass
-
-def export_single_file(*args):
-    # export everything in the layer as a single FBX file.
-    # Check move to origin? If so, move the entire thing to origin?
-    # remember to unparent stuff from parent group so parent doesn't get exported with selection
-    pass
-
-def export_multiple_files(*args):
-    # export everything individually in FBX files
-    # Check move to origin
-    # remember to unparent stuff from parent group so parent doesn't get exported with selection
-    pass
-
-def set_up_axis(*args):
-    # Set up axis Y or Z (maybe use Unity vs Unreal language instead of Y/Z?)
-    pass
-
-def move_to_origin(*args):
-    # move rotation and transf to 0
-    pass
-
 def browser_file_dialog(*args):
     # open new window with file dialog for that layer
     cmds.fileDialog2(dialogStyle=2, fileMode=3, okCaption="Select Folder")
@@ -108,17 +60,51 @@ def hex_to_rgb(value):
     return rgb_01
 
 
+# ---------- CREATE LAYER MANAGER ----------
+
+class LayerManager(QWidget):
+    def __init__(self, baseLayerName="Layer"):
+        super().__init__()
+    
+    def LoadInfo(self):
+        # Read all layer information from Maya layers, and update Tool layers accordingly
+        # Happens every time the tool is opened again
+        allMayaLayers = cmds.ls(type="displayLayer")
+        # filtered_layers = [layer for layer in allLayers if layer != "defaultLayer"]
+
+    def UpdateInfo(self):
+        pass
+
+    def SaveInfo(self):
+        pass
+
+    def createLayer(self, isEmpty, layerName="Layer"):
+        newMayaLayer = cmds.createDisplayLayer(e=isEmpty, n=layerName, mc=True)
+        newLayer = BaseLayer(newMayaLayer)
+        self.master_layer_layout.addWidget(newLayer, alignment=Qt.AlignmentFlag.AlignTop)
+
+    # UPDATING SELECTED LAYERS
+        # layerEditorDisplayLayerManagerChange;
+        # updateCurrentDisplayLayer layerManager.currentDisplayLayer;
+        
+        # DELETING LAYERS
+        # layerEditorDeleteLayer layer11;
+        # delete layer11; 
+
 # ---------- CREATE DRAGGABLE QWIDGET FOR LAYERS ----------
 
 class BaseLayer(QWidget):
-    def __init__(self):
+    def __init__(self, baseLayerName="Layer"):
         super().__init__()
+        # Set general settings
         self.setFixedHeight(45)
-        self.setAttribute(Qt.WA_StyledBackground, True)
         self.layerLayout = QHBoxLayout(self)
+        self.setAttribute(Qt.WA_StyledBackground, True) # Allow background color to be changed
+
+        # Add widgets
         self.layerColorButton = QPushButton()
         self.layerColorButton.clicked.connect(self.call_color_picker)
-        self.layerNameEdit = QLineEdit(text="Layer Name")
+        self.layerNameEdit = QLineEdit(text=baseLayerName)
         self.layerSelectAllButton = QPushButton(text="Select All")
         self.layerVisibilityCheckbox = QCheckBox(text="Vis")
         self.layerSMCheckbox = QCheckBox(text="SM")
@@ -130,6 +116,7 @@ class BaseLayer(QWidget):
         self.layerPathBrowser.clicked.connect(browser_file_dialog)
         self.layerExportButton = QPushButton(text="Export")
 
+        # Connect widgets
         self.layerLayout.addWidget(self.layerColorButton)
         self.layerLayout.addWidget(self.layerNameEdit)
         self.layerLayout.addWidget(self.layerSelectAllButton)
@@ -164,7 +151,7 @@ class BaseLayer(QWidget):
 
     def call_color_picker(self):
         # Use preexisting QColorDialog's getColor() method
-        new_color = QColorDialog.getColor(parent=self)
+        new_color = QColorDialog.getColor()
     
         if new_color.isValid():
             # Get hex string (#X0X0X0) to set the StyleSheet
@@ -217,8 +204,9 @@ class BaseLayer(QWidget):
         else:
             print("Invalid Color!")
 
-# ---------- CREATE THE MAIN WINDOW ----------
+            
 
+# ---------- CREATE THE MAIN WINDOW ----------
 
 class MainWindow(mixin, QtWidgets.QWidget):
     # Setup unique identifier as it is required by workspaceControl 
@@ -232,22 +220,24 @@ class MainWindow(mixin, QtWidgets.QWidget):
         
         super().__init__(get_main_window() if not parent else parent)
 
+        # Setup draggable functionality
         self.setAcceptDrops(True)
 
+        # Setup general settings
         self.setObjectName(self.UI_OBJECT_NAME)
         self.setWindowTitle("VFS Layer Tools")
 
-        # Create the vertical widget (pass self as parent so the widget is shown)
+        # Setup layout
         self.window_layout = QVBoxLayout(self)
         self.window_layout.setSpacing(0)
 
-        # Add a widget to be the top menu, and one to be the Master Layer
+        # Add Widgets
         self.top_menu = QToolBar()
         self.master_layer = QWidget()
         self.window_layout.addWidget(self.top_menu)
         self.window_layout.addWidget(self.master_layer)
         
-        # Setup each one of those
+        # Setup each widget
         self.top_menu_setup()
         self.layer_setup()
 
@@ -285,8 +275,6 @@ class MainWindow(mixin, QtWidgets.QWidget):
         # create local object toolbar and make it the same as the self.top_menu QToolBar widget
         toolbar = self.top_menu
         toolbar.setIconSize(QSize(20, 20))
-        # TODO: CHANGE THIS DISGUSTING COLOR LATER
-        #toolbar.setStyleSheet("background-color: #373737")
 
         # Spacer so all menu buttons are on the top right instead of top left
         spacer = QWidget()
@@ -301,38 +289,13 @@ class MainWindow(mixin, QtWidgets.QWidget):
 
         move_layer_up.triggered.connect(lambda: mel.eval("layerEditorMoveDisplayLayer 1;"))
         move_layer_down.triggered.connect(lambda: mel.eval("layerEditorMoveDisplayLayer 0;"))
-        new_layer.triggered.connect(lambda: mel.eval("layerEditorCreateLayer 1;"))
-        add_layer.triggered.connect(lambda: mel.eval("layerEditorCreateLayer 2;"))
+        new_layer.triggered.connect(lambda: self.createLayer(True))
+        add_layer.triggered.connect(lambda: self.createLayer(False))
         delete_layer.triggered.connect(lambda: print("DELETING WHATEVER LAYER THIS IS!!!!!"))
 
-
-        # UPDATING SELECTED LAYERS
-        # layerEditorDisplayLayerManagerChange;
-        # updateCurrentDisplayLayer layerManager.currentDisplayLayer;
-        
-        # DELETING LAYERS
-        # layerEditorDeleteLayer layer11;
-        # delete layer11; 
-
     def layer_setup(self):
-        # Create the horizontal layout and parent it to the tab widget
-        self.master_layer_layout = QVBoxLayout(self.master_layer)
-        # TODO: CHANGE THIS DISGUSTING COLOR LATER TOO
-        self.master_layer.setStyleSheet("background-color: #2B2B2B")
-        
-        top_layer = BaseLayer()
-        second_layer = BaseLayer()
-
-        # Create the separator
-        layerSeparator = QFrame()
-        layerSeparator.setFrameShape(QFrame.HLine)
-        layerSeparator.setFrameShadow(QFrame.Sunken)
-        layerSeparator.setLineWidth(5)
-        
-        self.master_layer_layout.addWidget(top_layer, alignment=Qt.AlignmentFlag.AlignTop)
-        self.master_layer_layout.addWidget(layerSeparator, alignment=Qt.AlignmentFlag.AlignTop)
-        self.master_layer_layout.addWidget(second_layer, alignment=Qt.AlignmentFlag.AlignTop)
-        self.master_layer_layout.addStretch()
+        self.master_layer_layout = QVBoxLayout()
+        self.windowLayerManager = LayerManager()
 
 
 def main():
