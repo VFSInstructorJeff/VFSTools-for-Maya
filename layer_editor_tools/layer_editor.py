@@ -65,41 +65,97 @@ def hex_to_rgb(value):
 class LayerManager(QWidget):
     def __init__(self, baseLayerName="Layer"):
         super().__init__()
+        self.vfs_layers = []
+        self.maya_layers = []
     
     def LoadInfo(self):
-        # Read all layer information from Maya layers, and update Tool layers accordingly
-        # Happens every time the tool is opened again
-        allMayaLayers = cmds.ls(type="displayLayer")
-        # filtered_layers = [layer for layer in allLayers if layer != "defaultLayer"]
+        # ONLY CALLED WHEN OPENING THE TOOL (reads things from files, calls sync update)
+        # Look for specific properties setup previously. If found, load them up. If not, create it.
+        #vfs_layer_ls = read_scene_content()
+        #self.vfs_layers = [layer for layer in vfs_layer_ls]
 
-    def UpdateInfo(self):
-        pass
+        # Read all Maya layers and add them to list
+        maya_layer_ls = cmds.ls(type="displayLayer")
+        self.maya_layers = [layer for layer in maya_layer_ls if layer != "defaultLayer"]
+
+    def SyncInfo(self):
+
+        # Make UUID : LayerObj dictionaries of the VFS Layers and the Maya Layers
+        vfs_layers_dict = {
+            vfs_layer._id: vfs_layer
+            for vfs_layer in self.vfs_layers
+        }
+
+        maya_layers_dict = {
+            maya_layers._id: maya_layers
+            for maya_layer in self.maya_layers
+        }
+
+        # Get only keys and make them into a set for easier matching
+        vfs_layers_ids = set(vfs_layers_dict.keys())
+        maya_layers_ids = set(maya_layers_dict.keys())
+
+        # Sync matching layers
+        for layer_id in maya_layers_ids & vfs_layers_ids:
+
+            # Get Maya layer with that id, get VFS with the SAME id, update the VFS one accordingly
+            maya_layer = maya_layers_dict[layer_id]
+            vfs_layer = vfs_layers_dict[layer_id]
+
+            self.UpdateInfo(vfs_layer, maya_layer)
+
+        # Create new VFS layers if there are new Maya layers
+        for layer_id in maya_layers_ids - vfs_layers_ids:
+
+            maya_layer = maya_layers_dict[layer_id]
+
+            self.createVFSLayer(True, maya_layer)
+
+        # Delete VFS layers if they were deleted in Maya
+        for layer_id in vfs_layers_ids - maya_layers_ids:
+
+            vfs_layer = vfs_layers_dict[layer_id]
+
+            self.RemoveVFSLayer(vfs_layer) # Kill VFS Layer UI
+            self.vfs_layers.remove(vfs_layer) # Remove VFS Layer from vfs_layers list
+            vfs_layers_ids.remove(vfs_layer._id) # Remove VFS Layer ID from vfs_layers_ids set 
+
+    def UpdateInfo(self, vfsLayer, mayaLayer):
+        vfsLayer
 
     def SaveInfo(self):
         pass
 
-    def createLayer(self, isEmpty, layerName="Layer"):
+    def CreateVFSLayer(self, isEmpty, layerName="Layer"):
+        # Add Children param
         newMayaLayer = cmds.createDisplayLayer(e=isEmpty, n=layerName, mc=True)
-        newLayer = BaseLayer(newMayaLayer)
+        newLayerID = cmds.ls(newMayaLayer, uuid=True)[0]
+        newLayer = BaseLayer(newMayaLayer, newLayerID)
         self.master_layer_layout.addWidget(newLayer, alignment=Qt.AlignmentFlag.AlignTop)
+        self.maya_layers.append(newMayaLayer)
+        self.vfs_layers.append(newLayer)
 
-    # UPDATING SELECTED LAYERS
-        # layerEditorDisplayLayerManagerChange;
-        # updateCurrentDisplayLayer layerManager.currentDisplayLayer;
-        
-        # DELETING LAYERS
-        # layerEditorDeleteLayer layer11;
-        # delete layer11; 
+    def RemoveVFSLayer(self, layer):
+        # TODO: Add a confirmation window before deleting
+        cmds.delete(layer)
 
 # ---------- CREATE DRAGGABLE QWIDGET FOR LAYERS ----------
 
 class BaseLayer(QWidget):
-    def __init__(self, baseLayerName="Layer"):
+    def __init__(self, baseLayerName="Layer", _id="0"):
         super().__init__()
         # Set general settings
         self.setFixedHeight(45)
         self.layerLayout = QHBoxLayout(self)
         self.setAttribute(Qt.WA_StyledBackground, True) # Allow background color to be changed
+        
+        # Maya Layer attributes
+        # DEFAULT: Visible, regular display type, white color, at the bottom
+        self.layerIDNumber = _id
+        self.visibility = True
+        self.displayType = 0
+        self.overrideColorRGB = [1.0, 1.0, 1.0]
+        self.displayOrder = "1"
 
         # Add widgets
         self.layerColorButton = QPushButton()
@@ -204,7 +260,6 @@ class BaseLayer(QWidget):
         else:
             print("Invalid Color!")
 
-            
 
 # ---------- CREATE THE MAIN WINDOW ----------
 
@@ -289,8 +344,8 @@ class MainWindow(mixin, QtWidgets.QWidget):
 
         move_layer_up.triggered.connect(lambda: mel.eval("layerEditorMoveDisplayLayer 1;"))
         move_layer_down.triggered.connect(lambda: mel.eval("layerEditorMoveDisplayLayer 0;"))
-        new_layer.triggered.connect(lambda: self.createLayer(True))
-        add_layer.triggered.connect(lambda: self.createLayer(False))
+        new_layer.triggered.connect(lambda: self.VFS(True))
+        add_layer.triggered.connect(lambda: self.VFS(False))
         delete_layer.triggered.connect(lambda: print("DELETING WHATEVER LAYER THIS IS!!!!!"))
 
     def layer_setup(self):
