@@ -89,7 +89,7 @@ def get_main_window() -> QtWidgets.QWidget:
 global primScale
 primScale = 100
 global current_step_index
-current_step_index = 6 # [6] is 1m
+current_step_index = 7 # [7] is 1m
 global currentCamPreview
 currentCamPreview = 'Null'
 
@@ -250,59 +250,52 @@ def scale_step_snap(*args):
     info = args[0]
     current_step_index = int(info)
     # Fix current_step_index received so it doesn't get out of the array range
-    if (current_step_index > 10):
+    if (current_step_index > 11):
         print("Step Snap is already at max value.")
-        current_step_index = 10
+        current_step_index = 11
     elif (current_step_index < 0):
         print("Step Snap is already at min value")
         current_step_index = 0
 
-    if (current_step_index == 0):
-        cmds.manipMoveContext('Move', edit=True, snap=False, constrainAlongNormal=True)
-        cmds.inViewMessage(amg='Step Snap is <hl>OFF</hl>.', pos='topCenter', fade=True)
-  
-    elif (current_step_index == 1):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=5, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>5cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 2):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=10, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>10cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 3):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=20, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>20cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 4):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=25, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>25cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 5):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=50, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>50cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 6):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=100, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>100cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 7):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=200, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>200cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 8):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=300, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>300cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 9):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=400, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>400cm</hl>.', pos='topCenter', fade=True)
-
-    elif (current_step_index == 10):
-        cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=500, constrainAlongNormal=False)
-        cmds.inViewMessage(amg='Step Snap set to <hl>500cm</hl>.', pos='topCenter', fade=True)
-
-    else:
-        print("[!] Something went wrong with step snap setup.")
+    match current_step_index:
+        case 0:
+            cmds.manipMoveContext('Move', edit=True, snap=False, constrainAlongNormal=True)
+            cmds.inViewMessage(amg='Step Snap is <hl>OFF</hl>.', pos='topCenter', fade=True)
+        case 1:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=2.5, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>2.5cm</hl>.', pos='topCenter', fade=True)
+        case 2:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=5, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>5cm</hl>.', pos='topCenter', fade=True)
+        case 3:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=10, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>10cm</hl>.', pos='topCenter', fade=True)
+        case 4:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=20, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>20cm</hl>.', pos='topCenter', fade=True)
+        case 5:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=25, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>25cm</hl>.', pos='topCenter', fade=True)
+        case 6:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=50, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>50cm</hl>.', pos='topCenter', fade=True)
+        case 7:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=100, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>100cm</hl>.', pos='topCenter', fade=True)
+        case 8:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=200, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>200cm</hl>.', pos='topCenter', fade=True)
+        case 9:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=300, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>300cm</hl>.', pos='topCenter', fade=True)
+        case 10:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=400, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>400cm</hl>.', pos='topCenter', fade=True)
+        case 11:
+            cmds.manipMoveContext('Move', edit=True, snap=True, snapValue=500, constrainAlongNormal=False)
+            cmds.inViewMessage(amg='Step Snap set to <hl>500cm</hl>.', pos='topCenter', fade=True)
+        case _:
+            print("[!] Something went wrong with step snap setup.")
 
 def auto_camera_preview():
     # Find Camera Preview panel
@@ -487,10 +480,6 @@ class MainWindow(mixin, QtWidgets.QDialog):
         grid_layout.addWidget(grid_icon)
         grid_layout.addWidget(grid_dropdown_label)
         grid_layout.addWidget(grid_dropdown)
-
-
-        
-
 
 
     def modularkit_tab_setup(self):
