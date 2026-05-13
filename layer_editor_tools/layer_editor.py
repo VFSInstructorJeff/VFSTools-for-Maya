@@ -4,6 +4,8 @@ from typing import Optional, Union
 from pathlib import Path
 import colorsys
 import sys
+import json
+import base64
 
 from maya import cmds
 from maya import mel
@@ -63,31 +65,37 @@ def hex_to_rgb(value):
 # ---------- CREATE LAYER MANAGER ----------
 
 class LayerManager(QWidget):
-    def __init__(self, baseLayerName="Layer"):
+    def __init__(self):
         super().__init__()
         self.vfs_layers = []
         self.maya_layers = []
     
     def LoadInfo(self):
-        # ONLY CALLED WHEN OPENING THE TOOL (reads things from files, calls sync update)
-        # Look for specific properties setup previously. If found, load them up. If not, create it.
-        #vfs_layer_ls = read_scene_content()
-        #self.vfs_layers = [layer for layer in vfs_layer_ls]
-
         # Read all Maya layers and add them to list
         maya_layer_ls = cmds.ls(type="displayLayer")
         self.maya_layers = [layer for layer in maya_layer_ls if layer != "defaultLayer"]
+
+        # Read all VFS layers if they exist
+        try:
+            raw_data = cmds.fileInfo("VFSLayers", q=True)[0]
+            loaded_data = json.loads(raw_data)
+            for data in loaded_data:
+                self.vfs_layers.append(data)
+            
+        except:
+            print("ACKTSHUALLY, this fileInfo thing doesn't exist, Buddy :/")
+
 
     def SyncInfo(self):
 
         # Make UUID : LayerObj dictionaries of the VFS Layers and the Maya Layers
         vfs_layers_dict = {
-            vfs_layer._id: vfs_layer
+            vfs_layer.layerIDNumber: vfs_layer
             for vfs_layer in self.vfs_layers
         }
 
         maya_layers_dict = {
-            maya_layers._id: maya_layers
+            cmds.ls(maya_layers, uuid=True)[0]: maya_layers
             for maya_layer in self.maya_layers
         }
 
@@ -121,10 +129,29 @@ class LayerManager(QWidget):
             vfs_layers_ids.remove(vfs_layer._id) # Remove VFS Layer ID from vfs_layers_ids set 
 
     def UpdateInfo(self, vfsLayer, mayaLayer):
-        vfsLayer
+        vfsLayer.visibility = mayaLayer.visibility
+        vfsLayer.displayType = mayaLayer.displayType
+        vfsLayer.overrideColorRGB = mayaLayer.overrideColorRGB
+        vfsLayer.displayOrder = mayaLayer.displayOrder
 
     def SaveInfo(self):
-        pass
+        VFSLayersVar = {}
+
+        for _layer in self.vfs_layers:
+            layer_info = {
+                "name" : _layer,
+                "color" : "Red",
+                "visibility" : True ,
+                "sm" : False,
+                "ucx" : False,
+                "singMult" : "Single",
+                "origin" : True,
+                "path" : "Meow",
+                }
+            json_str = json.dumps(layer_info)
+            VFSLayersVar[f"{_layer.layerIDNumber}"] = json_str
+        
+        cmds.fileInfo("VFSLayers", VFSLayersVar)
 
     def CreateVFSLayer(self, isEmpty, layerName="Layer"):
         # Add Children param
@@ -351,6 +378,13 @@ class MainWindow(mixin, QtWidgets.QWidget):
     def layer_setup(self):
         self.master_layer_layout = QVBoxLayout()
         self.windowLayerManager = LayerManager()
+        self.master_layer_layout.addWidget(self.windowLayerManager)
+        button1 = QPushButton()
+        button2 = QPushButton()
+        button3 = QPushButton()
+        self.master_layer_layout.addWidget(button1)
+        self.master_layer_layout.addWidget(button2)
+        self.master_layer_layout.addWidget(button3)
 
 
 def main():
