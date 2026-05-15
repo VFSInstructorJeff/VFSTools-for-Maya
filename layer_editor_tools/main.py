@@ -1,20 +1,18 @@
 from typing import Optional
 
 from maya import cmds
-from maya.api import OpenMaya as om
+from maya import mel
 from maya.app.general.mayaMixin import (MayaQWidgetDockableMixin as mixin)
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QSize, QTimer
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
-
-from shiboken6 import isValid
+from PySide6.QtWidgets import ( QWidget,
+                                QVBoxLayout,
+                                QToolBar )
 
 from layer_editor_tools.constants import *
-from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.layer_manager import LayerManager
-from layer_editor_tools.layer_widget import LayerWidget
 from layer_editor_tools.utils import get_main_window
 
 
@@ -33,7 +31,6 @@ class MainWindow(mixin, QWidget):
         self.setWindowTitle("VFS Layer Tools")
         self.setAcceptDrops(True)
         self.resize(900, 600)
-
         self.window_layout = QVBoxLayout(self)
 
         self.toolbar = QToolBar()
@@ -45,30 +42,10 @@ class MainWindow(mixin, QWidget):
         self.window_layout.addWidget(self.layer_container)
 
         self.layer_manager = LayerManager()
-        self._refreshing = False
 
         self.setup_toolbar()
+
         self.load_existing_layers()
-
-        # Scene callbacks
-        self._save_callback = om.MSceneMessage.addCallback(
-            om.MSceneMessage.kBeforeSave,
-            lambda *args: self.layer_manager.save()
-        )
-        self._new_callback = om.MSceneMessage.addCallback(
-            om.MSceneMessage.kAfterNew,
-            lambda *args: QTimer.singleShot(0, self.refresh_layers)
-        )
-        self._open_callback = om.MSceneMessage.addCallback(
-            om.MSceneMessage.kAfterOpen,
-            lambda *args: QTimer.singleShot(0, self.refresh_layers)
-        )
-
-        # Maya layer callbacks
-        self._layer_added_callback = om.MEventMessage.addEventCallback(
-            "displayLayerAdded",
-            lambda *args: self.on_maya_layer_added()
-        )
 
         self.show(dockable=True)
 
@@ -77,17 +54,17 @@ class MainWindow(mixin, QWidget):
     # --------------------------------
 
     def setup_toolbar(self):
-        move_up      = self.toolbar.addAction(QIcon(LAYER_UP), "")
-        move_down    = self.toolbar.addAction(QIcon(LAYER_DOWN), "")
-        new_layer    = self.toolbar.addAction(QIcon(LAYER_NEW), "")
-        add_layer    = self.toolbar.addAction(QIcon(LAYER_ADD), "")
+
+        move_up = self.toolbar.addAction(QIcon(LAYER_UP), "")
+        move_down = self.toolbar.addAction(QIcon(LAYER_DOWN), "")
+        new_layer = self.toolbar.addAction(QIcon(LAYER_NEW), "")
+        add_layer = self.toolbar.addAction(QIcon(LAYER_ADD), "")
         delete_layer = self.toolbar.addAction(QIcon(LAYER_DELETE), "")
 
-        move_up.triggered.connect(self.move_selected_up)
-        move_down.triggered.connect(self.move_selected_down)
-        new_layer.triggered.connect(lambda: self.add_layer(empty=True))
-        add_layer.triggered.connect(lambda: self.add_layer(empty=False))
-        delete_layer.triggered.connect(self.delete_selected_layer)
+        move_up.triggered.connect(lambda: mel.eval("layerEditorMoveDisplayLayer 1;"))
+        move_down.triggered.connect(lambda: mel.eval("layerEditorMoveDisplayLayer 0;"))
+        new_layer.triggered.connect(lambda: self.add_layer(True))
+        add_layer.triggered.connect(lambda: self.add_layer(False))
 
     # --------------------------------
     # Layer Operations
@@ -95,107 +72,20 @@ class MainWindow(mixin, QWidget):
 
     def add_layer(self, empty=True):
         widget = self.layer_manager.create_layer(empty=empty)
-        self.layer_layout.insertWidget(0, widget, alignment=Qt.AlignTop)
 
-    def delete_selected_layer(self):
-        entry = self.layer_manager.selected_entry
-        if not entry:
-            return
-        widget = entry["widget"]
-        self.layer_manager.remove_selected()
-        self.layer_layout.removeWidget(widget)
-
-    def move_selected_up(self):
-        entry = self.layer_manager.selected_entry
-        if not entry:
-            return
-        widget = entry["widget"]
-        index = self.layer_layout.indexOf(widget)
-        if index <= 0:
-            return
-        self.layer_manager.move_selected_up()
-        self.layer_layout.removeWidget(widget)
-        self.layer_layout.insertWidget(index - 1, widget, alignment=Qt.AlignTop)
-
-    def move_selected_down(self):
-        entry = self.layer_manager.selected_entry
-        if not entry:
-            return
-        widget = entry["widget"]
-        index = self.layer_layout.indexOf(widget)
-        if index == self.layer_layout.count() - 1:
-            return
-        self.layer_manager.move_selected_down()
-        self.layer_layout.removeWidget(widget)
-        self.layer_layout.insertWidget(index + 1, widget, alignment=Qt.AlignTop)
+        self.layer_layout.addWidget(widget, alignment=Qt.AlignTop)
 
     def load_existing_layers(self):
         widgets = self.layer_manager.load()
+
         for widget in widgets:
             self.layer_layout.addWidget(widget, alignment=Qt.AlignTop)
 
-    def refresh_layers(self):
-        self._refreshing = True
-        try:
-            for entry in self.layer_manager.layers:
-                widget = entry["widget"]
-                if isValid(widget):
-                    widget.setParent(None)
-                    widget.deleteLater()
-
-            self.layer_manager.layers = []
-            self.layer_manager.selected_entry = None
-
-            self.load_existing_layers()
-        finally:
-            self._refreshing = False
-
-    # --------------------------------
-    # Maya Layer Sync
-    # --------------------------------
-
-    def on_maya_layer_added(self):
-        if self.layer_manager._creating or self._refreshing:
-            return
-        try:
-            maya_layers = [l for l in cmds.ls(type="displayLayer") if l != "defaultLayer"]
-            known_names = {entry["data"].maya_layer_name for entry in self.layer_manager.layers}
-
-            for layer_name in maya_layers:
-                if layer_name not in known_names:
-                    uuid = cmds.ls(layer_name, uuid=True)[0]
-                    data = VFSLayerData(uuid=uuid, maya_layer_name=layer_name)
-                    self.layer_manager._sync_from_maya(data)
-
-                    widget = LayerWidget(data)
-                    widget.selected.connect(self.layer_manager.on_layer_selected)
-                    widget.path_changed.connect(self.layer_manager.update_session_cache)
-
-                    entry = {"data": data, "widget": widget}
-                    self.layer_manager.layers.insert(0, entry)
-                    self.layer_manager._attach_node_callback(entry)
-
-                    self.layer_layout.insertWidget(0, widget, alignment=Qt.AlignTop)
-
-        except RuntimeError:
-            pass  # Fired during scene switch before refresh completed, safe to ignore
-
-    # --------------------------------
-    # Cleanup
-    # --------------------------------
-
-    def closeEvent(self, event):
-        om.MSceneMessage.removeCallback(self._save_callback)
-        om.MSceneMessage.removeCallback(self._new_callback)
-        om.MSceneMessage.removeCallback(self._open_callback)
-        om.MEventMessage.removeCallback(self._layer_added_callback)
-        super().closeEvent(event)
-
 
 def main():
+
     window = MainWindow()
     return window
-
 
 if __name__ == "__main__":
     main()
