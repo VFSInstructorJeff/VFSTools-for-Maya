@@ -11,8 +11,8 @@ class VFSLayerData:
     display_type: int = 0
     color_rgb: tuple = (1.0, 1.0, 1.0)
 
-    is_sm: bool = False
-    is_ucx: bool = False
+    select_sm: bool = False
+    select_ucx: bool = False
 
     export_mode: str = "Single File"
     use_origin: bool = True
@@ -28,7 +28,6 @@ class VFSLayerData:
 
     @classmethod
     def from_dict(cls, data):
-
         data["color_rgb"] = tuple(
             data.get("color_rgb", [1, 1, 1])
         )

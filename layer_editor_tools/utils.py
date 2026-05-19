@@ -16,10 +16,7 @@ def get_main_window() -> QtWidgets.QWidget:
 
 def hex_to_rgb(value):
     value = value.lstrip('#')
-
-    rgb_255 = tuple(
-        int(value[i:i+2], 16)
-        for i in (0, 2, 4))
+    rgb_255 = tuple(int(value[i:i+2], 16) for i in (0, 2, 4))
 
     return tuple(v / 255.0 for v in rgb_255)
 
@@ -31,18 +28,13 @@ def rgb_to_hex(rgb):
     )
 
 def shifted_background_color(rgb_color):
-    hsv = colorsys.rgb_to_hsv(*rgb_color)
+    # Unpack each separate variable (Hue, Saturation, Value)
+    h, s, v = colorsys.rgb_to_hsv(*rgb_color)
 
-    shifted = []
+    # Define the factor by which we're making th BG color darker/brighter based on the picked color value
+    factor = 0.5 if v > 0.5 else 1.5
 
-    if hsv[2] > 0.5:
-        for value in rgb_color:
-            shifted.append(max(value * 0.5, 0))
-
-    else:
-        for value in rgb_color:
-            if value <= 0:
-                value = 0.075
-            shifted.append(min(value * 1.5, 1))
-
-    return tuple(shifted)
+    return tuple(
+        max(min(c * factor, 1.0), 0.075) if factor > 1 else max(c * factor, 0.0)
+        for c in rgb_color
+    )

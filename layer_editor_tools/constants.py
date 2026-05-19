@@ -4,7 +4,7 @@ from pathlib import Path
 # ------------ SETUP CONSTANTS ------------
 
 # Directories
-ICON_DIR = Path(r"C:\Users\lrenis\Documents\maya\VFSTools\icons")
+ICON_DIR = Path(__file__).parent.parent / "icons"
 
 # Icons
 LAYER_UP = str(ICON_DIR / "moveLayerUp.png")
