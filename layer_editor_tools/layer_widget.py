@@ -1,10 +1,12 @@
+from pathlib import Path
+
 from maya import cmds, mel
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QDrag
 from PySide6.QtWidgets import (QWidget, QPushButton, QLineEdit, QHBoxLayout,
                                 QVBoxLayout, QCheckBox, QComboBox, QColorDialog,
-                                QFileDialog)
+                                QFileDialog, QMessageBox)
 
 from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.utils import hex_to_rgb, rgb_to_hex, shifted_background_color
@@ -13,6 +15,7 @@ from layer_editor_tools.utils import hex_to_rgb, rgb_to_hex, shifted_background_
 class LayerWidget(QWidget):
 
     selected = Signal(object)
+    path_changed = Signal(str, str)  # uuid, export_path
 
     def __init__(self, data: VFSLayerData):
         super().__init__()
@@ -43,10 +46,10 @@ class LayerWidget(QWidget):
         self.export_dropdown.addItems(["Single File", "Multiple File"])
         self.origin_checkbox = QCheckBox("Origin")
         self.path_button = QPushButton("...")
-        self.export_button = QPushButton("Export")
         self.path_toggle = QPushButton("▶")
         self.path_toggle.setFixedWidth(16)
         self.path_toggle.setCheckable(True)
+        self.export_button = QPushButton("Export")
 
         self.layout.addWidget(self.color_button)
         self.layout.addWidget(self.name_edit)
@@ -56,8 +59,8 @@ class LayerWidget(QWidget):
         self.layout.addWidget(self.export_dropdown)
         self.layout.addWidget(self.origin_checkbox)
         self.layout.addWidget(self.path_button)
-        self.layout.addWidget(self.export_button)
         self.layout.addWidget(self.path_toggle)
+        self.layout.addWidget(self.export_button)
 
         # Bottom row — export path display, hidden by default
         self.path_edit = QLineEdit()
@@ -80,6 +83,7 @@ class LayerWidget(QWidget):
         self.export_dropdown.setCurrentText(self.data.export_mode)
         if self.data.export_path:
             self.path_edit.setText(self.data.export_path)
+            self.path_toggle.setChecked(True)
         self.apply_color_styles()
 
     def connect_signals(self):
@@ -92,6 +96,7 @@ class LayerWidget(QWidget):
         self.name_edit.editingFinished.connect(self.rename_layer)
         self.path_button.clicked.connect(self.pick_export_path)
         self.path_toggle.toggled.connect(self.toggle_path_row)
+        self.export_button.clicked.connect(self.export_layer)
 
     # -----------------------------
     # Selection
@@ -163,6 +168,68 @@ class LayerWidget(QWidget):
         if path:
             self.data.export_path = path
             self.path_edit.setText(path)
+            self.path_changed.emit(self.data.uuid, path)
+
+    # -----------------------------
+    # Export
+    # -----------------------------
+
+    def _move_to_origin(self, members):
+        """Move each object to (0,0,0) and return their original positions."""
+        original_positions = {}
+        for obj in members:
+            pos = cmds.xform(obj, q=True, worldSpace=True, translation=True)
+            original_positions[obj] = pos
+            cmds.xform(obj, worldSpace=True, translation=(0, 0, 0))
+        return original_positions
+
+    def _restore_positions(self, original_positions):
+        """Restore each object to its original position."""
+        for obj, pos in original_positions.items():
+            if cmds.objExists(obj):
+                cmds.xform(obj, worldSpace=True, translation=pos)
+
+    def export_layer(self):
+        if not self.data.export_path:
+            QMessageBox.warning(self, "Export Failed", "No export path set for this layer.")
+            return
+
+        if not Path(self.data.export_path).exists():
+            QMessageBox.warning(self, "Export Failed", f"Export path does not exist:\n{self.data.export_path}")
+            return
+
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True)
+
+        if not members:
+            QMessageBox.warning(self, "Export Failed", f"No objects found in layer {self.data.maya_layer_name}.")
+            return
+
+        previous_selection = cmds.ls(selection=True)
+
+        # Move to origin if needed, store positions for restore
+        original_positions = self._move_to_origin(members) if self.data.use_origin else {}
+
+        try:
+            if self.data.export_mode == "Single File":
+                cmds.select(members)
+                export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
+                cmds.file(export_path, force=True, options="v=0", type="FBX export", exportSelected=True)
+
+            elif self.data.export_mode == "Multiple File":
+                for obj in members:
+                    cmds.select(obj)
+                    export_path = f"{self.data.export_path}/{obj}.fbx"
+                    cmds.file(export_path, force=True, options="v=0", type="FBX export", exportSelected=True)
+
+        finally:
+            # Always restore positions and selection, even if export fails
+            if original_positions:
+                self._restore_positions(original_positions)
+
+            if previous_selection:
+                cmds.select(previous_selection)
+            else:
+                cmds.select(clear=True)
 
     # -----------------------------
     # Color
