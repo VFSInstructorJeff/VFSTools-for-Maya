@@ -45,17 +45,31 @@ class MainWindow(mixin, QWidget):
         self.setup_toolbar()
         self.load_existing_layers()
 
+        # Scene callbacks
+        self._save_callback = om.MSceneMessage.addCallback(
+            om.MSceneMessage.kBeforeSave,
+            lambda *args: self.layer_manager.save()
+        )
+        self._new_callback = om.MSceneMessage.addCallback(
+            om.MSceneMessage.kAfterNew,
+            lambda *args: self.refresh_layers()
+        )
+        self._open_callback = om.MSceneMessage.addCallback(
+            om.MSceneMessage.kAfterOpen,
+            lambda *args: self.refresh_layers()
+        )
+
         self.show(dockable=True)
 
-        self._save_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kBeforeSave, lambda *args: self.layer_manager.save())
-
-    # ------------ TOOLBAR ------------
+    # --------------------------------
+    # Toolbar
+    # --------------------------------
 
     def setup_toolbar(self):
-        move_up     = self.toolbar.addAction(QIcon(LAYER_UP), "")
-        move_down   = self.toolbar.addAction(QIcon(LAYER_DOWN), "")
-        new_layer   = self.toolbar.addAction(QIcon(LAYER_NEW), "")
-        add_layer   = self.toolbar.addAction(QIcon(LAYER_ADD), "")
+        move_up      = self.toolbar.addAction(QIcon(LAYER_UP), "")
+        move_down    = self.toolbar.addAction(QIcon(LAYER_DOWN), "")
+        new_layer    = self.toolbar.addAction(QIcon(LAYER_NEW), "")
+        add_layer    = self.toolbar.addAction(QIcon(LAYER_ADD), "")
         delete_layer = self.toolbar.addAction(QIcon(LAYER_DELETE), "")
 
         move_up.triggered.connect(self.move_selected_up)
@@ -64,7 +78,9 @@ class MainWindow(mixin, QWidget):
         add_layer.triggered.connect(lambda: self.add_layer(empty=False))
         delete_layer.triggered.connect(self.delete_selected_layer)
 
-    # ------------ LAYER FUNCTIONS ------------
+    # --------------------------------
+    # Layer Operations
+    # --------------------------------
 
     def add_layer(self, empty=True):
         widget = self.layer_manager.create_layer(empty=empty)
@@ -107,8 +123,27 @@ class MainWindow(mixin, QWidget):
         for widget in widgets:
             self.layer_layout.addWidget(widget, alignment=Qt.AlignTop)
 
+    def refresh_layers(self):
+        # Clear existing widgets from the layout
+        for entry in self.layer_manager.layers:
+            entry["widget"].setParent(None)
+            entry["widget"].deleteLater()
+
+        # Reset the manager
+        self.layer_manager.layers = []
+        self.layer_manager.selected_entry = None
+
+        # Reload
+        self.load_existing_layers()
+
+    # --------------------------------
+    # Cleanup
+    # --------------------------------
+
     def closeEvent(self, event):
         om.MSceneMessage.removeCallback(self._save_callback)
+        om.MSceneMessage.removeCallback(self._new_callback)
+        om.MSceneMessage.removeCallback(self._open_callback)
         super().closeEvent(event)
 
 
