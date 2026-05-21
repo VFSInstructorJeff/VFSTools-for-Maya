@@ -3,13 +3,14 @@ from pathlib import Path
 from maya import cmds, mel
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QDrag
+from PySide6.QtGui import QDrag, QIcon
 from PySide6.QtWidgets import (QWidget, QPushButton, QLineEdit, QHBoxLayout,
                                 QVBoxLayout, QCheckBox, QComboBox, QColorDialog,
                                 QFileDialog, QMessageBox)
 
 from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.utils import hex_to_rgb, rgb_to_hex, shifted_background_color
+from layer_editor_tools.constants import ARROW_RIGHT, ARROW_DOWN
 
 
 class LayerWidget(QWidget):
@@ -46,7 +47,7 @@ class LayerWidget(QWidget):
         self.export_dropdown.addItems(["Single File", "Multiple File"])
         self.origin_checkbox = QCheckBox("Origin")
         self.path_button = QPushButton("...")
-        self.path_toggle = QPushButton("▶")
+        self.path_toggle = QPushButton(QIcon(ARROW_RIGHT), "")
         self.path_toggle.setFixedWidth(16)
         self.path_toggle.setCheckable(True)
         self.export_button = QPushButton("Export")
@@ -119,7 +120,7 @@ class LayerWidget(QWidget):
 
     def toggle_path_row(self, checked):
         self.path_edit.setVisible(checked)
-        self.path_toggle.setText("▼" if checked else "▶")
+        self.path_toggle.setIcon(QIcon(ARROW_DOWN) if checked else QIcon(ARROW_RIGHT))
         self.setFixedHeight(75 if checked else 45)
 
     # -----------------------------
