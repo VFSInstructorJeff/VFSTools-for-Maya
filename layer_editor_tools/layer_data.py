@@ -28,6 +28,7 @@ class VFSLayerData:
 
     @classmethod
     def from_dict(cls, data):
+        print(f"from_dict received: {data}")
         data["color_rgb"] = tuple(
             data.get("color_rgb", [1, 1, 1])
         )
