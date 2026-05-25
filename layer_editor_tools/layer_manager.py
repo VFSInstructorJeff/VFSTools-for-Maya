@@ -18,26 +18,31 @@ class LayerManager:
     def __init__(self):
         self.layers = []
         self.selected_entry = None
-        self._attr_callbacks = {}  # uuid -> callback id
+        self._attr_callbacks = {}  # uuid -> (attr_cb_id, name_cb_id)
+        self._creating = False
 
     # --------------------------------
     # Create
     # --------------------------------
 
     def create_layer(self, empty=True, name="Layer"):
-        maya_layer = cmds.createDisplayLayer(e=empty, n=name, mc=True)
+        self._creating = True
+        try:
+            maya_layer = cmds.createDisplayLayer(e=empty, n=name)
 
-        uuid = cmds.ls(maya_layer, uuid=True)[0]
-        data = VFSLayerData(uuid=uuid, maya_layer_name=maya_layer)
+            uuid = cmds.ls(maya_layer, uuid=True)[0]
+            data = VFSLayerData(uuid=uuid, maya_layer_name=maya_layer)
 
-        widget = LayerWidget(data)
-        widget.selected.connect(self.on_layer_selected)
-        widget.path_changed.connect(self.update_session_cache)
+            widget = LayerWidget(data)
+            widget.selected.connect(self.on_layer_selected)
+            widget.path_changed.connect(self.update_session_cache)
 
-        entry = {"data": data, "widget": widget}
-        self.layers.insert(0, entry)
+            entry = {"data": data, "widget": widget}
+            self.layers.insert(0, entry)
 
-        self._attach_node_callback(entry)
+            self._attach_node_callback(entry)
+        finally:
+            self._creating = False
 
         return widget
 
@@ -63,7 +68,7 @@ class LayerManager:
         uuid = entry["data"].uuid
         layer_name = entry["data"].maya_layer_name
 
-        # Remove node callback
+        # Remove node callbacks
         self._remove_node_callback(uuid)
 
         if cmds.objExists(layer_name):
@@ -160,29 +165,24 @@ class LayerManager:
     def _attach_node_callback(self, entry):
         data = entry["data"]
 
-        sel = om.MSelectionList()
-        sel.add(data.maya_layer_name)
-        node = sel.getDependNode(0)
-
-        attr_cb_id = om.MNodeMessage.addAttributeChangedCallback(
-            node,
-            lambda msg, plug, other, cd: self._on_node_attr_changed(plug, data, entry["widget"])
-        )
-
-        name_cb_id = om.MNodeMessage.addNameChangedCallback(
-            node,
-            lambda node, old_name, cd: self._on_node_renamed(node, old_name, data, entry["widget"])
-        )
-
-        self._attr_callbacks[data.uuid] = (attr_cb_id, name_cb_id)
-
-    def _on_node_renamed(self, node, old_name, data, widget):
         try:
-            new_name = om.MFnDependencyNode(node).name()
-            data.maya_layer_name = new_name
-            widget.name_edit.setText(new_name)
-        except RuntimeError:
-            pass  # Widget already deleted during tool shutdown, safe to ignore
+            sel = om.MSelectionList()
+            sel.add(data.maya_layer_name)
+            node = sel.getDependNode(0)
+
+            attr_cb_id = om.MNodeMessage.addAttributeChangedCallback(
+                node,
+                lambda msg, plug, other, cd: self._on_node_attr_changed(plug, data, entry["widget"])
+            )
+
+            name_cb_id = om.MNodeMessage.addNameChangedCallback(
+                node,
+                lambda node, old_name, cd: self._on_node_renamed(node, old_name, data, entry["widget"])
+            )
+
+            self._attr_callbacks[data.uuid] = (attr_cb_id, name_cb_id)
+        except Exception as e:
+            print(f"Failed to attach callback to {data.maya_layer_name}: {e}")
 
     def _remove_node_callback(self, uuid):
         if uuid in self._attr_callbacks:
@@ -191,10 +191,12 @@ class LayerManager:
             om.MMessage.removeCallback(name_cb_id)
 
     def _on_node_attr_changed(self, plug, data, widget):
+        if self._creating:
+            return
         try:
             attr_name = plug.partialName()
 
-            if attr_name == "v":
+            if attr_name == "v":  # visibility
                 maya_vis = cmds.getAttr(f"{data.maya_layer_name}.visibility")
                 if data.visibility != maya_vis:
                     data.visibility = maya_vis
@@ -202,10 +204,15 @@ class LayerManager:
                     widget.visibility_checkbox.setChecked(maya_vis)
                     widget.visibility_checkbox.blockSignals(False)
 
-            elif attr_name == "dt":
+            elif attr_name == "dt":  # displayType
                 data.display_type = cmds.getAttr(f"{data.maya_layer_name}.displayType")
 
-            elif attr_name in ("ovcr", "ovcg", "ovcb"):
+            elif attr_name == "c":  # index color
+                color_index = cmds.getAttr(f"{data.maya_layer_name}.color")
+                data.color_rgb = self._index_to_rgb(color_index)
+                widget.apply_color_styles()
+
+            elif attr_name in ("ovcr", "ovcg", "ovcb"):  # RGB color channels
                 if cmds.getAttr(f"{data.maya_layer_name}.overrideRGBColors"):
                     r, g, b = cmds.getAttr(f"{data.maya_layer_name}.overrideColorRGB")[0]
                     data.color_rgb = (r, g, b)
@@ -213,6 +220,21 @@ class LayerManager:
 
         except RuntimeError:
             pass  # Widget already deleted during tool shutdown, safe to ignore
+
+    def _on_node_renamed(self, node, old_name, data, widget):
+        if self._creating:
+            return
+        try:
+            new_name = om.MFnDependencyNode(node).name()
+            data.maya_layer_name = new_name
+            widget.name_edit.setText(new_name)
+        except RuntimeError:
+            pass  # Widget already deleted during tool shutdown, safe to ignore
+
+    def _index_to_rgb(self, index):
+        """Convert Maya color index to RGB 0-1 tuple."""
+        r, g, b = cmds.colorIndex(index, q=True)
+        return (r, g, b)
 
     # --------------------------------
     # Session Cache
@@ -295,3 +317,6 @@ class LayerManager:
         if cmds.getAttr(f"{layer}.overrideRGBColors"):
             r, g, b = cmds.getAttr(f"{layer}.overrideColorRGB")[0]
             data.color_rgb = (r, g, b)
+        else:
+            color_index = cmds.getAttr(f"{layer}.color")
+            data.color_rgb = self._index_to_rgb(color_index)
