@@ -138,7 +138,22 @@ class LayerWidget(QWidget):
 
     def on_ucx_changed(self, state):
         self.data.select_ucx = state
-        # TODO: Add logic to display only meshes that start with UCX_, no regular meshes
+        if state:
+            members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
+            ucx_members = []
+            for obj in members:
+                # Check children for UCX meshes
+                children = cmds.listRelatives(obj, allDescendents=True, fullPath=True) or []
+                for child in children:
+                    if child.split("|")[-1].startswith("UCX_"):
+                        ucx_members.append(child)
+
+            if ucx_members:
+                cmds.select(ucx_members)
+            else:
+                cmds.select(clear=True)
+        else:
+            cmds.select(clear=True)
 
     def on_origin_changed(self, state):
         self.data.use_origin = state

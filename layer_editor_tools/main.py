@@ -5,12 +5,16 @@ from maya.api import OpenMaya as om
 from maya.app.general.mayaMixin import (MayaQWidgetDockableMixin as mixin)
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
 
+from shiboken6 import isValid
+
 from layer_editor_tools.constants import *
+from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.layer_manager import LayerManager
+from layer_editor_tools.layer_widget import LayerWidget
 from layer_editor_tools.utils import get_main_window
 
 
@@ -41,6 +45,7 @@ class MainWindow(mixin, QWidget):
         self.window_layout.addWidget(self.layer_container)
 
         self.layer_manager = LayerManager()
+        self._refreshing = False
 
         self.setup_toolbar()
         self.load_existing_layers()
@@ -52,11 +57,17 @@ class MainWindow(mixin, QWidget):
         )
         self._new_callback = om.MSceneMessage.addCallback(
             om.MSceneMessage.kAfterNew,
-            lambda *args: self.refresh_layers()
+            lambda *args: QTimer.singleShot(0, self.refresh_layers)
         )
         self._open_callback = om.MSceneMessage.addCallback(
             om.MSceneMessage.kAfterOpen,
-            lambda *args: self.refresh_layers()
+            lambda *args: QTimer.singleShot(0, self.refresh_layers)
+        )
+
+        # Maya layer callbacks
+        self._layer_added_callback = om.MEventMessage.addEventCallback(
+            "displayLayerAdded",
+            lambda *args: self.on_maya_layer_added()
         )
 
         self.show(dockable=True)
@@ -124,17 +135,50 @@ class MainWindow(mixin, QWidget):
             self.layer_layout.addWidget(widget, alignment=Qt.AlignTop)
 
     def refresh_layers(self):
-        # Clear existing widgets from the layout
-        for entry in self.layer_manager.layers:
-            entry["widget"].setParent(None)
-            entry["widget"].deleteLater()
+        self._refreshing = True
+        try:
+            for entry in self.layer_manager.layers:
+                widget = entry["widget"]
+                if isValid(widget):
+                    widget.setParent(None)
+                    widget.deleteLater()
 
-        # Reset the manager
-        self.layer_manager.layers = []
-        self.layer_manager.selected_entry = None
+            self.layer_manager.layers = []
+            self.layer_manager.selected_entry = None
 
-        # Reload
-        self.load_existing_layers()
+            self.load_existing_layers()
+        finally:
+            self._refreshing = False
+
+    # --------------------------------
+    # Maya Layer Sync
+    # --------------------------------
+
+    def on_maya_layer_added(self):
+        if self.layer_manager._creating or self._refreshing:
+            return
+        try:
+            maya_layers = [l for l in cmds.ls(type="displayLayer") if l != "defaultLayer"]
+            known_names = {entry["data"].maya_layer_name for entry in self.layer_manager.layers}
+
+            for layer_name in maya_layers:
+                if layer_name not in known_names:
+                    uuid = cmds.ls(layer_name, uuid=True)[0]
+                    data = VFSLayerData(uuid=uuid, maya_layer_name=layer_name)
+                    self.layer_manager._sync_from_maya(data)
+
+                    widget = LayerWidget(data)
+                    widget.selected.connect(self.layer_manager.on_layer_selected)
+                    widget.path_changed.connect(self.layer_manager.update_session_cache)
+
+                    entry = {"data": data, "widget": widget}
+                    self.layer_manager.layers.insert(0, entry)
+                    self.layer_manager._attach_node_callback(entry)
+
+                    self.layer_layout.insertWidget(0, widget, alignment=Qt.AlignTop)
+
+        except RuntimeError:
+            pass  # Fired during scene switch before refresh completed, safe to ignore
 
     # --------------------------------
     # Cleanup
@@ -144,6 +188,7 @@ class MainWindow(mixin, QWidget):
         om.MSceneMessage.removeCallback(self._save_callback)
         om.MSceneMessage.removeCallback(self._new_callback)
         om.MSceneMessage.removeCallback(self._open_callback)
+        om.MEventMessage.removeCallback(self._layer_added_callback)
         super().closeEvent(event)
 
 
