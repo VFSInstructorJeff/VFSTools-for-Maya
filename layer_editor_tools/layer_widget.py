@@ -1,3 +1,4 @@
+# ------------ IMPORT LIBRARIES/MODULES ------------
 from pathlib import Path
 
 from maya import cmds, mel
@@ -12,11 +13,14 @@ from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.utils import hex_to_rgb, rgb_to_hex, shifted_background_color
 from layer_editor_tools.constants import ARROW_RIGHT, ARROW_DOWN
 
+# ------------ LAYER WIDGET CLASS ------------
 
 class LayerWidget(QWidget):
 
-    selected = Signal(object)
-    path_changed = Signal(str, str)  # uuid, export_path
+    # ------------ CREATE SIGNALS ------------
+    # Signals belong to the Emitter
+    selected = Signal(object)   # Signal passes/transmits an object
+    path_changed = Signal(str, str)  # Signal transmits 2 strings: uuid, export_path
 
     def __init__(self, data: VFSLayerData):
         super().__init__()
