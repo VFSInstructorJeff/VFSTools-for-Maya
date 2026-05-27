@@ -1,62 +1,83 @@
+# ------------ IMPORT LIBRARIES/MODULES ------------
 import json
 
 from maya import cmds
 from maya.api import OpenMaya as om
 
-from layer_editor_tools.layer_data import VFSLayerData
-from layer_editor_tools.layer_widget import LayerWidget
+from layer_editor_tools.layer_data import VFSLayerData      # Import data
+from layer_editor_tools.layer_widget import LayerWidget     # Import UI
 
+# _var is to indicate a private var
+# Putting this dict at module level so the information is saved even if the tool is closed
+# The info only exists during the Maya session, if Maya is closed without saving it will be erased
+_session_cache = {}  #  uuid (key) -> export_path (value)
 
-# Module-level session cache — persists across tool open/close within the same Maya session
-_session_cache = {}  # uuid -> export_path
-
+# ------------ LAYER MANAGER CLASS ------------
 
 class LayerManager:
-
+    # Setup the variable name to look for in the .ma to check if there's saved layer information to pull from
     FILE_INFO_KEY = "VFSLayers"
 
     def __init__(self):
         self.layers = []
         self.selected_entry = None
-        self._attr_callbacks = {}  # uuid -> (attr_cb_id, name_cb_id)
-        self._creating = False
+        self._attr_callbacks = {}   # uuid (key) -> (attr_cb_id, name_cb_id) (tuple value)
+        self._creating = False      # Checking if a layer is being created to delay other callbacks so there isn't conflict
 
-    # --------------------------------
-    # Create
-    # --------------------------------
+    # ------------ CREATE LAYER METHOD ------------
 
+    # Pass only name and if it should be empty or if it should contain the user selection
     def create_layer(self, empty=True, name="Layer"):
         self._creating = True
         try:
+            # Make Maya layer
             maya_layer = cmds.createDisplayLayer(e=empty, n=name)
 
+            # Get the maya layer UUID (best way of consistently keeping track of any changes made to a layer, since all other info is mutable)
             uuid = cmds.ls(maya_layer, uuid=True)[0]
+            # Make VFS layer data using the Maya layer UUID and name
             data = VFSLayerData(uuid=uuid, maya_layer_name=maya_layer)
 
+            # Build the widget with the data
             widget = LayerWidget(data)
+            # Connect LayerManager methods to LayerWidget Signals so widgets can emit signals to the manager
             widget.selected.connect(self.on_layer_selected)
             widget.path_changed.connect(self.update_session_cache)
 
+            # Create entry layer with data from VFSLayerData and widget from LayerWidget
             entry = {"data": data, "widget": widget}
+            # Insert at position 0 to mimick native Maya layer ordering
             self.layers.insert(0, entry)
 
+            
             self._attach_node_callback(entry)
         finally:
+            # Set _creating to False when done
             self._creating = False
 
         return widget
 
-    # --------------------------------
-    # Remove
-    # --------------------------------
+    # ------------ REMOVE LAYER METHODS ------------
 
     def remove_selected(self):
+        # If no layers are selected, return
         if not self.selected_entry:
             return
+        # Call layer removal for the selected layer and set selection to None again
         self.remove_layer(self.selected_entry["widget"])
         self.selected_entry = None
-
+    
     def remove_layer(self, widget):
+        """
+            There are 5 steps to layer removal:
+            1. Removing all callbacks associated with the layer
+            2. Removing the Maya layer
+            3. Removing the PySide/VFS layer widget
+            4. Removing the layer info from the _session_cache (the current Maya session's unsaved info)
+            5. Removing the layer info from the Layer Manager
+        """
+        # Iterate through layers until the widget info matches the selected widget, if none match, make entry = None
+        # Using next() to get the first result that matches and then stop iterating
         entry = next(
             (x for x in self.layers if x["widget"] == widget),
             None
@@ -65,15 +86,18 @@ class LayerManager:
         if not entry:
             return
 
+        # Get UUID and name from the entry's data
         uuid = entry["data"].uuid
         layer_name = entry["data"].maya_layer_name
 
         # Remove node callbacks
         self._remove_node_callback(uuid)
 
+        # Delete the Maya layer
         if cmds.objExists(layer_name):
             cmds.delete(layer_name)
 
+        # Unparent widget from UI and schedule deletion
         widget.setParent(None)
         widget.deleteLater()
 
@@ -81,11 +105,10 @@ class LayerManager:
         if uuid in _session_cache:
             del _session_cache[uuid]
 
+        # Remove it from Layer Manager list
         self.layers.remove(entry)
 
-    # --------------------------------
-    # Selection
-    # --------------------------------
+    # ------------ SELECT LAYER METHOD ------------
 
     def on_layer_selected(self, widget):
         # Deselect previous
@@ -101,9 +124,7 @@ class LayerManager:
         if self.selected_entry:
             self.selected_entry["widget"].set_selected(True)
 
-    # --------------------------------
-    # Reorder
-    # --------------------------------
+    # ------------ REORDER LAYERS METHODS ------------
 
     def move_selected_up(self):
         if not self.selected_entry:
