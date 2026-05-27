@@ -40,6 +40,7 @@ class LayerWidget(QWidget):
 
         self.color_button = QPushButton()
         self.name_edit = QLineEdit(self.data.maya_layer_name)
+        self.select_button = QPushButton("Select All")
         self.visibility_checkbox = QCheckBox("Vis")
         self.sm_checkbox = QCheckBox("SM")
         self.ucx_checkbox = QCheckBox("UCX")
@@ -54,6 +55,7 @@ class LayerWidget(QWidget):
 
         self.layout.addWidget(self.color_button)
         self.layout.addWidget(self.name_edit)
+        self.layout.addWidget(self.select_button)  # add here
         self.layout.addWidget(self.visibility_checkbox)
         self.layout.addWidget(self.sm_checkbox)
         self.layout.addWidget(self.ucx_checkbox)
@@ -89,6 +91,7 @@ class LayerWidget(QWidget):
 
     def connect_signals(self):
         self.color_button.clicked.connect(self.pick_color)
+        self.select_button.clicked.connect(self.select_all)
         self.visibility_checkbox.toggled.connect(self.on_visibility_changed)
         self.sm_checkbox.toggled.connect(self.on_sm_changed)
         self.ucx_checkbox.toggled.connect(self.on_ucx_changed)
@@ -127,6 +130,13 @@ class LayerWidget(QWidget):
     # Maya Updates
     # -----------------------------
 
+    def select_all(self):
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
+        if members:
+            cmds.select(members)
+        else:
+            cmds.select(clear=True)
+    
     def on_visibility_changed(self, state):
         self.data.visibility = state
         cmds.setAttr(f"{self.data.maya_layer_name}.visibility", state)
