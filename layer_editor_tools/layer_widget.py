@@ -26,7 +26,7 @@ class LayerWidget(QWidget):
         super().__init__()
         self.data = data
         self.setFixedHeight(45)
-        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setAttribute(Qt.WA_StyledBackground, True) # Allow for the background to be a different color
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setSpacing(2)
         self.main_layout.setContentsMargins(4, 4, 4, 4)
@@ -37,11 +37,13 @@ class LayerWidget(QWidget):
     # ------------ SETUP UI ------------
 
     def build_ui(self):
-        # Top row — all controls
+        # Setup all controls
+        # Widget + Layout
         self.controls_row = QWidget()
         self.layout = QHBoxLayout(self.controls_row)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
+        # Buttons/Checkboxes/Dropdowns
         self.color_button = QPushButton()
         self.name_edit = QLineEdit(self.data.maya_layer_name)
         self.select_button = QPushButton("Select All")
@@ -54,12 +56,13 @@ class LayerWidget(QWidget):
         self.path_button = QPushButton("...")
         self.path_toggle = QPushButton(QIcon(ARROW_RIGHT), "")
         self.path_toggle.setFixedWidth(16)
-        self.path_toggle.setCheckable(True)
+        # self.path_toggle.setCheckable(True) # Commenting this out because it's bugging out a bit. Might add it back if it breaks.
         self.export_button = QPushButton("Export")
 
+        # Add all widgets to Layout
         self.layout.addWidget(self.color_button)
         self.layout.addWidget(self.name_edit)
-        self.layout.addWidget(self.select_button)  # add here
+        self.layout.addWidget(self.select_button)
         self.layout.addWidget(self.visibility_checkbox)
         self.layout.addWidget(self.sm_checkbox)
         self.layout.addWidget(self.ucx_checkbox)
