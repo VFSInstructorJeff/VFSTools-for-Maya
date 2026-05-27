@@ -5,7 +5,7 @@ from maya import mel
 from maya import utils
 import maya.OpenMaya as om
 
-from layer_editor_tools import ui as layer_editor_tools_ui
+from layer_editor_tools.old import ui as layer_editor_tools_ui
 from animation_tools import ui as anim_tools_ui
 from leveldesign_tools import ld_tools as ld
 
@@ -124,7 +124,7 @@ def import_LD_mats(*args):
     mat_count = 0
     for material in all_mats:
         if cmds.objExists(material):
-            print(f"{material} already exist.")
+            print(f"{material} already exists.")
             mat_count = mat_count + 1
     
     if (mat_count == 14):

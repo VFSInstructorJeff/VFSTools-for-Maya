@@ -1,4 +1,4 @@
-from layer_editor_tools import ui as layer_editor_ui
+from layer_editor_tools.old import ui as layer_editor_ui
 
 try:
     layer_editor_ui.show_ui()

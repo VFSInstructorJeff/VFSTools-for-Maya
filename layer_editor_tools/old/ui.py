@@ -1,4 +1,4 @@
-from layer_editor_tools import core as layer_editor_tools_core
+from layer_editor_tools.old import core as layer_editor_tools_core
 from maya import cmds
 import maya.mel as mm
 import pickle
