@@ -37,7 +37,6 @@ class VFSLayerData:
     # Using this to have an alternative constructor/a factory method (?) that uses data from somewhere else (the dictionary saved to the .ma file)
     @classmethod
     def from_dict(cls, data):
-        print(f"from_dict received: {data}")
         # Make the color_rbg parameters a tuple again
         data["color_rgb"] = tuple(
             data.get("color_rgb", [1, 1, 1])
