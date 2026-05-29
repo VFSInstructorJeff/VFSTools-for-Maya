@@ -179,9 +179,7 @@ class LayerManager:
         from maya import mel
         mel.eval("updateLayerEditor();")
 
-    # --------------------------------
-    # Node Callbacks
-    # --------------------------------
+    # ------------ NODE CALLBACKS ------------
 
     def _attach_node_callback(self, entry):
         data = entry["data"]
@@ -257,9 +255,7 @@ class LayerManager:
         r, g, b = cmds.colorIndex(index, q=True)
         return (r, g, b)
 
-    # --------------------------------
-    # Session Cache
-    # --------------------------------
+    # ------------ SESSION CACHE ------------
 
     def update_session_cache(self, uuid, export_path):
         """Called whenever a layer's export path changes."""
@@ -270,17 +266,13 @@ class LayerManager:
         if not data.export_path and data.uuid in _session_cache:
             data.export_path = _session_cache[data.uuid]
 
-    # --------------------------------
-    # Save
-    # --------------------------------
+    # ------------ SAVE ------------
 
     def save(self):
         payload = [x["data"].to_dict() for x in self.layers]
         cmds.fileInfo(self.FILE_INFO_KEY, json.dumps(payload))
 
-    # --------------------------------
-    # Load
-    # --------------------------------
+    # ------------ LOAD ------------
 
     def load(self):
         # Read fileInfo, keyed by UUID for quick lookup

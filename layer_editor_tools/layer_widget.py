@@ -56,7 +56,7 @@ class LayerWidget(QWidget):
         self.path_button = QPushButton("...")
         self.path_toggle = QPushButton(QIcon(ARROW_RIGHT), "")
         self.path_toggle.setFixedWidth(16)
-        # self.path_toggle.setCheckable(True) # Commenting this out because it's bugging out a bit. Might add it back if it breaks.
+        self.path_toggle.setCheckable(True)
         self.export_button = QPushButton("Export")
 
         # Add all widgets to Layout
@@ -72,19 +72,22 @@ class LayerWidget(QWidget):
         self.layout.addWidget(self.path_toggle)
         self.layout.addWidget(self.export_button)
 
-        # Bottom row — export path display, hidden by default
+        # Export path display row, hidden by default
         self.path_edit = QLineEdit()
         self.path_edit.setReadOnly(True)
         self.path_edit.setPlaceholderText("No export path set")
         self.path_edit.setFixedHeight(16)
+        # TODO: Set a better style sheet for this line since it's sometimes hard/impossible to read
         self.path_edit.setStyleSheet(
             "font-size: 9px; background: transparent; border: none; color: grey;"
         )
         self.path_edit.setVisible(False)
 
+        # Add widgets to layout
         self.main_layout.addWidget(self.controls_row)
         self.main_layout.addWidget(self.path_edit)
 
+    # Setup each widget to match the data
     def populate_ui(self):
         self.visibility_checkbox.setChecked(self.data.visibility)
         self.sm_checkbox.setChecked(self.data.select_sm)
@@ -109,10 +112,9 @@ class LayerWidget(QWidget):
         self.path_toggle.toggled.connect(self.toggle_path_row)
         self.export_button.clicked.connect(self.export_layer)
 
-    # -----------------------------
-    # Selection
-    # -----------------------------
+    # ------------ SELECTION METHODS ------------
 
+    # TODO: Make dragging layers to reorder work properly (WIP)
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.selected.emit(self)
@@ -124,18 +126,14 @@ class LayerWidget(QWidget):
         self.style().unpolish(self)
         self.style().polish(self)
 
-    # -----------------------------
-    # Path Row Toggle
-    # -----------------------------
+    # ------------ TOGGLE THE EXPORT PATH ROW ------------
 
     def toggle_path_row(self, checked):
         self.path_edit.setVisible(checked)
         self.path_toggle.setIcon(QIcon(ARROW_DOWN) if checked else QIcon(ARROW_RIGHT))
         self.setFixedHeight(75 if checked else 45)
 
-    # -----------------------------
-    # Maya Updates
-    # -----------------------------
+    # ------------ TRACKING MAYA UPDATES ------------
 
     def select_all(self):
         members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
@@ -187,9 +185,7 @@ class LayerWidget(QWidget):
         new_layer_name = cmds.rename(self.data.maya_layer_name, new_name)
         self.data.maya_layer_name = new_layer_name
 
-    # -----------------------------
-    # Export Path
-    # -----------------------------
+    # ------------ EXPORT PATH SETUP ------------
 
     def pick_export_path(self):
         path = QFileDialog.getExistingDirectory(
@@ -203,9 +199,9 @@ class LayerWidget(QWidget):
             self.path_edit.setText(path)
             self.path_changed.emit(self.data.uuid, path)
 
-    # -----------------------------
-    # Export
-    # -----------------------------
+    # ------------ EXPORT ------------
+
+    # TODO: Add settings like smoothing groups
 
     def _move_to_origin(self, members):
         """Move each object to (0,0,0) and return their original positions."""
@@ -264,9 +260,7 @@ class LayerWidget(QWidget):
             else:
                 cmds.select(clear=True)
 
-    # -----------------------------
-    # Color
-    # -----------------------------
+    # ------------ COLOR FUNCTIONS ------------
 
     def pick_color(self):
         color = QColorDialog.getColor()
@@ -300,9 +294,7 @@ class LayerWidget(QWidget):
             }}
         """)
 
-    # -----------------------------
-    # Drag
-    # -----------------------------
+    # ------------ DRAG FUNCTION ------------
 
     def mouseMoveEvent(self, e):
         if e.buttons() == Qt.LeftButton:
