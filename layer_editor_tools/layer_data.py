@@ -34,7 +34,7 @@ class VFSLayerData:
         return data
 
     # @classmethod means it's a method that is bound to the class instead of the instances
-    # Using this to have an alternative constructor/a factory method (?) that uses data from somewhere else (the dictionary saved to the .ma file)
+    # Using this to have an alternative constructor/a factory method that uses data from somewhere else (the dictionary saved to the .ma file)
     @classmethod
     def from_dict(cls, data):
         # Make the color_rbg parameters a tuple again

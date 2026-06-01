@@ -1,4 +1,5 @@
 # ------------ IMPORT LIBRARIES/MODULES ------------
+import webbrowser
 from pathlib import Path
 
 from maya import cmds, mel
@@ -7,26 +8,29 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QDrag, QIcon
 from PySide6.QtWidgets import (QWidget, QPushButton, QLineEdit, QHBoxLayout,
                                 QVBoxLayout, QCheckBox, QComboBox, QColorDialog,
-                                QFileDialog, QMessageBox)
+                                QFileDialog, QMessageBox, QMenu, QFrame)
 
 from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.utils import hex_to_rgb, rgb_to_hex, shifted_background_color
-from layer_editor_tools.constants import ARROW_RIGHT, ARROW_DOWN
+from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN
+
+# Layer display types and their labels for the cycling button
+LAYER_MODES = ["N", "T", "R"]
+BUG_REPORT_URL = "https://forms.gle/2jvAfG3b7qkrEswr9"
 
 # ------------ LAYER WIDGET CLASS ------------
 
 class LayerWidget(QWidget):
 
-    # ------------ CREATE SIGNALS ------------
-    # Signals belong to the Emitter
-    selected = Signal(object)   # Signal passes/transmits an object
-    path_changed = Signal(str, str)  # Signal transmits 2 strings: uuid, export_path
+    # ------------ SIGNALS ------------
+    selected = Signal(object)           # Emitted when the layer is selected
+    path_changed = Signal(str, str)     # Emitted when export path changes: uuid, export_path
 
     def __init__(self, data: VFSLayerData):
         super().__init__()
         self.data = data
         self.setFixedHeight(45)
-        self.setAttribute(Qt.WA_StyledBackground, True) # Allow for the background to be a different color
+        self.setAttribute(Qt.WA_StyledBackground, True)
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setSpacing(2)
         self.main_layout.setContentsMargins(4, 4, 4, 4)
@@ -34,158 +38,261 @@ class LayerWidget(QWidget):
         self.populate_ui()
         self.connect_signals()
 
-    # ------------ SETUP UI ------------
+    # ------------ BUILD UI ------------
 
     def build_ui(self):
-        # Setup all controls
-        # Widget + Layout
-        self.controls_row = QWidget()
-        self.layout = QHBoxLayout(self.controls_row)
-        self.layout.setContentsMargins(0, 0, 0, 0)
 
-        # Buttons/Checkboxes/Dropdowns
+        # ---- TOP ROW ----
+        self.top_row = QWidget()
+        self.top_layout = QHBoxLayout(self.top_row)
+        self.top_layout.setContentsMargins(0, 0, 0, 0)
+
         self.color_button = QPushButton()
+        self.color_button.setFixedWidth(20)
+
         self.name_edit = QLineEdit(self.data.maya_layer_name)
-        self.select_button = QPushButton("Select All")
-        self.visibility_checkbox = QCheckBox("Vis")
-        self.sm_checkbox = QCheckBox("SM")
-        self.ucx_checkbox = QCheckBox("UCX")
-        self.export_dropdown = QComboBox()
-        self.export_dropdown.addItems(["Single File", "Multiple File"])
-        self.origin_checkbox = QCheckBox("Origin")
-        self.path_button = QPushButton("...")
-        self.path_toggle = QPushButton(QIcon(ARROW_RIGHT), "")
-        self.path_toggle.setFixedWidth(16)
-        self.path_toggle.setCheckable(True)
+
+        self.visibility_button = QPushButton(QIcon(VISIBLE), "")
+        self.visibility_button.setFixedWidth(24)
+        self.visibility_button.setCheckable(True)
+
+        self.mode_button = QPushButton(LAYER_MODES[self.data.display_type])
+        self.mode_button.setFixedWidth(24)
+
+        self.export_toggle = QPushButton(QIcon(CONFIG_DROPDOWN), "")
+        self.export_toggle.setFixedWidth(24)
+        self.export_toggle.setCheckable(True)
+
         self.export_button = QPushButton("Export")
+        self.export_button.setFixedWidth(60)
 
-        # Add all widgets to Layout
-        self.layout.addWidget(self.color_button)
-        self.layout.addWidget(self.name_edit)
-        self.layout.addWidget(self.select_button)
-        self.layout.addWidget(self.visibility_checkbox)
-        self.layout.addWidget(self.sm_checkbox)
-        self.layout.addWidget(self.ucx_checkbox)
-        self.layout.addWidget(self.export_dropdown)
-        self.layout.addWidget(self.origin_checkbox)
-        self.layout.addWidget(self.path_button)
-        self.layout.addWidget(self.path_toggle)
-        self.layout.addWidget(self.export_button)
+        self.top_layout.addWidget(self.color_button)
+        self.top_layout.addWidget(self.name_edit)
+        self.top_layout.addWidget(self.visibility_button)
+        self.top_layout.addWidget(self.mode_button)
+        self.top_layout.addWidget(self.export_toggle)
+        self.top_layout.addWidget(self.export_button)
 
-        # Export path display row, hidden by default
+        # --- SEPARATOR ---
+        self.separator = QFrame()
+        self.separator.setFrameShape(QFrame.HLine)
+        self.separator.setStyleSheet("color: rgba(255, 255, 255, 40);")
+        self.separator.setVisible(False)
+
+
+        # ---- BOTTOM ROW (export settings, hidden by default) ----
+        self.bottom_row = QWidget()
+        self.bottom_layout = QHBoxLayout(self.bottom_row)
+        self.bottom_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.path_button = QPushButton(QIcon(FOLDER_OPEN), "")
+        self.path_button.setFixedWidth(24)
+
         self.path_edit = QLineEdit()
         self.path_edit.setReadOnly(True)
         self.path_edit.setPlaceholderText("No export path set")
-        self.path_edit.setFixedHeight(16)
-        # TODO: Set a better style sheet for this line since it's sometimes hard/impossible to read
-        self.path_edit.setStyleSheet(
-            "font-size: 9px; background: transparent; border: none; color: grey;"
-        )
-        self.path_edit.setVisible(False)
 
-        # Add widgets to layout
-        self.main_layout.addWidget(self.controls_row)
-        self.main_layout.addWidget(self.path_edit)
+        self.export_dropdown = QComboBox()
+        self.export_dropdown.addItems(["Single File", "Multiple File"])
+        self.export_dropdown.setFixedWidth(100)
 
-    # Setup each widget to match the data
+        self.origin_checkbox = QCheckBox("Origin")
+
+        self.bottom_layout.addWidget(self.path_button)
+        self.bottom_layout.addWidget(self.path_edit)
+        self.bottom_layout.addWidget(self.export_dropdown)
+        self.bottom_layout.addWidget(self.origin_checkbox)
+
+        self.bottom_row.setVisible(False)
+
+        # ---- ADD ROWS TO MAIN LAYOUT ----
+        self.main_layout.addWidget(self.top_row)
+        self.main_layout.addWidget(self.separator)
+        self.main_layout.addWidget(self.bottom_row)
+
     def populate_ui(self):
-        self.visibility_checkbox.setChecked(self.data.visibility)
-        self.sm_checkbox.setChecked(self.data.select_sm)
-        self.ucx_checkbox.setChecked(self.data.select_ucx)
+        # Visibility button reflects current state
+        self.visibility_button.setChecked(not self.data.visibility)
+        self.visibility_button.setIcon(QIcon(HIDDEN) if not self.data.visibility else QIcon(VISIBLE))
+
+        self.mode_button.setText(LAYER_MODES[self.data.display_type])
         self.origin_checkbox.setChecked(self.data.use_origin)
         self.export_dropdown.setCurrentText(self.data.export_mode)
+
         if self.data.export_path:
             self.path_edit.setText(self.data.export_path)
-            self.path_toggle.setChecked(True)
+            self.export_toggle.setChecked(True)
+            self.toggle_export_row(True)
+
         self.apply_color_styles()
 
     def connect_signals(self):
         self.color_button.clicked.connect(self.pick_color)
-        self.select_button.clicked.connect(self.select_all)
-        self.visibility_checkbox.toggled.connect(self.on_visibility_changed)
-        self.sm_checkbox.toggled.connect(self.on_sm_changed)
-        self.ucx_checkbox.toggled.connect(self.on_ucx_changed)
-        self.origin_checkbox.toggled.connect(self.on_origin_changed)
-        self.export_dropdown.currentTextChanged.connect(self.on_export_mode_changed)
         self.name_edit.editingFinished.connect(self.rename_layer)
-        self.path_button.clicked.connect(self.pick_export_path)
-        self.path_toggle.toggled.connect(self.toggle_path_row)
+        self.visibility_button.toggled.connect(self.on_visibility_changed)
+        self.mode_button.clicked.connect(self.cycle_layer_mode)
+        self.export_toggle.toggled.connect(self.toggle_export_row)
         self.export_button.clicked.connect(self.export_layer)
+        self.path_button.clicked.connect(self.pick_export_path)
+        self.export_dropdown.currentTextChanged.connect(self.on_export_mode_changed)
+        self.origin_checkbox.toggled.connect(self.on_origin_changed)
 
-    # ------------ SELECTION METHODS ------------
+    # ------------ SELECTION ------------
 
-    # TODO: Make dragging layers to reorder work properly (WIP)
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.selected.emit(self)
+        elif event.button() == Qt.RightButton:
+            self.show_context_menu(event.globalPosition().toPoint())
         super().mousePressEvent(event)
 
     def set_selected(self, is_selected: bool):
-        """Toggle visual selected state. Style via LayerWidget[selected='true'] in stylesheet."""
+        """Toggle visual selected state."""
         self.setProperty("selected", is_selected)
         self.style().unpolish(self)
         self.style().polish(self)
 
-    # ------------ TOGGLE THE EXPORT PATH ROW ------------
+    # ------------ CONTEXT MENU ------------
 
-    def toggle_path_row(self, checked):
-        self.path_edit.setVisible(checked)
-        self.path_toggle.setIcon(QIcon(ARROW_DOWN) if checked else QIcon(ARROW_RIGHT))
+    def show_context_menu(self, pos):
+        menu = QMenu(self)
+
+        # Title — disabled so it acts as a label
+        title = menu.addAction("VFS Layer Tools")
+        title.setEnabled(False)
+        menu.addSeparator()
+
+        menu.addAction("Select All", self.select_all)
+        menu.addAction("Select SM", self.select_sm)
+        menu.addAction("Select UCX", self.select_ucx)
+        menu.addSeparator()
+        menu.addAction("Add To Layer", self.add_selection_to_layer)
+        menu.addAction("Remove From Layer", self.remove_selection_from_layer)
+        menu.addAction("Empty Layer", self.empty_layer)
+        menu.addSeparator()
+        menu.addAction("Help", self.open_help)           # TODO: Add documentation URL
+        menu.addAction("Report A Bug", self.report_bug)
+
+        menu.exec(pos)
+
+    # ------------ EXPORT ROW TOGGLE ------------
+
+    def toggle_export_row(self, checked):
+        self.bottom_row.setVisible(checked)
+        self.separator.setVisible(checked)
+        self.export_toggle.setIcon(QIcon(CONFIG_DROPDOWN))
         self.setFixedHeight(75 if checked else 45)
 
-    # ------------ TRACKING MAYA UPDATES ------------
+    # ------------ MAYA UPDATES ------------
+
+    def on_visibility_changed(self, hidden):
+        # Button is checked when layer is HIDDEN, so we invert
+        self.data.visibility = not hidden
+        cmds.setAttr(f"{self.data.maya_layer_name}.visibility", not hidden)
+        self.visibility_button.setIcon(QIcon(HIDDEN) if hidden else QIcon(VISIBLE))
+        mel.eval("updateLayerEditor();")
+
+    def cycle_layer_mode(self):
+        # Cycle through Normal (0) -> Template (1) -> Reference (2) -> Normal (0)
+        next_mode = (self.data.display_type + 1) % len(LAYER_MODES)
+        self.data.display_type = next_mode
+        self.mode_button.setText(LAYER_MODES[next_mode])
+        cmds.setAttr(f"{self.data.maya_layer_name}.displayType", next_mode)
+        mel.eval("updateLayerEditor();")
+
+    def on_export_mode_changed(self, text):
+        self.data.export_mode = text
+
+    def on_origin_changed(self, state):
+        self.data.use_origin = state
+
+    def rename_layer(self):
+        new_name = self.name_edit.text()
+        if not cmds.objExists(self.data.maya_layer_name):
+            return
+        new_layer_name = cmds.rename(self.data.maya_layer_name, new_name)
+        self.data.maya_layer_name = new_layer_name
+
+    # ------------ CONTEXT MENU ACTIONS ------------
 
     def select_all(self):
+        """Select all meshes in this layer."""
         members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
         if members:
             cmds.select(members)
         else:
             cmds.select(clear=True)
-    
-    def on_visibility_changed(self, state):
-        self.data.visibility = state
-        cmds.setAttr(f"{self.data.maya_layer_name}.visibility", state)
-        mel.eval("updateLayerEditor();")
 
-    def on_sm_changed(self, state):
-        self.data.select_sm = state
-        # TODO: Add logic to display only static meshes, no UCX
-
-    def on_ucx_changed(self, state):
-        self.data.select_ucx = state
-        if state:
-            members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
-            ucx_members = []
-            for obj in members:
-                # Check children for UCX meshes
-                children = cmds.listRelatives(obj, allDescendents=True, fullPath=True) or []
-                for child in children:
-                    if child.split("|")[-1].startswith("UCX_"):
-                        ucx_members.append(child)
-
-            if ucx_members:
-                cmds.select(ucx_members)
-            else:
-                cmds.select(clear=True)
+    def select_sm(self):
+        """Select all non-UCX meshes in this layer."""
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
+        sm_members = []
+        for obj in members:
+            all_nodes = [obj] + (cmds.listRelatives(obj, allDescendents=True, fullPath=True) or [])
+            for node in all_nodes:
+                if not node.split("|")[-1].startswith("UCX_"):
+                    # Only include transform nodes, not shapes
+                    if cmds.nodeType(node) == "transform":
+                        sm_members.append(node)
+        if sm_members:
+            cmds.select(sm_members)
         else:
             cmds.select(clear=True)
 
-    def on_origin_changed(self, state):
-        self.data.use_origin = state
+    def select_ucx(self):
+        """Select all UCX meshes in this layer."""
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
+        ucx_members = []
+        for obj in members:
+            children = cmds.listRelatives(obj, allDescendents=True, fullPath=True) or []
+            for child in children:
+                if child.split("|")[-1].startswith("UCX_"):
+                    ucx_members.append(child)
+        if ucx_members:
+            cmds.select(ucx_members)
+        else:
+            cmds.select(clear=True)
 
-    def on_export_mode_changed(self, text):
-        self.data.export_mode = text
-
-    def rename_layer(self):
-        new_name = self.name_edit.text()
-
-        if not cmds.objExists(self.data.maya_layer_name):
+    def add_selection_to_layer(self):
+        """Add currently selected Maya objects to this layer."""
+        selection = cmds.ls(selection=True)
+        if not selection:
+            QMessageBox.warning(self, "Add To Layer", "Nothing is currently selected.")
             return
+        cmds.editDisplayLayerMembers(self.data.maya_layer_name, *selection)
 
-        new_layer_name = cmds.rename(self.data.maya_layer_name, new_name)
-        self.data.maya_layer_name = new_layer_name
+    def remove_selection_from_layer(self):
+        """Remove currently selected Maya objects from this layer."""
+        selection = cmds.ls(selection=True)
+        if not selection:
+            QMessageBox.warning(self, "Remove From Layer", "Nothing is currently selected.")
+            return
+        # Moving objects to defaultLayer effectively removes them from the current layer
+        cmds.editDisplayLayerMembers("defaultLayer", *selection)
 
-    # ------------ EXPORT PATH SETUP ------------
+    def empty_layer(self):
+        """Remove all objects from this layer."""
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
+        if not members:
+            QMessageBox.warning(self, "Empty Layer", "Layer is already empty.")
+            return
+        confirm = QMessageBox.question(
+            self,
+            "Empty Layer",
+            f"Remove all {len(members)} object(s) from {self.data.maya_layer_name}?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if confirm == QMessageBox.Yes:
+            cmds.editDisplayLayerMembers("defaultLayer", *members)
+
+    def open_help(self):
+        # TODO: Add documentation URL
+        pass
+
+    def report_bug(self):
+        webbrowser.open(BUG_REPORT_URL)
+
+    # ------------ EXPORT PATH ------------
 
     def pick_export_path(self):
         path = QFileDialog.getExistingDirectory(
@@ -193,15 +300,12 @@ class LayerWidget(QWidget):
             "Select Export Folder",
             self.data.export_path or ""
         )
-
         if path:
             self.data.export_path = path
             self.path_edit.setText(path)
             self.path_changed.emit(self.data.uuid, path)
 
     # ------------ EXPORT ------------
-
-    # TODO: Add settings like smoothing groups
 
     def _move_to_origin(self, members):
         """Move each object to (0,0,0) and return their original positions."""
@@ -228,14 +332,11 @@ class LayerWidget(QWidget):
             return
 
         members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True)
-
         if not members:
             QMessageBox.warning(self, "Export Failed", f"No objects found in layer {self.data.maya_layer_name}.")
             return
 
         previous_selection = cmds.ls(selection=True)
-
-        # Move to origin if needed, store positions for restore
         original_positions = self._move_to_origin(members) if self.data.use_origin else {}
 
         try:
@@ -251,20 +352,17 @@ class LayerWidget(QWidget):
                     cmds.file(export_path, force=True, options="v=0", type="FBX export", exportSelected=True)
 
         finally:
-            # Always restore positions and selection, even if export fails
             if original_positions:
                 self._restore_positions(original_positions)
-
             if previous_selection:
                 cmds.select(previous_selection)
             else:
                 cmds.select(clear=True)
 
-    # ------------ COLOR FUNCTIONS ------------
+    # ------------ COLOR ------------
 
     def pick_color(self):
         color = QColorDialog.getColor()
-
         if not color.isValid():
             return
 
@@ -294,7 +392,7 @@ class LayerWidget(QWidget):
             }}
         """)
 
-    # ------------ DRAG FUNCTION ------------
+    # ------------ DRAG ------------
 
     def mouseMoveEvent(self, e):
         if e.buttons() == Qt.LeftButton:

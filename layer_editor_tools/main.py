@@ -32,7 +32,7 @@ class MainWindow(mixin, QWidget):
         self.setObjectName(self.UI_OBJECT_NAME)
         self.setWindowTitle("VFS Layer Tools")
         self.setAcceptDrops(True)
-        self.resize(900, 600)
+        self.resize(600, 600)
 
         self.window_layout = QVBoxLayout(self)
 

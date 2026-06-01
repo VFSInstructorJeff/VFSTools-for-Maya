@@ -27,7 +27,7 @@ class LayerManager:
     # ------------ CREATE LAYER METHOD ------------
 
     # Pass only name and if it should be empty or if it should contain the user selection
-    def create_layer(self, empty=True, name="Layer"):
+    def create_layer(self, empty=True, name="layer"):
         self._creating = True
         try:
             # Make Maya layer
