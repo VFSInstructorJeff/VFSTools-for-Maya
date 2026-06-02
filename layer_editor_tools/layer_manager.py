@@ -4,8 +4,11 @@ import json
 from maya import cmds
 from maya.api import OpenMaya as om
 
+from PySide6.QtGui import QIcon
+
 from layer_editor_tools.layer_data import VFSLayerData      # Import data
 from layer_editor_tools.layer_widget import LayerWidget     # Import UI
+from layer_editor_tools.constants import HIDDEN, VISIBLE    # Import icons
 
 # _var is to indicate a private var
 # Putting this dict at module level so the information is saved even if the tool is closed
@@ -219,12 +222,14 @@ class LayerManager:
                 maya_vis = cmds.getAttr(f"{data.maya_layer_name}.visibility")
                 if data.visibility != maya_vis:
                     data.visibility = maya_vis
-                    widget.visibility_checkbox.blockSignals(True)
-                    widget.visibility_checkbox.setChecked(maya_vis)
-                    widget.visibility_checkbox.blockSignals(False)
+                    widget.visibility_button.blockSignals(True)
+                    widget.visibility_button.setChecked(not maya_vis)
+                    widget.visibility_button.setIcon(QIcon(HIDDEN) if not maya_vis else QIcon(VISIBLE))
+                    widget.visibility_button.blockSignals(False)
 
             elif attr_name == "dt":  # displayType
                 data.display_type = cmds.getAttr(f"{data.maya_layer_name}.displayType")
+                widget.mode_button.setText(["N", "T", "R"][data.display_type])
 
             elif attr_name == "c":  # index color
                 color_index = cmds.getAttr(f"{data.maya_layer_name}.color")

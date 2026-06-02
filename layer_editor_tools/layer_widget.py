@@ -12,11 +12,10 @@ from PySide6.QtWidgets import (QWidget, QPushButton, QLineEdit, QHBoxLayout,
 
 from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.utils import hex_to_rgb, rgb_to_hex, shifted_background_color
-from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN
+from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN, BUG_REPORT_URL, HELP, BUG_REPORT
 
 # Layer display types and their labels for the cycling button
 LAYER_MODES = ["N", "T", "R"]
-BUG_REPORT_URL = "https://forms.gle/2jvAfG3b7qkrEswr9"
 
 # ------------ LAYER WIDGET CLASS ------------
 
@@ -170,7 +169,7 @@ class LayerWidget(QWidget):
         menu.addAction("Remove From Layer", self.remove_selection_from_layer)
         menu.addAction("Empty Layer", self.empty_layer)
         menu.addSeparator()
-        menu.addAction("Help", self.open_help)           # TODO: Add documentation URL
+        menu.addAction("Help", self.open_help)
         menu.addAction("Report A Bug", self.report_bug)
 
         menu.exec(pos)
@@ -216,23 +215,29 @@ class LayerWidget(QWidget):
     # ------------ CONTEXT MENU ACTIONS ------------
 
     def select_all(self):
-        """Select all meshes in this layer."""
-        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
-        if members:
-            cmds.select(members)
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True) or []
+        all_objects = []
+        for obj in members:
+            all_objects.append(obj)
+            descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True) or []
+            all_objects.extend(descendants)
+        if all_objects:
+            cmds.select(all_objects)
         else:
             cmds.select(clear=True)
 
     def select_sm(self):
-        """Select all non-UCX meshes in this layer."""
-        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True) or []
         sm_members = []
         for obj in members:
             all_nodes = [obj] + (cmds.listRelatives(obj, allDescendents=True, fullPath=True) or [])
             for node in all_nodes:
-                if not node.split("|")[-1].startswith("UCX_"):
-                    # Only include transform nodes, not shapes
-                    if cmds.nodeType(node) == "transform":
+                short_name = node.split("|")[-1]
+                if not short_name.startswith("UCX_") and cmds.nodeType(node) == "transform":
+                    # Only include if it has a shape as a direct child
+                    children = cmds.listRelatives(node, children=True, fullPath=True) or []
+                    has_shape = any(cmds.nodeType(c) in ("mesh", "nurbsSurface", "nurbsCurve", "lattice") for c in children)
+                    if has_shape:
                         sm_members.append(node)
         if sm_members:
             cmds.select(sm_members)
@@ -241,7 +246,7 @@ class LayerWidget(QWidget):
 
     def select_ucx(self):
         """Select all UCX meshes in this layer."""
-        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True) or []
         ucx_members = []
         for obj in members:
             children = cmds.listRelatives(obj, allDescendents=True, fullPath=True) or []
@@ -272,7 +277,7 @@ class LayerWidget(QWidget):
 
     def empty_layer(self):
         """Remove all objects from this layer."""
-        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True) or []
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True) or []
         if not members:
             QMessageBox.warning(self, "Empty Layer", "Layer is already empty.")
             return
@@ -331,7 +336,7 @@ class LayerWidget(QWidget):
             QMessageBox.warning(self, "Export Failed", f"Export path does not exist:\n{self.data.export_path}")
             return
 
-        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True)
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True)
         if not members:
             QMessageBox.warning(self, "Export Failed", f"No objects found in layer {self.data.maya_layer_name}.")
             return
