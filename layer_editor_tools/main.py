@@ -1,4 +1,5 @@
 from typing import Optional
+import webbrowser
 
 from maya import cmds
 from maya.api import OpenMaya as om
@@ -7,7 +8,7 @@ from maya.app.general.mayaMixin import (MayaQWidgetDockableMixin as mixin)
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QScrollArea, QLabel
 
 from shiboken6 import isValid
 
@@ -42,7 +43,19 @@ class MainWindow(mixin, QWidget):
 
         self.layer_container = QWidget()
         self.layer_layout = QVBoxLayout(self.layer_container)
-        self.window_layout.addWidget(self.layer_container)
+        self.layer_layout.setAlignment(Qt.AlignTop)
+        self.layer_layout.setSpacing(2)
+        self.layer_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidget(self.layer_container)
+        self.scroll_area.setWidgetResizable(True)                               # Make container stretch to fill the scroll area width
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)    # No horizontal scrollbar since layers should always
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)       # Scrollbar only appears when there's more layers than the window can show
+        self.window_layout.addWidget(self.scroll_area)
+
+        self.tool_version = QLabel("VFS Layer Tools v1.0.0")
+        self.window_layout.addWidget(self.tool_version)
 
         self.layer_manager = LayerManager()
         self._refreshing = False
@@ -77,17 +90,28 @@ class MainWindow(mixin, QWidget):
     # --------------------------------
 
     def setup_toolbar(self):
-        move_up      = self.toolbar.addAction(QIcon(LAYER_UP), "")
-        move_down    = self.toolbar.addAction(QIcon(LAYER_DOWN), "")
         new_layer    = self.toolbar.addAction(QIcon(LAYER_NEW), "")
         add_layer    = self.toolbar.addAction(QIcon(LAYER_ADD), "")
         delete_layer = self.toolbar.addAction(QIcon(LAYER_DELETE), "")
+        move_up      = self.toolbar.addAction(QIcon(LAYER_UP), "")
+        move_down    = self.toolbar.addAction(QIcon(LAYER_DOWN), "")
 
-        move_up.triggered.connect(self.move_selected_up)
-        move_down.triggered.connect(self.move_selected_down)
         new_layer.triggered.connect(lambda: self.add_layer(empty=True))
         add_layer.triggered.connect(lambda: self.add_layer(empty=False))
         delete_layer.triggered.connect(self.delete_selected_layer)
+        move_up.triggered.connect(self.move_selected_up)
+        move_down.triggered.connect(self.move_selected_down)
+
+        # Push subsequent buttons to the right
+        spacer = QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.toolbar.addWidget(spacer)
+
+        help_btn = self.toolbar.addAction(QIcon(HELP), "")
+        bug_btn = self.toolbar.addAction(QIcon(BUG_REPORT), "")
+
+        help_btn.triggered.connect(lambda: webbrowser.open(HELP_URL) if HELP_URL else None) # TODO: Add documentation
+        bug_btn.triggered.connect(lambda: webbrowser.open(BUG_REPORT_URL))
 
     # --------------------------------
     # Layer Operations
