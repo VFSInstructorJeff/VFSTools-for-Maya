@@ -325,7 +325,7 @@ global proc shelf_VFS_Tools () {
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
-        -flexibleWidthValue 32
+        -flexibleWidthValue 33
         -enable 1
         -width 36
         -height 34
@@ -346,8 +346,8 @@ global proc shelf_VFS_Tools () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "FKSingle.png" 
-        -image1 "FKSingle.png" 
+        -image "FKSingleMirrorAnim.png" 
+        -image1 "FKSingleMirrorAnim.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
@@ -359,7 +359,7 @@ global proc shelf_VFS_Tools () {
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
-        -flexibleWidthValue 32
+        -flexibleWidthValue 33
         -enable 1
         -width 36
         -height 34
@@ -380,8 +380,8 @@ global proc shelf_VFS_Tools () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "FKAllChildren.png" 
-        -image1 "FKAllChildren.png" 
+        -image "FKAllChildrenMirrorAnim.png" 
+        -image1 "FKAllChildrenMirrorAnim.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
@@ -414,8 +414,8 @@ global proc shelf_VFS_Tools () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "IKSingle.png" 
-        -image1 "IKSingle.png" 
+        -image "IKSingleMirrorAnim.png" 
+        -image1 "IKSingleMirrorAnim.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
@@ -427,7 +427,7 @@ global proc shelf_VFS_Tools () {
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
-        -flexibleWidthValue 32
+        -flexibleWidthValue 33
         -enable 1
         -width 36
         -height 34
@@ -448,8 +448,8 @@ global proc shelf_VFS_Tools () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "C:/Users/lrenis/Documents/maya/VFSTools/icons/FKSingleInverseMirrorAnim.png" 
-        -image1 "C:/Users/lrenis/Documents/maya/VFSTools/icons/FKSingleInverseMirrorAnim.png" 
+        -image "FKSingleInverseMirrorAnim.png" 
+        -image1 "FKSingleInverseMirrorAnim.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
@@ -461,7 +461,7 @@ global proc shelf_VFS_Tools () {
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
-        -flexibleWidthValue 32
+        -flexibleWidthValue 33
         -enable 1
         -width 36
         -height 34
@@ -482,8 +482,8 @@ global proc shelf_VFS_Tools () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "C:/Users/lrenis/Documents/maya/VFSTools/icons/FKAllChildrenInverseMirrorAnim.png" 
-        -image1 "C:/Users/lrenis/Documents/maya/VFSTools/icons/FKAllChildrenInverseMirrorAnim.png" 
+        -image "FKAllChildrenInverseMirrorAnim.png" 
+        -image1 "FKAllChildrenInverseMirrorAnim.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
@@ -495,7 +495,7 @@ global proc shelf_VFS_Tools () {
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
-        -flexibleWidthValue 32
+        -flexibleWidthValue 33
         -enable 1
         -width 36
         -height 34
@@ -516,8 +516,8 @@ global proc shelf_VFS_Tools () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "C:/Users/lrenis/Documents/maya/VFSTools/icons/IKSingleInverseMirrorAnim.png" 
-        -image1 "C:/Users/lrenis/Documents/maya/VFSTools/icons/IKSingleInverseMirrorAnim.png" 
+        -image "IKSingleInverseMirrorAnim.png" 
+        -image1 "IKSingleInverseMirrorAnim.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
@@ -529,7 +529,7 @@ global proc shelf_VFS_Tools () {
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
-        -flexibleWidthValue 32
+        -flexibleWidthValue 33
         -enable 1
         -width 36
         -height 34
@@ -550,8 +550,8 @@ global proc shelf_VFS_Tools () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "C:/Users/lrenis/Documents/maya/VFSTools/icons/IKAllChildrenInverseAnimMirror.png" 
-        -image1 "C:/Users/lrenis/Documents/maya/VFSTools/icons/IKAllChildrenInverseAnimMirror.png" 
+        -image "IKAllChildrenInverseAnimMirror.png" 
+        -image1 "IKAllChildrenInverseAnimMirror.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
@@ -563,7 +563,7 @@ global proc shelf_VFS_Tools () {
     shelfButton
         -enableCommandRepeat 1
         -flexibleWidthType 3
-        -flexibleWidthValue 32
+        -flexibleWidthValue 33
         -enable 1
         -width 36
         -height 34
@@ -584,8 +584,8 @@ global proc shelf_VFS_Tools () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "C:/Users/lrenis/Documents/maya/VFSTools/icons/FKCenterSelectedMirror.png" 
-        -image1 "C:/Users/lrenis/Documents/maya/VFSTools/icons/FKCenterSelectedMirror.png" 
+        -image "FKCenterSelectedMirror.png" 
+        -image1 "FKCenterSelectedMirror.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
