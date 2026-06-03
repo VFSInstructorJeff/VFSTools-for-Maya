@@ -337,6 +337,7 @@ class LayerWidget(QWidget):
             return
 
         members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True)
+        members = [obj for obj in members if cmds.nodeType(obj) == "transform"]
         if not members:
             QMessageBox.warning(self, "Export Failed", f"No objects found in layer {self.data.maya_layer_name}.")
             return
