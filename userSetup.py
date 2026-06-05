@@ -12,10 +12,9 @@ from leveldesign_tools import ld_tools as ld
 def load_hotkeys(*args):
     hotkeys_dir = os.path.join(os.path.expanduser('~'), "Documents", "maya", "VFSTools", "VFS_Hotkeys.mhk")
 
-    hksets = cmds.hotkeySet(q=True, hsa=True)
     vfs_hotkeys_exist = cmds.hotkeySet("VFS_Hotkeys", q=True, ex=True)
 
-    if (vfs_hotkeys_exist is True):
+    if vfs_hotkeys_exist:
         vfs_hotkeys_current = cmds.hotkeySet("VFS_Hotkeys", q=True, cu=True)
         if (vfs_hotkeys_current == "VFS_Hotkeys"):
             print("VFS Hotkeys are already setup!")
