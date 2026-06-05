@@ -10,13 +10,11 @@ from animation_tools import ui as anim_tools_ui
 from leveldesign_tools import ld_tools as ld
 
 def load_hotkeys(*args):
-    hotkeys_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/VFS_Hotkeys.mhk"
-    hotkeys_dir = hotkeys_dir.replace("\\", "/")
+    hotkeys_dir = os.path.join(os.path.expanduser('~'), "Documents", "maya", "VFSTools", "VFS_Hotkeys.mhk")
 
-    hksets = cmds.hotkeySet(q=True, hsa=True)
     vfs_hotkeys_exist = cmds.hotkeySet("VFS_Hotkeys", q=True, ex=True)
 
-    if (vfs_hotkeys_exist is True):
+    if vfs_hotkeys_exist:
         vfs_hotkeys_current = cmds.hotkeySet("VFS_Hotkeys", q=True, cu=True)
         if (vfs_hotkeys_current == "VFS_Hotkeys"):
             print("VFS Hotkeys are already setup!")
@@ -39,7 +37,7 @@ def create_script_jobs():
     cmds.scriptJob(event=["NewSceneOpened", on_scene_change], protected=True)
     cmds.scriptJob(event=["SceneOpened", on_scene_change], protected=True)
     cmds.scriptJob(event=["SceneSaved", on_scene_change], protected=True)
-    #cmds.scriptJob( e=["DagObjectCreated", UCX_name_fix], protected=True)
+    #cmds.scriptJob( e=["DagObjectCreated", UCX_name_fix], protected=True) # Not entirely reliable. Fixing it is not a priority right now, so commenting it out.
 
 def UCX_name_fix():
     # Define prefix and suffix
@@ -56,7 +54,7 @@ def UCX_name_fix():
         selection_name = selection_name[0]
     
     # Get the obj's children
-    children_ls = cmds.listRelatives(children=True, type='transform', fullPath=True)
+    children_ls = cmds.listRelatives(selection_name, children=True, type='transform', fullPath=True)
     # Check if children are null (e.g.: creating a regular polyCube)
     if (children_ls == None):
         return
@@ -92,8 +90,10 @@ def merge_namespaces_on_import(*args):
     cmds.namespace(setNamespace=':')
     namespaces = [namespace for namespace in cmds.namespaceInfo(listOnlyNamespaces=True) if namespace != "UI" and namespace != "shared"] 
     for namespace in namespaces:
-        cmds.namespace(removeNamespace = namespace, mergeNamespaceWithRoot = True)
-        print(namespace + " was merged with Root.")
+        try:
+            cmds.namespace(removeNamespace=namespace, mergeNamespaceWithRoot=True)
+        except Exception as e:
+            print(f"Could not merge namespace '{namespace}': {e}")
 
 def reopen_mixamo_editor(*args):
     if cmds.window("mixamoEditorWindow", exists=True):
@@ -105,15 +105,14 @@ def reopen_mixamo_editor(*args):
 def import_workspaces(*args):
     # Create the absolute workspaces path to import from (.../VFSTools/)
     print("Importing workspaces...")
-    workspaces_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/workspaces"
-    workspaces_dir = workspaces_dir.replace("\\", "/")
+    workspaces_dir = os.path.join(os.path.expanduser('~'), "Documents", "maya", "VFSTools", "workspaces")
     
     # Add all files in workspaces folder to a list
     workspaces = os.listdir(workspaces_dir)
 
     # For each workspace item in the workspaces folder list, import it 
     for workspace in workspaces:
-        workspace_str = workspaces_dir + r"/" + workspace
+        workspace_str = os.path.join(workspaces_dir, workspace)
         cmds.workspaceLayoutManager(i=workspace_str)
 
 def import_LD_mats(*args):
@@ -133,33 +132,31 @@ def import_LD_mats(*args):
         check_mat_duplicates()
         return
     else:
-        mats_dir = str(os.path.expanduser('~')) + r"/Documents/maya/VFSTools/MayaLDToolsMaterials.ma"
-        mats_dir = mats_dir.replace("\\", "/")
+        mats_dir = os.path.join(os.path.expanduser('~'), "Documents", "maya", "VFSTools", "MayaLDToolsMaterials.ma")
         cmds.file(mats_dir, i=True)
         check_mat_duplicates()
-
         
 
 def check_mat_duplicates():
     # Cleanup any repeated mats, 2dplacements, textures, and shading groups
-        repeated_mat_indicator = "MayaLDToolsMaterials"
-        
-        post_import_mats = cmds.ls(materials=True)
-        for mat in post_import_mats:
-            if repeated_mat_indicator in mat:
-                cmds.delete(mat)
-        all_2d_textures = cmds.ls(type='place2dTexture')
-        for tex2d in all_2d_textures:
-            if repeated_mat_indicator in tex2d:
-                cmds.delete(tex2d)
-        all_textures = cmds.ls(type='file')
-        for tex in all_textures:
-            if repeated_mat_indicator in tex:
-                cmds.delete(tex)
-        all_sgs = cmds.ls(type='shadingEngine')
-        for sg in all_sgs:
-            if repeated_mat_indicator in sg:
-                cmds.delete(sg)
+    repeated_mat_indicator = "MayaLDToolsMaterials"
+    
+    post_import_mats = cmds.ls(materials=True)
+    for mat in post_import_mats:
+        if repeated_mat_indicator in mat:
+            cmds.delete(mat)
+    all_2d_textures = cmds.ls(type='place2dTexture')
+    for tex2d in all_2d_textures:
+        if repeated_mat_indicator in tex2d:
+            cmds.delete(tex2d)
+    all_textures = cmds.ls(type='file')
+    for tex in all_textures:
+        if repeated_mat_indicator in tex:
+            cmds.delete(tex)
+    all_sgs = cmds.ls(type='shadingEngine')
+    for sg in all_sgs:
+        if repeated_mat_indicator in sg:
+            cmds.delete(sg)
 
 callbacks = []
 def create_callbacks():
@@ -167,10 +164,18 @@ def create_callbacks():
     mixamo_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterImport, reopen_mixamo_editor)
     mats_new_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterNew, import_LD_mats)
     mats_open_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterOpen, import_LD_mats)
+    exit_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kMayaExiting, remove_callbacks)
     callbacks.append(namespace_callback)
     callbacks.append(mixamo_callback)
     callbacks.append(mats_new_callback)
     callbacks.append(mats_open_callback)
+    callbacks.append(exit_callback)
+
+# Cleanup
+def remove_callbacks(*args):
+    for cb in callbacks:
+        om.MMessage.removeCallback(cb)
+    callbacks.clear()
 
 def deferred_functions():
     create_script_jobs()
@@ -179,4 +184,4 @@ def deferred_functions():
     load_hotkeys()
 
 # Use executeDeferred to ensure Maya is fully loaded
-utils.executeDeferred(deferred_functions())
+utils.executeDeferred(deferred_functions)
