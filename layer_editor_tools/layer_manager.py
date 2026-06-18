@@ -51,9 +51,11 @@ class LayerManager:
             entry = {"data": data, "widget": widget}
             # Insert at position 0 to mimick native Maya layer ordering
             self.layers.insert(0, entry)
-
-            
             self._attach_node_callback(entry)
+
+            if not empty:
+                cmds.select(clear=True)
+
         finally:
             # Set _creating to False when done
             self._creating = False

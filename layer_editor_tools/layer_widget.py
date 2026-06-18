@@ -8,11 +8,11 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QDrag, QIcon
 from PySide6.QtWidgets import (QWidget, QPushButton, QLineEdit, QHBoxLayout,
                                 QVBoxLayout, QCheckBox, QComboBox, QColorDialog,
-                                QFileDialog, QMessageBox, QMenu, QFrame)
+                                QFileDialog, QMessageBox, QMenu, QFrame, QLabel)
 
 from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.utils import hex_to_rgb, rgb_to_hex, shifted_background_color
-from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN, BUG_REPORT_URL, HELP, BUG_REPORT
+from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN, BUG_REPORT_URL, HELP, BUG_REPORT, DRAG_HANDLE
 
 # Layer display types and their labels for the cycling button
 LAYER_MODES = ["N", "T", "R"]
@@ -28,7 +28,7 @@ class LayerWidget(QWidget):
     def __init__(self, data: VFSLayerData):
         super().__init__()
         self.data = data
-        self.setFixedHeight(45)
+        self.setFixedHeight(35)
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setSpacing(2)
@@ -46,25 +46,40 @@ class LayerWidget(QWidget):
         self.top_layout = QHBoxLayout(self.top_row)
         self.top_layout.setContentsMargins(0, 0, 0, 0)
 
+        drag_handle_icon = QIcon(DRAG_HANDLE)
+        drag_handle_pixmap = drag_handle_icon.pixmap(20, 20)
+        self.drag_handle = QLabel()
+        self.drag_handle.setPixmap(drag_handle_pixmap)
+        self.drag_handle.setFixedWidth(16)
+        self.drag_handle.setCursor(Qt.SizeVerCursor)
+        self.top_layout.insertWidget(0, self.drag_handle)
+        
         self.color_button = QPushButton()
         self.color_button.setFixedWidth(20)
+        self.color_button.setToolTip("Pick layer color")
 
         self.name_edit = QLineEdit(self.data.maya_layer_name)
+        self.name_edit.setMinimumWidth(80) # TODO: Tweak this value until it looks good
+        self.name_edit.setToolTip("Layer name")
 
         self.visibility_button = QPushButton(QIcon(VISIBLE), "")
         self.visibility_button.setFixedWidth(24)
         self.visibility_button.setCheckable(True)
+        self.visibility_button.setToolTip("Toggle layer visibility")
 
         self.mode_button = QPushButton(LAYER_MODES[self.data.display_type])
         self.mode_button.setFixedWidth(24)
+        self.mode_button.setToolTip("Cycle layer mode: Normal / Template / Reference")
 
         self.export_toggle = QPushButton(QIcon(CONFIG_DROPDOWN), "")
         self.export_toggle.setFixedWidth(24)
         self.export_toggle.setCheckable(True)
+        self.export_toggle.setToolTip("Toggle export settings")
 
         self.export_button = QPushButton("Export")
         self.export_button.setFixedWidth(60)
-
+        self.export_button.setToolTip("Export layer") 
+        
         self.top_layout.addWidget(self.color_button)
         self.top_layout.addWidget(self.name_edit)
         self.top_layout.addWidget(self.visibility_button)
@@ -86,16 +101,20 @@ class LayerWidget(QWidget):
 
         self.path_button = QPushButton(QIcon(FOLDER_OPEN), "")
         self.path_button.setFixedWidth(24)
+        self.path_button.setToolTip("Set export folder")
 
         self.path_edit = QLineEdit()
         self.path_edit.setReadOnly(True)
         self.path_edit.setPlaceholderText("No export path set")
+        self.path_edit.setToolTip("Export path")
 
         self.export_dropdown = QComboBox()
         self.export_dropdown.addItems(["Single File", "Multiple File"])
         self.export_dropdown.setFixedWidth(100)
+        self.export_dropdown.setToolTip("Export mode")
 
         self.origin_checkbox = QCheckBox("Origin")
+        self.origin_checkbox.setToolTip("Move objects to origin before exporting")
 
         self.bottom_layout.addWidget(self.path_button)
         self.bottom_layout.addWidget(self.path_edit)
@@ -312,20 +331,35 @@ class LayerWidget(QWidget):
 
     # ------------ EXPORT ------------
 
-    def _move_to_origin(self, members):
-        """Move each object to (0,0,0) and return their original positions."""
-        original_positions = {}
+    def _get_top_level_members(self, members):
+        """Filter members down to top-level transforms only, excluding shape nodes
+        and transforms whose parent is also in the layer."""
+        member_set = set(members)
+        top_level = []
         for obj in members:
-            pos = cmds.xform(obj, q=True, worldSpace=True, translation=True)
+            if cmds.nodeType(obj) != "transform":
+                continue
+            parent = cmds.listRelatives(obj, parent=True, fullPath=True)
+            if parent and parent[0] in member_set:
+                continue
+            top_level.append(obj)
+        return top_level
+
+    def _move_to_origin(self, members):
+        """Move each top-level object to origin and return their original positions."""
+        top_level = self._get_top_level_members(members)
+        original_positions = {}
+        for obj in top_level:
+            pos = cmds.xform(obj, q=True, worldSpace=True, rotatePivot=True)
             original_positions[obj] = pos
-            cmds.xform(obj, worldSpace=True, translation=(0, 0, 0))
+            cmds.move(0, 0, 0, obj, worldSpace=True, rotatePivotRelative=True)
         return original_positions
 
     def _restore_positions(self, original_positions):
-        """Restore each object to its original position."""
+        """Restore each top-level object to its original position."""
         for obj, pos in original_positions.items():
             if cmds.objExists(obj):
-                cmds.xform(obj, worldSpace=True, translation=pos)
+                cmds.move(pos[0], pos[1], pos[2], obj, worldSpace=True, rotatePivotRelative=True)
 
     def export_layer(self):
         if not self.data.export_path:
@@ -349,13 +383,13 @@ class LayerWidget(QWidget):
             if self.data.export_mode == "Single File":
                 cmds.select(members)
                 export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
-                cmds.file(export_path, force=True, options="v=0", type="FBX export", exportSelected=True)
+                cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
 
             elif self.data.export_mode == "Multiple File":
                 for obj in members:
                     cmds.select(obj)
                     export_path = f"{self.data.export_path}/{obj}.fbx"
-                    cmds.file(export_path, force=True, options="v=0", type="FBX export", exportSelected=True)
+                    cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
 
         finally:
             if original_positions:

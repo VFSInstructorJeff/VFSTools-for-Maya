@@ -54,6 +54,9 @@ class MainWindow(mixin, QWidget):
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)       # Scrollbar only appears when there's more layers than the window can show
         self.window_layout.addWidget(self.scroll_area)
 
+        self.hint_label = QLabel("Right click layer for more options")
+        self.window_layout.addWidget(self.hint_label)
+
         self.tool_version = QLabel("VFS Layer Tools v1.0.0")
         self.window_layout.addWidget(self.tool_version)
 
@@ -90,11 +93,11 @@ class MainWindow(mixin, QWidget):
     # --------------------------------
 
     def setup_toolbar(self):
-        new_layer    = self.toolbar.addAction(QIcon(LAYER_NEW), "")
-        add_layer    = self.toolbar.addAction(QIcon(LAYER_ADD), "")
+        new_layer = self.toolbar.addAction(QIcon(LAYER_NEW), "")
+        add_layer = self.toolbar.addAction(QIcon(LAYER_ADD), "")
         delete_layer = self.toolbar.addAction(QIcon(LAYER_DELETE), "")
-        move_up      = self.toolbar.addAction(QIcon(LAYER_UP), "")
-        move_down    = self.toolbar.addAction(QIcon(LAYER_DOWN), "")
+        move_up = self.toolbar.addAction(QIcon(LAYER_UP), "")
+        move_down = self.toolbar.addAction(QIcon(LAYER_DOWN), "")
 
         new_layer.triggered.connect(lambda: self.add_layer(empty=True))
         add_layer.triggered.connect(lambda: self.add_layer(empty=False))
@@ -112,6 +115,14 @@ class MainWindow(mixin, QWidget):
 
         help_btn.triggered.connect(lambda: webbrowser.open(HELP_URL) if HELP_URL else None) # TODO: Add documentation
         bug_btn.triggered.connect(lambda: webbrowser.open(BUG_REPORT_URL))
+
+        new_layer.setToolTip("Create new empty layer")
+        add_layer.setToolTip("Create new layer from selection")
+        delete_layer.setToolTip("Delete selected layer")
+        move_up.setToolTip("Move selected layer up")
+        move_down.setToolTip("Move selected layer down")
+        help_btn.setToolTip("Open documentation")
+        bug_btn.setToolTip("Report a bug")
 
     # --------------------------------
     # Layer Operations
