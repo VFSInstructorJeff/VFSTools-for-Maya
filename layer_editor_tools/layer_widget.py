@@ -28,7 +28,7 @@ class LayerWidget(QWidget):
     def __init__(self, data: VFSLayerData):
         super().__init__()
         self.data = data
-        self.setFixedHeight(35)
+        self.setFixedHeight(30)
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setSpacing(2)
@@ -108,17 +108,14 @@ class LayerWidget(QWidget):
         self.path_edit.setPlaceholderText("No export path set")
         self.path_edit.setToolTip("Export path")
 
-        self.export_dropdown = QComboBox()
-        self.export_dropdown.addItems(["Single File", "Multiple File"])
-        self.export_dropdown.setFixedWidth(100)
-        self.export_dropdown.setToolTip("Export mode")
+        # TODO: Remove export options and make it so the export button combines, freezes transforms, kills history, exports, and then UNDO all of it up to the combine.
 
         self.origin_checkbox = QCheckBox("Origin")
         self.origin_checkbox.setToolTip("Move objects to origin before exporting")
 
         self.bottom_layout.addWidget(self.path_button)
         self.bottom_layout.addWidget(self.path_edit)
-        self.bottom_layout.addWidget(self.export_dropdown)
+        #self.bottom_layout.addWidget(self.export_dropdown)
         self.bottom_layout.addWidget(self.origin_checkbox)
 
         self.bottom_row.setVisible(False)
@@ -135,7 +132,6 @@ class LayerWidget(QWidget):
 
         self.mode_button.setText(LAYER_MODES[self.data.display_type])
         self.origin_checkbox.setChecked(self.data.use_origin)
-        self.export_dropdown.setCurrentText(self.data.export_mode)
 
         if self.data.export_path:
             self.path_edit.setText(self.data.export_path)
@@ -152,7 +148,6 @@ class LayerWidget(QWidget):
         self.export_toggle.toggled.connect(self.toggle_export_row)
         self.export_button.clicked.connect(self.export_layer)
         self.path_button.clicked.connect(self.pick_export_path)
-        self.export_dropdown.currentTextChanged.connect(self.on_export_mode_changed)
         self.origin_checkbox.toggled.connect(self.on_origin_changed)
 
     # ------------ SELECTION ------------
@@ -199,7 +194,7 @@ class LayerWidget(QWidget):
         self.bottom_row.setVisible(checked)
         self.separator.setVisible(checked)
         self.export_toggle.setIcon(QIcon(CONFIG_DROPDOWN))
-        self.setFixedHeight(75 if checked else 45)
+        self.setFixedHeight(60 if checked else 30)
 
     # ------------ MAYA UPDATES ------------
 
@@ -217,9 +212,6 @@ class LayerWidget(QWidget):
         self.mode_button.setText(LAYER_MODES[next_mode])
         cmds.setAttr(f"{self.data.maya_layer_name}.displayType", next_mode)
         mel.eval("updateLayerEditor();")
-
-    def on_export_mode_changed(self, text):
-        self.data.export_mode = text
 
     def on_origin_changed(self, state):
         self.data.use_origin = state
@@ -380,17 +372,9 @@ class LayerWidget(QWidget):
         original_positions = self._move_to_origin(members) if self.data.use_origin else {}
 
         try:
-            if self.data.export_mode == "Single File":
-                cmds.select(members)
-                export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
-                cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
-
-            elif self.data.export_mode == "Multiple File":
-                for obj in members:
-                    cmds.select(obj)
-                    export_path = f"{self.data.export_path}/{obj}.fbx"
-                    cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
-
+            cmds.select(members)
+            export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
+            cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
         finally:
             if original_positions:
                 self._restore_positions(original_positions)

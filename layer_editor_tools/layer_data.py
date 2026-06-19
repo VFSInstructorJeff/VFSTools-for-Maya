@@ -1,6 +1,6 @@
 # ------------ IMPORTING MODULES ------------
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 
 # ------------ SETUP DATA CLASS ------------
 # Using data class for cleaner code (automatically handles __init__ and self.var = var assignments)
@@ -18,7 +18,6 @@ class VFSLayerData:
     select_sm: bool = False
     select_ucx: bool = False
 
-    export_mode: str = "Single File"
     use_origin: bool = True
     export_path: str = ""
 
@@ -41,6 +40,11 @@ class VFSLayerData:
         data["color_rgb"] = tuple(
             data.get("color_rgb", [1, 1, 1])
         )
+
+        # Strip any keys that no longer exist on the dataclass
+        # This handles backwards compatibility when fields are removed
+        valid_fields = {f.name for f in fields(cls)}
+        data = {k: v for k, v in data.items() if k in valid_fields} # k = key, v = value
 
         # **data is unpacking a dictionary
         # cls(**data) is calling the class (making an instance) and passing the unpacked dictionary data as the parameters
