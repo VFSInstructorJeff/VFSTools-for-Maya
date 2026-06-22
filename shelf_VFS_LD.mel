@@ -97,6 +97,53 @@ global proc shelf_VFS_LD () {
         -manage 1
         -visible 1
         -preventOverride 0
+        -annotation "Parabolic Arc Generator" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "ArcTool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "curveCV.png" 
+        -image1 "curveCV.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command " # ---------- LIBRARIES/MODULES ----------\nimport maya.cmds as cmds\nfrom functools import partial\n\n# ---------- VARIABLES ----------\n\n# Function Vars\njumpHeight = 250\njumpDistance = 500\nfallExtension = 0.0\nsegmentAmount = 40\n\n# UI vars\nmargins_value=15\nseparator_height = 16\nrow_height = 25\n\n# ---------- FUNCTION ----------\n\ndef create_jump_arc(distance, height, extension=0.0, segments=40, *args):\n\n    points = []\n    maxT = 1.0 + extension\n\n    for i in range(segments + 1):\n        t = (float(i) / float(segments)) * maxT\n        x = distance * t\n        y = 4 * height * t * (1 - t)\n        points.append((x, y, 0))\n    return cmds.curve(d=3, p=points, name=\"jumpArc_CURVE\")\n\n# ---------- UI ----------\n\n# Delete window if it already exists to avoid duplicates\nif cmds.window(\"VFSArcTool\", exists=True):\n\tcmds.deleteUI(\"VFSArcTool\", window=True)\n\narc_win = cmds.window(\"VFSArcTool\", title = 'VFS Arc Tool', widthHeight=(235,200), sizeable=False)\n\narc_win_layout = cmds.columnLayout(adjustableColumn=True, margins=margins_value)\ncmds.text('VFS Parabolic Arc Generator', font='boldLabelFont', align='center')\n\ncmds.separator(height=separator_height, style='in')\n\n# User Input Fields \n\nrow_one_layout = cmds.rowLayout(adjustableColumn=True, numberOfColumns=2, columnWidth2=(100, 100), height=row_height)\n# Height\ncmds.text('Height', annotation = 'The highest point of the curve', font='boldLabelFont', align='left')\nheight_field = cmds.floatFieldGrp(numberOfFields=1, value1=jumpHeight,  annotation = 'The highest point of the curve.')\ncmds.setParent('..')\n\n# Distance\nrow_two_layout = cmds.rowLayout(adjustableColumn=True, numberOfColumns=2, columnWidth2=(100, 100), height=row_height)\ncmds.text('Distance', annotation = 'How far the curve reaches', font='boldLabelFont', align='left')\ndistance_field = cmds.floatFieldGrp(numberOfFields=1, value1=jumpDistance, annotation = 'How far the curve reaches.')\ncmds.setParent('..')\n\n# Falloff Extension\nrow_three_layout = cmds.rowLayout(adjustableColumn=True, numberOfColumns=2, columnWidth2=(100, 100), height=row_height)\ncmds.text('Falloff Extension', annotation = 'How much further the curve continues to extend after reaching the full distance', font='boldLabelFont', align='left')\nfalloff_field = cmds.floatFieldGrp(numberOfFields=1, value1=fallExtension, annotation = 'How much further the curve continues to extend after reaching the full distance.')\ncmds.setParent('..')\n\n# Segments\nrow_four_layout = cmds.rowLayout(adjustableColumn=True, numberOfColumns=2, columnWidth2=(100, 100), height=row_height)\ncmds.text('Segments', annotation = 'The amount of points along this curve.\\n[ ! ] Too few points will give you incorrect values on your curve.', font='boldLabelFont', align='left')\nsegments_field = cmds.intFieldGrp(numberOfFields=1, value1=segmentAmount, annotation = 'The amount of points along this curve.\\n[ ! ] Too few points will give you incorrect values on your curve.')\ncmds.setParent('..')\n\n\ncmds.separator(height=10, style='none')\n\n# Run Function With User Values\n\ndef query_user_input(*args):\n    # Query user input values\n    height_value = cmds.floatFieldGrp(height_field, query=True, value=True)\n    distance_value = cmds.floatFieldGrp(distance_field, query=True, value=True)\n    falloff_value = cmds.floatFieldGrp(falloff_field, query=True, value=True)\n    segments_value = cmds.intFieldGrp(segments_field, query=True, value=True)\n    # Create arc\n    create_jump_arc(distance_value[0], height_value[0], falloff_value[0], segments_value[0])\n\narc_button = cmds.button(label='Create Arc', command='query_user_input()')\n\n\ncmds.showWindow()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
         -annotation "0.25m³ Cube / Set pivot / Auto UV / Layout" 
         -enableBackground 0
         -backgroundColor 0 0 0 
@@ -910,19 +957,6 @@ global proc shelf_VFS_LD () {
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
-    ;
-    separator
-        -enable 1
-        -width 12
-        -height 35
-        -manage 1
-        -visible 1
-        -preventOverride 0
-        -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -style "shelf" 
-        -horizontal 0
     ;
 
 } 
