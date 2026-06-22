@@ -57,7 +57,7 @@ class MainWindow(mixin, QWidget):
         self.hint_label = QLabel("Right click layer for more options")
         self.window_layout.addWidget(self.hint_label)
 
-        self.tool_version = QLabel("VFS Layer Tools v1.1.0 [FEATURE BRANCH]")
+        self.tool_version = QLabel("VFS Layer Tools v1.2.0 [FEATURE BRANCH]")
         self.window_layout.addWidget(self.tool_version)
 
         self.layer_manager = LayerManager()
@@ -220,6 +220,11 @@ class MainWindow(mixin, QWidget):
     # --------------------------------
 
     def closeEvent(self, event):
+        # Remove node callbacks for all layers
+        for entry in self.layer_manager.layers:
+            uuid = entry["data"].uuid
+            self.layer_manager._remove_node_callback(uuid)
+    
         om.MSceneMessage.removeCallback(self._save_callback)
         om.MSceneMessage.removeCallback(self._new_callback)
         om.MSceneMessage.removeCallback(self._open_callback)
