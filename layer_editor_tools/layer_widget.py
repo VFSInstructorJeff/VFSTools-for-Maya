@@ -17,6 +17,14 @@ from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDE
 # Layer display types and their labels for the cycling button
 LAYER_MODES = ["N", "T", "R"]
 
+# ------------ LAYER NAME EDIT CLASS ------------
+
+class LayerNameEdit(QLineEdit):
+    def focusOutEvent(self, event):
+        if not self.isReadOnly():
+            self.editingFinished.emit()
+        super().focusOutEvent(event)
+
 # ------------ LAYER WIDGET CLASS ------------
 
 class LayerWidget(QWidget):
@@ -58,8 +66,10 @@ class LayerWidget(QWidget):
         self.color_button.setFixedWidth(20)
         self.color_button.setToolTip("Pick layer color")
 
-        self.name_edit = QLineEdit(self.data.maya_layer_name)
+        self.name_edit = LayerNameEdit(self.data.maya_layer_name)
         self.name_edit.setMinimumWidth(80) # TODO: Tweak this value until it looks good
+        self.name_edit.setReadOnly(True)
+        self.name_edit.setStyleSheet("QLineEdit { border: none; background: transparent; }")
         self.name_edit.setToolTip("Layer name")
 
         self.visibility_button = QPushButton(QIcon(VISIBLE), "")
@@ -142,7 +152,7 @@ class LayerWidget(QWidget):
 
     def connect_signals(self):
         self.color_button.clicked.connect(self.pick_color)
-        self.name_edit.editingFinished.connect(self.rename_layer)
+        self.name_edit.editingFinished.connect(self.finish_rename)
         self.visibility_button.toggled.connect(self.on_visibility_changed)
         self.mode_button.clicked.connect(self.cycle_layer_mode)
         self.export_toggle.toggled.connect(self.toggle_export_row)
@@ -415,6 +425,23 @@ class LayerWidget(QWidget):
                 border: 2px solid white;
             }}
         """)
+
+    # ------------ RENAME ------------
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.start_rename()
+        super().mouseDoubleClickEvent(event)
+
+    def start_rename(self):
+        self.name_edit.setReadOnly(False)
+        self.name_edit.setStyleSheet("")
+        self.name_edit.setFocus()
+        self.name_edit.selectAll()
+
+    def finish_rename(self):
+        self.name_edit.setReadOnly(True)
+        self.name_edit.setStyleSheet("QLineEdit { border: none; background: transparent; }")
+        self.rename_layer()
 
     # ------------ DRAG ------------
 
