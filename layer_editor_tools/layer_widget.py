@@ -4,7 +4,7 @@ from pathlib import Path
 
 from maya import cmds, mel
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QEvent
 from PySide6.QtGui import QDrag, QIcon
 from PySide6.QtWidgets import (QWidget, QPushButton, QLineEdit, QHBoxLayout,
                                 QVBoxLayout, QCheckBox, QComboBox, QColorDialog,
@@ -69,7 +69,7 @@ class LayerWidget(QWidget):
         self.name_edit = LayerNameEdit(self.data.maya_layer_name)
         self.name_edit.setMinimumWidth(80) # TODO: Tweak this value until it looks good
         self.name_edit.setReadOnly(True)
-        self.name_edit.setStyleSheet("QLineEdit { border: none; background: transparent; }")
+        self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
         self.name_edit.setToolTip("Layer name")
 
         self.visibility_button = QPushButton(QIcon(VISIBLE), "")
@@ -149,10 +149,12 @@ class LayerWidget(QWidget):
             self.toggle_export_row(True)
 
         self.apply_color_styles()
+        self.name_edit.setCursorPosition(0)
 
     def connect_signals(self):
         self.color_button.clicked.connect(self.pick_color)
         self.name_edit.editingFinished.connect(self.finish_rename)
+        self.name_edit.installEventFilter(self)
         self.visibility_button.toggled.connect(self.on_visibility_changed)
         self.mode_button.clicked.connect(self.cycle_layer_mode)
         self.export_toggle.toggled.connect(self.toggle_export_row)
@@ -427,11 +429,6 @@ class LayerWidget(QWidget):
         """)
 
     # ------------ RENAME ------------
-    def mouseDoubleClickEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.start_rename()
-        super().mouseDoubleClickEvent(event)
-
     def start_rename(self):
         self.name_edit.setReadOnly(False)
         self.name_edit.setStyleSheet("")
@@ -440,8 +437,19 @@ class LayerWidget(QWidget):
 
     def finish_rename(self):
         self.name_edit.setReadOnly(True)
-        self.name_edit.setStyleSheet("QLineEdit { border: none; background: transparent; }")
+        self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
+        self.name_edit.setCursorPosition(0)
         self.rename_layer()
+
+    def eventFilter(self, obj, event):
+        if obj == self.name_edit:
+            if event.type() == QEvent.Type.MouseButtonDblClick:
+                self.start_rename()
+                return True
+            if event.type() == QEvent.Type.MouseButtonPress:
+                if event.button() == Qt.LeftButton:
+                    self.selected.emit(self)
+        return super().eventFilter(obj, event)
 
     # ------------ DRAG ------------
 
