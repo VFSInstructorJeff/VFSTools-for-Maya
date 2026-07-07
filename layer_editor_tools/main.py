@@ -7,8 +7,8 @@ from maya.app.general.mayaMixin import (MayaQWidgetDockableMixin as mixin)
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QSize, QTimer
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QScrollArea, QLabel
+from PySide6.QtGui import QIcon, QColor
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QScrollArea, QLabel, QColorDialog
 
 from shiboken6 import isValid
 
@@ -18,6 +18,7 @@ from layer_editor_tools.layer_manager import LayerManager
 from layer_editor_tools.layer_widget import LayerWidget
 from layer_editor_tools.utils import get_main_window
 
+# ------------ MAIN WINDOW ------------
 
 class MainWindow(mixin, QWidget):
 
@@ -63,6 +64,7 @@ class MainWindow(mixin, QWidget):
         self.layer_manager = LayerManager()
         self._refreshing = False
 
+        self._setup_color_palette()
         self.setup_toolbar()
         self.load_existing_layers()
 
@@ -87,6 +89,17 @@ class MainWindow(mixin, QWidget):
         )
 
         self.show(dockable=True)
+
+    # --------------------------------
+    # Setup Custom Color Palette
+    # --------------------------------
+
+    def _setup_color_palette(self):
+        index = 0
+        for row in LAYER_PALETTE:
+            for hex_color in row:
+                QColorDialog.setStandardColor(index, QColor(hex_color))
+                index += 1
 
     # --------------------------------
     # Toolbar
@@ -173,14 +186,15 @@ class MainWindow(mixin, QWidget):
         self._refreshing = True
         try:
             for entry in self.layer_manager.layers:
+                self.layer_manager._remove_node_callback(entry["data"].uuid)
                 widget = entry["widget"]
                 if isValid(widget):
                     widget.setParent(None)
                     widget.deleteLater()
-
+    
             self.layer_manager.layers = []
             self.layer_manager.selected_entry = None
-
+    
             self.load_existing_layers()
         finally:
             self._refreshing = False

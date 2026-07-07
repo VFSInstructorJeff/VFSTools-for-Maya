@@ -118,14 +118,15 @@ class LayerWidget(QWidget):
         self.path_edit.setPlaceholderText("No export path set")
         self.path_edit.setToolTip("Export path")
 
-        # TODO: Remove export options and make it so the export button combines, freezes transforms, kills history, exports, and then UNDO all of it up to the combine.
+        self.legc_checkbox = QCheckBox("LEGC")
+        self.legc_checkbox.setToolTip("Check on for LEGC export.\nSwitches UV map order, unchecks itself after Export.")
 
         self.origin_checkbox = QCheckBox("Origin")
         self.origin_checkbox.setToolTip("Move objects to origin before exporting")
 
         self.bottom_layout.addWidget(self.path_button)
         self.bottom_layout.addWidget(self.path_edit)
-        #self.bottom_layout.addWidget(self.export_dropdown)
+        self.bottom_layout.addWidget(self.legc_checkbox)
         self.bottom_layout.addWidget(self.origin_checkbox)
 
         self.bottom_row.setVisible(False)
@@ -384,9 +385,29 @@ class LayerWidget(QWidget):
         original_positions = self._move_to_origin(members) if self.data.use_origin else {}
 
         try:
+            # Run LEGC if checked
+            if self.legc_checkbox.isChecked():
+                self._run_legc(members)
+
             cmds.select(members)
             export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
             cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+
+            '''
+            SINGLE/MULTIPLE FILE REMOVED FOR NOW, WILL READD IT FOR LD PURPOSES
+
+            if self.data.export_mode == "Single File":
+                cmds.select(members)
+                export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
+                cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+
+            elif self.data.export_mode == "Multiple File":
+                for obj in members:
+                    cmds.select(obj)
+                    export_path = f"{self.data.export_path}/{obj}.fbx"
+                    cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+            '''
+
         finally:
             if original_positions:
                 self._restore_positions(original_positions)
@@ -394,6 +415,9 @@ class LayerWidget(QWidget):
                 cmds.select(previous_selection)
             else:
                 cmds.select(clear=True)
+
+            # Reset LEGC checkbox after export
+            self.legc_checkbox.setChecked(False)
 
     # ------------ COLOR ------------
 
@@ -450,6 +474,93 @@ class LayerWidget(QWidget):
                 if event.button() == Qt.LeftButton:
                     self.selected.emit(self)
         return super().eventFilter(obj, event)
+
+    # ------------ LEGC ------------
+
+    def _run_legc(self, members):
+        """Duplicate map1 as uvSet1, make it primary, then layout all valid mesh UVs together."""
+
+        # ---- LAYOUT SETTINGS (adjust here if needed) ----
+        LAYOUT_RESOLUTION = 256
+        LAYOUT_SHELL_SPACING = 0.002
+        LAYOUT_MUTATIONS = 1
+
+        # Get top level transforms only
+        top_level = self._get_top_level_members(members)
+
+        # Expand to include all descendant transforms
+        all_transforms = []
+        for obj in top_level:
+            all_transforms.append(obj)
+            descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True, type="transform") or []
+            all_transforms.extend(descendants)
+
+        skipped = []
+        valid_shapes = []
+
+        for transform in all_transforms:
+            short_name = transform.split("|")[-1]
+
+            # Skip UCX and group nodes by transform name
+            if short_name.startswith("UCX_") or short_name.endswith("_grp"):
+                continue
+
+            # Get shape nodes from this transform
+            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh") or []
+
+            for shape in shapes:
+                # Check if uvSet1 already exists
+                existing_uvsets = cmds.polyUVSet(shape, q=True, allUVSets=True) or []
+                if "uvSet1" in existing_uvsets:
+                    skipped.append(short_name)
+                    continue
+
+                # Get the first UV set name (usually map1 but not always)
+                if not existing_uvsets:
+                    continue
+                first_uvset = existing_uvsets[0]
+
+                # Copy first UV set as uvSet1
+                mel.eval(f'polyUVSet -copy -uvSet "{first_uvset}" -newUVSet "uvSet1" {shape};')
+
+                # Reorder uvSet1 to be first
+                mel.eval(f'polyUVSet -reorder -uvSet "uvSet1" -newUVSet "{first_uvset}" {shape};')
+
+                # Set uvSet1 as current
+                cmds.polyUVSet(shape, currentUVSet=True, uvSet="uvSet1")
+
+                valid_shapes.append(shape)
+
+        if skipped:
+            QMessageBox.warning(
+                self,
+                "LEGC Skipped",
+                "The following meshes already have a uvSet1 and were skipped:\n\n" +
+                "\n".join(skipped)
+            )
+
+        # Layout all valid mesh UV shells together in a single operation
+        if valid_shapes:
+            uv_faces = [f"{shape}.f[*]" for shape in valid_shapes]
+            cmds.select(uv_faces)
+            cmds.polyUVSet(currentUVSet=True, uvSet="uvSet1")
+            cmds.u3dLayout(
+                uv_faces,
+                resolution=LAYOUT_RESOLUTION,
+                shellSpacing=LAYOUT_SHELL_SPACING,
+                mutations=LAYOUT_MUTATIONS,
+                box=(0, 1, 0, 1)
+            )
+        
+            # Get transforms from valid shapes for freeze and delete history
+            valid_transforms = [cmds.listRelatives(shape, parent=True, fullPath=True)[0] for shape in valid_shapes]
+        
+            # Freeze transforms
+            cmds.makeIdentity(valid_transforms, apply=True, translate=True, rotate=True, scale=True, normal=False)
+        
+            # Delete history
+            cmds.delete(valid_transforms, constructionHistory=True)
+
 
     # ------------ DRAG ------------
 
