@@ -463,6 +463,8 @@ class LayerWidget(QWidget):
             valid_components = [c for c in components if cmds.objExists(c.split(".")[0])]
             if valid_components:
                 cmds.sets(valid_components, edit=True, forceElement=sg)
+        # Force viewport refresh to clear any stale shading group visualization
+        cmds.refresh(force=True)
 
     # ------------ LEGC ------------
 
@@ -512,8 +514,13 @@ class LayerWidget(QWidget):
 
                 first_uvset = existing_uvsets[0]
 
-                # Copy first UV set as uvSet1
-                mel.eval(f'polyUVSet -copy -uvSet "{first_uvset}" -newUVSet "uvSet1" {shape};')
+                # We're creating a new UV set instead of duplicating the existing map1 to avoid a Maya bug
+                # Where reordering the UV sets overrides them, undoing the layout of the LEGC UV set
+                
+                # Create new empty UV set called uvSet1
+                cmds.select(shape)
+                cmds.polyUVSet(create=True, uvSet = "uvSet1")
+                cmds.polyCopyUV(shape, uvSetNameInput = first_uvset, uvSetName = "uvSet1")
 
                 # Reorder uvSet1 to be first
                 mel.eval(f'polyUVSet -reorder -uvSet "uvSet1" -newUVSet "{first_uvset}" {shape};')
