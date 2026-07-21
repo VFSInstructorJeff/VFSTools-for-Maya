@@ -12,7 +12,7 @@ class VFSLayerData:
     maya_layer_name: str
 
     visibility: bool = True
-    display_type: int = 0               # TODO: Make this a button, for now it's just a value in data and doesn't reflect on the UI
+    display_type: int = 0
     color_rgb: tuple = (1.0, 1.0, 1.0)
 
     select_sm: bool = False
@@ -20,6 +20,7 @@ class VFSLayerData:
 
     use_origin: bool = True
     export_path: str = ""
+    legc_export_path: str = ""
 
     # ------------ FUNCTIONS ------------
 

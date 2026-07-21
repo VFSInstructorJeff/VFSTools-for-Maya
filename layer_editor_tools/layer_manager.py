@@ -14,6 +14,7 @@ from layer_editor_tools.constants import HIDDEN, VISIBLE    # Import icons
 # Putting this dict at module level so the information is saved even if the tool is closed
 # The info only exists during the Maya session, if Maya is closed without saving it will be erased
 _session_cache = {}  #  uuid (key) -> export_path (value)
+_legc_session_cache = {}
 
 # ------------ LAYER MANAGER CLASS ------------
 
@@ -109,6 +110,9 @@ class LayerManager:
         # Remove from session cache
         if uuid in _session_cache:
             del _session_cache[uuid]
+        
+        if uuid in _legc_session_cache:
+            del _legc_session_cache[uuid]
 
         # Remove it from Layer Manager list
         self.layers.remove(entry)
@@ -267,11 +271,14 @@ class LayerManager:
     def update_session_cache(self, uuid, export_path):
         """Called whenever a layer's export path changes."""
         _session_cache[uuid] = export_path
+        _legc_session_cache[uuid] = export_path
 
     def _apply_session_cache(self, data):
         """Fill in export_path from session cache if not already set."""
         if not data.export_path and data.uuid in _session_cache:
             data.export_path = _session_cache[data.uuid]
+        if not data.legc_export_path and data.uuid in _legc_session_cache:
+            data.legc_export_path = _legc_session_cache[data.uuid]
 
     # ------------ SAVE ------------
 

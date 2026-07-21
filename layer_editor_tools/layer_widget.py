@@ -17,13 +17,16 @@ from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDE
 # Layer display types and their labels for the cycling button
 LAYER_MODES = ["N", "T", "R"]
 
-# ------------ LAYER NAME EDIT CLASS ------------
+
+# ------------ LAYER NAME EDIT ------------
+# Subclassed to emit editingFinished on focus loss so clicking outside confirms rename
 
 class LayerNameEdit(QLineEdit):
     def focusOutEvent(self, event):
         if not self.isReadOnly():
             self.editingFinished.emit()
         super().focusOutEvent(event)
+
 
 # ------------ LAYER WIDGET CLASS ------------
 
@@ -67,10 +70,11 @@ class LayerWidget(QWidget):
         self.color_button.setToolTip("Pick layer color")
 
         self.name_edit = LayerNameEdit(self.data.maya_layer_name)
-        self.name_edit.setMinimumWidth(80) # TODO: Tweak this value until it looks good
+        self.name_edit.setMinimumWidth(80)
         self.name_edit.setReadOnly(True)
         self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
-        self.name_edit.setToolTip("Layer name")
+        self.name_edit.setToolTip("Layer name — double click to rename")
+        self.name_edit.installEventFilter(self)
 
         self.visibility_button = QPushButton(QIcon(VISIBLE), "")
         self.visibility_button.setFixedWidth(24)
@@ -88,8 +92,9 @@ class LayerWidget(QWidget):
 
         self.export_button = QPushButton("Export")
         self.export_button.setFixedWidth(60)
-        self.export_button.setToolTip("Export layer") 
-        
+        self.export_button.setToolTip("Export layer")
+
+        self.top_layout.addWidget(self.drag_handle)
         self.top_layout.addWidget(self.color_button)
         self.top_layout.addWidget(self.name_edit)
         self.top_layout.addWidget(self.visibility_button)
@@ -102,7 +107,6 @@ class LayerWidget(QWidget):
         self.separator.setFrameShape(QFrame.HLine)
         self.separator.setStyleSheet("color: rgba(255, 255, 255, 40);")
         self.separator.setVisible(False)
-
 
         # ---- BOTTOM ROW (export settings, hidden by default) ----
         self.bottom_row = QWidget()
@@ -118,16 +122,23 @@ class LayerWidget(QWidget):
         self.path_edit.setPlaceholderText("No export path set")
         self.path_edit.setToolTip("Export path")
 
-        self.legc_checkbox = QCheckBox("LEGC")
-        self.legc_checkbox.setToolTip("Check on for LEGC export.\nSwitches UV map order, unchecks itself after Export.")
+        self.legc_path_edit = QLineEdit()
+        self.legc_path_edit.setReadOnly(True)
+        self.legc_path_edit.setPlaceholderText("No LEGC export path set")
+        self.legc_path_edit.setToolTip("LEGC export path")
+        self.legc_path_edit.setVisible(False)
 
         self.origin_checkbox = QCheckBox("Origin")
         self.origin_checkbox.setToolTip("Move objects to origin before exporting")
 
+        self.legc_checkbox = QCheckBox("LEGC")
+        self.legc_checkbox.setToolTip("Run LEGC UV operation on export")
+
         self.bottom_layout.addWidget(self.path_button)
         self.bottom_layout.addWidget(self.path_edit)
-        self.bottom_layout.addWidget(self.legc_checkbox)
+        self.bottom_layout.addWidget(self.legc_path_edit)
         self.bottom_layout.addWidget(self.origin_checkbox)
+        self.bottom_layout.addWidget(self.legc_checkbox)
 
         self.bottom_row.setVisible(False)
 
@@ -149,19 +160,48 @@ class LayerWidget(QWidget):
             self.export_toggle.setChecked(True)
             self.toggle_export_row(True)
 
-        self.apply_color_styles()
+        if self.data.legc_export_path:
+            self.legc_path_edit.setText(self.data.legc_export_path)
+
         self.name_edit.setCursorPosition(0)
+        self.apply_color_styles()
 
     def connect_signals(self):
         self.color_button.clicked.connect(self.pick_color)
         self.name_edit.editingFinished.connect(self.finish_rename)
-        self.name_edit.installEventFilter(self)
         self.visibility_button.toggled.connect(self.on_visibility_changed)
         self.mode_button.clicked.connect(self.cycle_layer_mode)
         self.export_toggle.toggled.connect(self.toggle_export_row)
         self.export_button.clicked.connect(self.export_layer)
         self.path_button.clicked.connect(self.pick_export_path)
         self.origin_checkbox.toggled.connect(self.on_origin_changed)
+        self.legc_checkbox.toggled.connect(self.on_legc_toggled)
+
+    # ------------ EVENT FILTER ------------
+
+    def eventFilter(self, obj, event):
+        if obj == self.name_edit:
+            if event.type() == QEvent.Type.MouseButtonDblClick:
+                self.start_rename()
+                return True
+            if event.type() == QEvent.Type.MouseButtonPress:
+                if event.button() == Qt.LeftButton:
+                    self.selected.emit(self)
+        return super().eventFilter(obj, event)
+
+    # ------------ RENAME ------------
+
+    def start_rename(self):
+        self.name_edit.setReadOnly(False)
+        self.name_edit.setStyleSheet("")
+        self.name_edit.setFocus()
+        self.name_edit.selectAll()
+
+    def finish_rename(self):
+        self.name_edit.setReadOnly(True)
+        self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
+        self.name_edit.setCursorPosition(0)
+        self.rename_layer()
 
     # ------------ SELECTION ------------
 
@@ -209,6 +249,12 @@ class LayerWidget(QWidget):
         self.export_toggle.setIcon(QIcon(CONFIG_DROPDOWN))
         self.setFixedHeight(60 if checked else 30)
 
+    # ------------ LEGC TOGGLE ------------
+
+    def on_legc_toggled(self, checked):
+        self.path_edit.setVisible(not checked)
+        self.legc_path_edit.setVisible(checked)
+
     # ------------ MAYA UPDATES ------------
 
     def on_visibility_changed(self, hidden):
@@ -224,10 +270,9 @@ class LayerWidget(QWidget):
         self.data.display_type = next_mode
         self.mode_button.setText(LAYER_MODES[next_mode])
         cmds.setAttr(f"{self.data.maya_layer_name}.displayType", next_mode)
-        mel.eval("updateLayerEditor();")
 
-    def on_origin_changed(self, state):
-        self.data.use_origin = state
+    def on_origin_changed(self, checked):
+        self.data.use_origin = checked
 
     def rename_layer(self):
         new_name = self.name_edit.text()
@@ -240,9 +285,8 @@ class LayerWidget(QWidget):
 
     def select_all(self):
         members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True) or []
-        all_objects = []
+        all_objects = [obj for obj in members]
         for obj in members:
-            all_objects.append(obj)
             descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True) or []
             all_objects.extend(descendants)
         if all_objects:
@@ -258,7 +302,6 @@ class LayerWidget(QWidget):
             for node in all_nodes:
                 short_name = node.split("|")[-1]
                 if not short_name.startswith("UCX_") and cmds.nodeType(node) == "transform":
-                    # Only include if it has a shape as a direct child
                     children = cmds.listRelatives(node, children=True, fullPath=True) or []
                     has_shape = any(cmds.nodeType(c) in ("mesh", "nurbsSurface", "nurbsCurve", "lattice") for c in children)
                     if has_shape:
@@ -296,7 +339,6 @@ class LayerWidget(QWidget):
         if not selection:
             QMessageBox.warning(self, "Remove From Layer", "Nothing is currently selected.")
             return
-        # Moving objects to defaultLayer effectively removes them from the current layer
         cmds.editDisplayLayerMembers("defaultLayer", *selection)
 
     def empty_layer(self):
@@ -324,17 +366,24 @@ class LayerWidget(QWidget):
     # ------------ EXPORT PATH ------------
 
     def pick_export_path(self):
+        is_legc = self.legc_checkbox.isChecked()
+        current_path = self.data.legc_export_path if is_legc else self.data.export_path
+
         path = QFileDialog.getExistingDirectory(
             self,
-            "Select Export Folder",
-            self.data.export_path or ""
+            "Select LEGC Export Folder" if is_legc else "Select Export Folder",
+            current_path or ""
         )
         if path:
-            self.data.export_path = path
-            self.path_edit.setText(path)
-            self.path_changed.emit(self.data.uuid, path)
+            if is_legc:
+                self.data.legc_export_path = path
+                self.legc_path_edit.setText(path)
+            else:
+                self.data.export_path = path
+                self.path_edit.setText(path)
+                self.path_changed.emit(self.data.uuid, path)
 
-    # ------------ EXPORT ------------
+    # ------------ EXPORT HELPERS ------------
 
     def _get_top_level_members(self, members):
         """Filter members down to top-level transforms only, excluding shape nodes
@@ -366,6 +415,164 @@ class LayerWidget(QWidget):
             if cmds.objExists(obj):
                 cmds.move(pos[0], pos[1], pos[2], obj, worldSpace=True, rotatePivotRelative=True)
 
+    def _capture_shading_groups(self, valid_shapes):
+        """Capture per-face and per-mesh shading group assignments for valid shapes."""
+        # Build lookup sets for shapes and their parent transform names
+        valid_shape_set = set(valid_shapes)
+        valid_shape_short = {s.split("|")[-1] for s in valid_shapes}
+        valid_transform_short = set()
+        for shape in valid_shapes:
+            parent = cmds.listRelatives(shape, parent=True, fullPath=True)
+            if parent:
+                valid_transform_short.add(parent[0].split("|")[-1])
+
+        # Get all SGs connected to valid shapes, deduplicated
+        all_sgs = set()
+        for shape in valid_shapes:
+            sgs = cmds.listConnections(shape, type="shadingEngine") or []
+            all_sgs.update(sgs)
+
+        original_shading_groups = {}  # sg -> [components]
+
+        for sg in all_sgs:
+            sg_members = cmds.sets(sg, q=True) or []
+            relevant_components = []
+
+            for member in sg_members:
+                if "." in member:
+                    # Face-level assignment: node name before "." is the transform name
+                    node_name = member.split(".")[0]
+                    if node_name in valid_transform_short:
+                        relevant_components.append(member)
+                else:
+                    # Whole mesh assignment: check against shape names
+                    short = member.split("|")[-1]
+                    if member in valid_shape_set or short in valid_shape_short:
+                        relevant_components.append(member)
+
+            if relevant_components:
+                original_shading_groups[sg] = relevant_components
+
+        return original_shading_groups
+
+    def _restore_shading_groups(self, original_shading_groups):
+        """Restore per-face and per-mesh shading group assignments."""
+        for sg, components in original_shading_groups.items():
+            if not cmds.objExists(sg):
+                continue
+            valid_components = [c for c in components if cmds.objExists(c.split(".")[0])]
+            if valid_components:
+                cmds.sets(valid_components, edit=True, forceElement=sg)
+
+    # ------------ LEGC ------------
+
+    def _run_legc(self, members):
+        """Run LEGC: duplicate map1 as uvSet1, layout all shells together,
+        freeze transforms, delete history, then assign standardSurface1."""
+
+        # ---- LAYOUT SETTINGS (adjust here if needed) ----
+        LAYOUT_RESOLUTION = 256
+        # Spacing and Margin are Shell Padding or Tile Padding divided by Map Size (in this case, 8/2048 = 0.00390625)
+        LAYOUT_SHELL_SPACING = 0.00390625
+        LAYOUT_TILE_MARGIN = 0.00390625 
+        LAYOUT_MUTATIONS = 1
+
+        # Get top level transforms only
+        top_level = self._get_top_level_members(members)
+
+        # Expand to include all descendant transforms
+        all_transforms = []
+        for obj in top_level:
+            all_transforms.append(obj)
+            descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True, type="transform") or []
+            all_transforms.extend(descendants)
+
+        skipped = []
+        valid_shapes = []
+
+        for transform in all_transforms:
+            short_name = transform.split("|")[-1]
+
+            # Skip UCX and group nodes by transform name
+            if short_name.startswith("UCX_") or short_name.endswith("_grp"):
+                continue
+
+            # Get shape nodes from this transform
+            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh") or []
+
+            for shape in shapes:
+                existing_uvsets = cmds.polyUVSet(shape, q=True, allUVSets=True) or []
+                if "uvSet1" in existing_uvsets:
+                    skipped.append(short_name)
+                    continue
+
+                if not existing_uvsets:
+                    continue
+
+                first_uvset = existing_uvsets[0]
+
+                # Copy first UV set as uvSet1
+                mel.eval(f'polyUVSet -copy -uvSet "{first_uvset}" -newUVSet "uvSet1" {shape};')
+
+                # Reorder uvSet1 to be first
+                mel.eval(f'polyUVSet -reorder -uvSet "uvSet1" -newUVSet "{first_uvset}" {shape};')
+
+                # Set uvSet1 as current
+                cmds.polyUVSet(shape, currentUVSet=True, uvSet="uvSet1")
+
+                valid_shapes.append(shape)
+
+        if skipped:
+            QMessageBox.warning(
+                self,
+                "LEGC Skipped",
+                "The following meshes already have a uvSet1 and were skipped:\n\n" +
+                "\n".join(skipped)
+            )
+
+        if not valid_shapes:
+            return {}
+
+        # Layout all valid mesh UV shells together in a single operation
+        uv_faces = [f"{shape}.f[*]" for shape in valid_shapes]
+        cmds.select(uv_faces)
+        cmds.polyUVSet(currentUVSet=True, uvSet="uvSet1")
+        cmds.u3dLayout(
+            uv_faces,
+            resolution=LAYOUT_RESOLUTION,
+            shellSpacing=LAYOUT_SHELL_SPACING,
+            tileMargin=LAYOUT_TILE_MARGIN,
+            mutations=LAYOUT_MUTATIONS,
+            box=(0, 1, 0, 1)
+        )
+
+        # Get transforms from valid shapes
+        valid_transforms = [
+            cmds.listRelatives(shape, parent=True, fullPath=True)[0]
+            for shape in valid_shapes
+        ]
+
+        # Freeze transforms
+        cmds.makeIdentity(valid_transforms, apply=True, translate=True, rotate=True, scale=True, normal=False)
+
+        # Delete history
+        cmds.delete(valid_transforms, constructionHistory=True)
+
+        # Capture per-face shading group assignments before material assignment
+        original_shading_groups = self._capture_shading_groups(valid_shapes)
+
+        # Assign standardSurface1 to all valid meshes
+        cmds.select(valid_transforms)
+        cmds.hyperShade(assign="standardSurface1")
+
+        return {
+            "valid_shapes": valid_shapes,
+            "valid_transforms": valid_transforms,
+            "original_shading_groups": original_shading_groups
+        }
+
+    # ------------ EXPORT ------------
+
     def export_layer(self):
         if not self.data.export_path:
             QMessageBox.warning(self, "Export Failed", "No export path set for this layer.")
@@ -374,6 +581,15 @@ class LayerWidget(QWidget):
         if not Path(self.data.export_path).exists():
             QMessageBox.warning(self, "Export Failed", f"Export path does not exist:\n{self.data.export_path}")
             return
+
+        # LEGC path validation
+        if self.legc_checkbox.isChecked():
+            if not self.data.legc_export_path:
+                QMessageBox.warning(self, "Export Failed", "No LEGC export path set for this layer.")
+                return
+            if not Path(self.data.legc_export_path).exists():
+                QMessageBox.warning(self, "Export Failed", f"LEGC export path does not exist:\n{self.data.legc_export_path}")
+                return
 
         members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True)
         members = [obj for obj in members if cmds.nodeType(obj) == "transform"]
@@ -385,28 +601,40 @@ class LayerWidget(QWidget):
         original_positions = self._move_to_origin(members) if self.data.use_origin else {}
 
         try:
-            # Run LEGC if checked
             if self.legc_checkbox.isChecked():
-                self._run_legc(members)
+                # Run LEGC and capture state for restoration
+                legc_result = self._run_legc(members)
+                valid_shapes = legc_result.get("valid_shapes", [])
+                valid_transforms = legc_result.get("valid_transforms", [])
+                original_shading_groups = legc_result.get("original_shading_groups", {})
 
+                # LEGC export
+                cmds.select(members)
+                legc_export_path = f"{self.data.legc_export_path}/{self.data.maya_layer_name}_LEGC.fbx"
+                cmds.file(legc_export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+
+                # Restore original materials
+                self._restore_shading_groups(original_shading_groups)
+
+                # Restore UV order: map1 on top, uvSet1 below, map1 as current
+                for shape in valid_shapes:
+                    if cmds.objExists(shape):
+                        existing_uvsets = cmds.polyUVSet(shape, q=True, allUVSets=True) or []
+                        if "uvSet1" in existing_uvsets and "map1" in existing_uvsets:
+                            mel.eval(f'polyUVSet -reorder -uvSet "map1" -newUVSet "uvSet1" {shape};')
+                        cmds.polyUVSet(shape, currentUVSet=True, uvSet="map1")
+
+                # Freeze and delete history again after UV restore
+                if valid_transforms:
+                    existing_transforms = [t for t in valid_transforms if cmds.objExists(t)]
+                    if existing_transforms:
+                        cmds.makeIdentity(existing_transforms, apply=True, translate=True, rotate=True, scale=True, normal=False)
+                        cmds.delete(existing_transforms, constructionHistory=True)
+
+            # Regular export
             cmds.select(members)
             export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
             cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
-
-            '''
-            SINGLE/MULTIPLE FILE REMOVED FOR NOW, WILL READD IT FOR LD PURPOSES
-
-            if self.data.export_mode == "Single File":
-                cmds.select(members)
-                export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
-                cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
-
-            elif self.data.export_mode == "Multiple File":
-                for obj in members:
-                    cmds.select(obj)
-                    export_path = f"{self.data.export_path}/{obj}.fbx"
-                    cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
-            '''
 
         finally:
             if original_positions:
@@ -416,7 +644,7 @@ class LayerWidget(QWidget):
             else:
                 cmds.select(clear=True)
 
-            # Reset LEGC checkbox after export
+            # Reset LEGC checkbox after export regardless of success or failure
             self.legc_checkbox.setChecked(False)
 
     # ------------ COLOR ------------
@@ -452,119 +680,9 @@ class LayerWidget(QWidget):
             }}
         """)
 
-    # ------------ RENAME ------------
-    def start_rename(self):
-        self.name_edit.setReadOnly(False)
-        self.name_edit.setStyleSheet("")
-        self.name_edit.setFocus()
-        self.name_edit.selectAll()
-
-    def finish_rename(self):
-        self.name_edit.setReadOnly(True)
-        self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
-        self.name_edit.setCursorPosition(0)
-        self.rename_layer()
-
-    def eventFilter(self, obj, event):
-        if obj == self.name_edit:
-            if event.type() == QEvent.Type.MouseButtonDblClick:
-                self.start_rename()
-                return True
-            if event.type() == QEvent.Type.MouseButtonPress:
-                if event.button() == Qt.LeftButton:
-                    self.selected.emit(self)
-        return super().eventFilter(obj, event)
-
-    # ------------ LEGC ------------
-
-    def _run_legc(self, members):
-        """Duplicate map1 as uvSet1, make it primary, then layout all valid mesh UVs together."""
-
-        # ---- LAYOUT SETTINGS (adjust here if needed) ----
-        LAYOUT_RESOLUTION = 256
-        LAYOUT_SHELL_SPACING = 0.002
-        LAYOUT_MUTATIONS = 1
-
-        # Get top level transforms only
-        top_level = self._get_top_level_members(members)
-
-        # Expand to include all descendant transforms
-        all_transforms = []
-        for obj in top_level:
-            all_transforms.append(obj)
-            descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True, type="transform") or []
-            all_transforms.extend(descendants)
-
-        skipped = []
-        valid_shapes = []
-
-        for transform in all_transforms:
-            short_name = transform.split("|")[-1]
-
-            # Skip UCX and group nodes by transform name
-            if short_name.startswith("UCX_") or short_name.endswith("_grp"):
-                continue
-
-            # Get shape nodes from this transform
-            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh") or []
-
-            for shape in shapes:
-                # Check if uvSet1 already exists
-                existing_uvsets = cmds.polyUVSet(shape, q=True, allUVSets=True) or []
-                if "uvSet1" in existing_uvsets:
-                    skipped.append(short_name)
-                    continue
-
-                # Get the first UV set name (usually map1 but not always)
-                if not existing_uvsets:
-                    continue
-                first_uvset = existing_uvsets[0]
-
-                # Copy first UV set as uvSet1
-                mel.eval(f'polyUVSet -copy -uvSet "{first_uvset}" -newUVSet "uvSet1" {shape};')
-
-                # Reorder uvSet1 to be first
-                mel.eval(f'polyUVSet -reorder -uvSet "uvSet1" -newUVSet "{first_uvset}" {shape};')
-
-                # Set uvSet1 as current
-                cmds.polyUVSet(shape, currentUVSet=True, uvSet="uvSet1")
-
-                valid_shapes.append(shape)
-
-        if skipped:
-            QMessageBox.warning(
-                self,
-                "LEGC Skipped",
-                "The following meshes already have a uvSet1 and were skipped:\n\n" +
-                "\n".join(skipped)
-            )
-
-        # Layout all valid mesh UV shells together in a single operation
-        if valid_shapes:
-            uv_faces = [f"{shape}.f[*]" for shape in valid_shapes]
-            cmds.select(uv_faces)
-            cmds.polyUVSet(currentUVSet=True, uvSet="uvSet1")
-            cmds.u3dLayout(
-                uv_faces,
-                resolution=LAYOUT_RESOLUTION,
-                shellSpacing=LAYOUT_SHELL_SPACING,
-                mutations=LAYOUT_MUTATIONS,
-                box=(0, 1, 0, 1)
-            )
-        
-            # Get transforms from valid shapes for freeze and delete history
-            valid_transforms = [cmds.listRelatives(shape, parent=True, fullPath=True)[0] for shape in valid_shapes]
-        
-            # Freeze transforms
-            cmds.makeIdentity(valid_transforms, apply=True, translate=True, rotate=True, scale=True, normal=False)
-        
-            # Delete history
-            cmds.delete(valid_transforms, constructionHistory=True)
-
-
     # ------------ DRAG ------------
 
     def mouseMoveEvent(self, e):
         if e.buttons() == Qt.LeftButton:
             drag = QDrag(self)
-            drag.exec(Qt.MoveAction)
+            drag.exec(Qt.MoveAction)  # TODO: Implement drag-to-reorder
