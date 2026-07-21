@@ -476,6 +476,7 @@ class LayerWidget(QWidget):
         LAYOUT_SHELL_SPACING = 0.00390625
         LAYOUT_TILE_MARGIN = 0.00390625 
         LAYOUT_MUTATIONS = 1
+        LAYOUT_SCALE = 1
 
         # Get top level transforms only
         top_level = self._get_top_level_members(members)
@@ -534,17 +535,17 @@ class LayerWidget(QWidget):
             return {}
 
         # Layout all valid mesh UV shells together in a single operation
-        uv_faces = [f"{shape}.f[*]" for shape in valid_shapes]
-        cmds.select(uv_faces)
+        #uv_faces = [f"{shape}.f[*]" for shape in valid_shapes]
+        cmds.select(valid_shapes)
         cmds.polyUVSet(currentUVSet=True, uvSet="uvSet1")
-        cmds.u3dLayout(
-            uv_faces,
-            resolution=LAYOUT_RESOLUTION,
-            shellSpacing=LAYOUT_SHELL_SPACING,
-            tileMargin=LAYOUT_TILE_MARGIN,
-            mutations=LAYOUT_MUTATIONS,
-            box=(0, 1, 0, 1)
-        )
+        cmds.u3dLayout( valid_shapes,
+                        scl = LAYOUT_SCALE,
+                        resolution=LAYOUT_RESOLUTION,
+                        shellSpacing=LAYOUT_SHELL_SPACING,
+                        tileMargin=LAYOUT_TILE_MARGIN,
+                        mutations=LAYOUT_MUTATIONS,
+                        box=(0, 1, 0, 1)
+                        )
 
         # Get transforms from valid shapes
         valid_transforms = [
