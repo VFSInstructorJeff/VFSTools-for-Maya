@@ -442,6 +442,7 @@ class LayerWidget(QWidget):
                 if "." in member:
                     # Face-level assignment: node name before "." is the transform name
                     node_name = member.split(".")[0]
+                    node_name = node_name.split("|")[-1]
                     if node_name in valid_transform_short:
                         relevant_components.append(member)
                 else:
