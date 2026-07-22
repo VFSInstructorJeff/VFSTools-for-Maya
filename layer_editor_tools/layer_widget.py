@@ -422,9 +422,16 @@ class LayerWidget(QWidget):
         valid_shape_short = {s.split("|")[-1] for s in valid_shapes}
         valid_transform_short = set()
         for shape in valid_shapes:
-            parent = cmds.listRelatives(shape, parent=True, fullPath=True)
-            if parent:
-                valid_transform_short.add(parent[0].split("|")[-1])
+            try:
+                parent = cmds.listRelatives(shape, parent=True, fullPath=True)
+                if parent:
+                    valid_transform_short.add(parent[0].split("|")[-1])
+            except ValueError as value_error_msg:
+                QMessageBox.warning(
+                    self,
+                    "LEGC Material Saving Failed",
+                    f"Something went wrong with the LEGC Material Saving procedure.\n\n{value_error_msg}"
+                )
 
         # Get all SGs connected to valid shapes, deduplicated
         all_sgs = set()
@@ -542,18 +549,25 @@ class LayerWidget(QWidget):
         if not valid_shapes:
             return {}
 
-        # Layout all valid mesh UV shells together in a single operation
-        #uv_faces = [f"{shape}.f[*]" for shape in valid_shapes]
-        cmds.select(valid_shapes)
-        cmds.polyUVSet(currentUVSet=True, uvSet="uvSet1")
-        cmds.u3dLayout( valid_shapes,
-                        scl = LAYOUT_SCALE,
-                        resolution=LAYOUT_RESOLUTION,
-                        shellSpacing=LAYOUT_SHELL_SPACING,
-                        tileMargin=LAYOUT_TILE_MARGIN,
-                        mutations=LAYOUT_MUTATIONS,
-                        box=(0, 1, 0, 1)
-                        )
+        try:
+            # Layout all valid mesh UV shells together in a single operation
+            #uv_faces = [f"{shape}.f[*]" for shape in valid_shapes]
+            cmds.select(valid_shapes)
+            cmds.polyUVSet(currentUVSet=True, uvSet="uvSet1")
+            cmds.u3dLayout( valid_shapes,
+                            scl = LAYOUT_SCALE,
+                            resolution=LAYOUT_RESOLUTION,
+                            shellSpacing=LAYOUT_SHELL_SPACING,
+                            tileMargin=LAYOUT_TILE_MARGIN,
+                            mutations=LAYOUT_MUTATIONS,
+                            box=(0, 1, 0, 1)
+                            )
+        except RuntimeError as runtime_error_msg:
+            QMessageBox.warning(
+                self,
+                "LEGC Layout Failed",
+                f"Something went wrong with the LEGC Layout procedure.\n\n{runtime_error_msg}"
+            )
 
         # Get transforms from valid shapes
         valid_transforms = [
@@ -644,6 +658,7 @@ class LayerWidget(QWidget):
             cmds.select(members)
             export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
             cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+            cmds.inViewMessage(amg='LEGC and Regular FBX files exported <hl>successfully</hl>.', pos='topCenter', fade=True)
 
         finally:
             if original_positions:
