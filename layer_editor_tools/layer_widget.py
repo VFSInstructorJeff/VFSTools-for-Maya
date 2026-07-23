@@ -8,11 +8,12 @@ from PySide6.QtCore import Qt, Signal, QEvent
 from PySide6.QtGui import QDrag, QIcon
 from PySide6.QtWidgets import (QWidget, QPushButton, QLineEdit, QHBoxLayout,
                                 QVBoxLayout, QCheckBox, QComboBox, QColorDialog,
-                                QFileDialog, QMessageBox, QMenu, QFrame, QLabel)
+                                QFileDialog, QMessageBox, QMenu, QFrame, QLabel,
+                                QSizePolicy)
 
 from layer_editor_tools.layer_data import VFSLayerData
 from layer_editor_tools.utils import hex_to_rgb, rgb_to_hex, shifted_background_color
-from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN, BUG_REPORT_URL, HELP, BUG_REPORT, DRAG_HANDLE
+from layer_editor_tools.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN, BUG_REPORT_URL, HELP, BUG_REPORT, DRAG_HANDLE, UNDO
 
 # Layer display types and their labels for the cycling button
 LAYER_MODES = ["N", "T", "R"]
@@ -35,6 +36,8 @@ class LayerWidget(QWidget):
     # ------------ SIGNALS ------------
     selected = Signal(object)           # Emitted when the layer is selected
     path_changed = Signal(str, str)     # Emitted when export path changes: uuid, export_path
+    legc_path_changed = Signal(str, str)  # uuid, legc_export_path
+    legc_state_changed = Signal(str, bool)  # uuid, legc_applied
 
     def __init__(self, data: VFSLayerData):
         super().__init__()
@@ -57,6 +60,8 @@ class LayerWidget(QWidget):
         self.top_layout = QHBoxLayout(self.top_row)
         self.top_layout.setContentsMargins(0, 0, 0, 0)
 
+        '''
+        TODO: Get draggable feature working. For now, just commenting this out since it doesn't work currently.
         drag_handle_icon = QIcon(DRAG_HANDLE)
         drag_handle_pixmap = drag_handle_icon.pixmap(20, 20)
         self.drag_handle = QLabel()
@@ -64,7 +69,8 @@ class LayerWidget(QWidget):
         self.drag_handle.setFixedWidth(16)
         self.drag_handle.setCursor(Qt.SizeVerCursor)
         self.top_layout.insertWidget(0, self.drag_handle)
-        
+        '''
+
         self.color_button = QPushButton()
         self.color_button.setFixedWidth(20)
         self.color_button.setToolTip("Pick layer color")
@@ -75,6 +81,9 @@ class LayerWidget(QWidget):
         self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
         self.name_edit.setToolTip("Layer name — double click to rename")
         self.name_edit.installEventFilter(self)
+
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         self.visibility_button = QPushButton(QIcon(VISIBLE), "")
         self.visibility_button.setFixedWidth(24)
@@ -94,9 +103,10 @@ class LayerWidget(QWidget):
         self.export_button.setFixedWidth(60)
         self.export_button.setToolTip("Export layer")
 
-        self.top_layout.addWidget(self.drag_handle)
+        # self.top_layout.addWidget(self.drag_handle)
         self.top_layout.addWidget(self.color_button)
         self.top_layout.addWidget(self.name_edit)
+        self.top_layout.addWidget(spacer)
         self.top_layout.addWidget(self.visibility_button)
         self.top_layout.addWidget(self.mode_button)
         self.top_layout.addWidget(self.export_toggle)
@@ -134,11 +144,21 @@ class LayerWidget(QWidget):
         self.legc_checkbox = QCheckBox("LEGC")
         self.legc_checkbox.setToolTip("Run LEGC UV operation on export")
 
+        self.legc_undo_label = QLabel("LEGC")
+        self.legc_undo_label.setVisible(False)
+
+        self.legc_undo_button = QPushButton(QIcon(UNDO), "")
+        self.legc_undo_button.setFixedWidth(20)
+        self.legc_undo_button.setToolTip("Undo LEGC")
+        self.legc_undo_button.setVisible(False)
+        
         self.bottom_layout.addWidget(self.path_button)
         self.bottom_layout.addWidget(self.path_edit)
         self.bottom_layout.addWidget(self.legc_path_edit)
         self.bottom_layout.addWidget(self.origin_checkbox)
         self.bottom_layout.addWidget(self.legc_checkbox)
+        self.bottom_layout.addWidget(self.legc_undo_button)
+        self.bottom_layout.addWidget(self.legc_undo_label)
 
         self.bottom_row.setVisible(False)
 
@@ -163,6 +183,11 @@ class LayerWidget(QWidget):
         if self.data.legc_export_path:
             self.legc_path_edit.setText(self.data.legc_export_path)
 
+        if self.data.legc_applied:
+            self.legc_checkbox.setVisible(False)
+            self.legc_undo_label.setVisible(True)
+            self.legc_undo_button.setVisible(True)
+
         self.name_edit.setCursorPosition(0)
         self.apply_color_styles()
 
@@ -176,6 +201,7 @@ class LayerWidget(QWidget):
         self.path_button.clicked.connect(self.pick_export_path)
         self.origin_checkbox.toggled.connect(self.on_origin_changed)
         self.legc_checkbox.toggled.connect(self.on_legc_toggled)
+        self.legc_undo_button.clicked.connect(self.undo_legc)
 
     # ------------ EVENT FILTER ------------
 
@@ -378,6 +404,7 @@ class LayerWidget(QWidget):
             if is_legc:
                 self.data.legc_export_path = path
                 self.legc_path_edit.setText(path)
+                self.legc_path_changed.emit(self.data.uuid, path)
             else:
                 self.data.export_path = path
                 self.path_edit.setText(path)
@@ -594,6 +621,78 @@ class LayerWidget(QWidget):
             "original_shading_groups": original_shading_groups
         }
 
+    def undo_legc(self):
+        confirm = QMessageBox.question(
+            self,
+            "Undo LEGC",
+            "This will delete uvSet1 from all valid meshes in this layer. Are you sure?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if confirm != QMessageBox.Yes:
+            return
+
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True) or []
+        if not members:
+            QMessageBox.warning(self, "Undo LEGC", "No objects found in this layer.")
+            return
+
+        # Get all transforms
+        top_level = self._get_top_level_members(members)
+        all_transforms = []
+        for obj in top_level:
+            all_transforms.append(obj)
+            descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True, type="transform") or []
+            all_transforms.extend(descendants)
+
+        processed = []
+        skipped = []
+
+        for transform in all_transforms:
+            short_name = transform.split("|")[-1]
+            if short_name.startswith("UCX_") or short_name.endswith("_grp"):
+                continue
+
+            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh") or []
+            for shape in shapes:
+                try:
+                    existing_uvsets = cmds.polyUVSet(shape, q=True, allUVSets=True) or []
+                    if "uvSet1" not in existing_uvsets:
+                        skipped.append(short_name)
+                        continue
+
+                    # If uvSet1 is on top, move map1 to top first
+                    if existing_uvsets[0] == "uvSet1" and "map1" in existing_uvsets:
+                        mel.eval(f'polyUVSet -reorder -uvSet "map1" -newUVSet "uvSet1" {shape};')
+                        cmds.polyUVSet(shape, currentUVSet=True, uvSet="map1")
+
+                    # Delete uvSet1
+                    cmds.polyUVSet(shape, delete=True, uvSet="uvSet1")
+                    processed.append(short_name)
+
+                except RuntimeError as e:
+                    QMessageBox.warning(self, "Undo LEGC Failed",
+                        f"Could not undo LEGC on {short_name}:\n\n{e}")
+
+        # Swap button back to checkbox
+        self.legc_undo_button.setVisible(False)
+        self.legc_undo_label.setVisible(False)
+        self.legc_checkbox.setVisible(True)
+        self.data.legc_applied = False
+        self.legc_state_changed.emit(self.data.uuid, False)
+
+        # Build result message
+        msg_parts = []
+        if processed:
+            msg_parts.append(f"uvSet1 removed from: {', '.join(processed)}")
+        if skipped:
+            msg_parts.append(f"No uvSet1 found on: {', '.join(skipped)}")
+
+        cmds.inViewMessage(
+            amg="LEGC <hl>undone</hl> successfully.",
+            pos="topCenter",
+            fade=True
+        )
+
     # ------------ EXPORT ------------
 
     def export_layer(self):
@@ -623,9 +722,14 @@ class LayerWidget(QWidget):
         previous_selection = cmds.ls(selection=True)
         original_positions = self._move_to_origin(members) if self.data.use_origin else {}
 
+        legc_ran = False
         try:
             if self.legc_checkbox.isChecked():
                 # Run LEGC and capture state for restoration
+                legc_ran = True
+                self.data.legc_applied = True
+                print(f"Emitting legc_state_changed: {self.data.uuid}, True")
+                self.legc_state_changed.emit(self.data.uuid, True)
                 legc_result = self._run_legc(members)
                 valid_shapes = legc_result.get("valid_shapes", [])
                 valid_transforms = legc_result.get("valid_transforms", [])
@@ -667,6 +771,11 @@ class LayerWidget(QWidget):
                 cmds.select(previous_selection)
             else:
                 cmds.select(clear=True)
+            self.legc_checkbox.setChecked(False)
+            if legc_ran:
+                self.legc_checkbox.setVisible(False)
+                self.legc_undo_label.setVisible(True)
+                self.legc_undo_button.setVisible(True)
 
             # Reset LEGC checkbox after export regardless of success or failure
             self.legc_checkbox.setChecked(False)

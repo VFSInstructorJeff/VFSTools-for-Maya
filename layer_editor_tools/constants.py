@@ -48,6 +48,7 @@ FOLDER_OPEN = str(ICON_DIR / "folder-open.png")
 HELP = str(ICON_DIR / "help_line.png")
 BUG_REPORT = str(ICON_DIR / "aic_warning.png")
 DRAG_HANDLE = str(ICON_DIR / "draggable.png")
+UNDO = str(ICON_DIR/ "undo_s.png")
 
 # Others
 ARROW_RIGHT = str(ICON_DIR / "teRightArrow.png")

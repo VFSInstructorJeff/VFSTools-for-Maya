@@ -18,9 +18,10 @@ class VFSLayerData:
     select_sm: bool = False
     select_ucx: bool = False
 
-    use_origin: bool = True
+    use_origin: bool = False
     export_path: str = ""
     legc_export_path: str = ""
+    legc_applied: bool = False
 
     # ------------ FUNCTIONS ------------
 

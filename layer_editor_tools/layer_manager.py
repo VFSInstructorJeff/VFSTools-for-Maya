@@ -47,6 +47,8 @@ class LayerManager:
             # Connect LayerManager methods to LayerWidget Signals so widgets can emit signals to the manager
             widget.selected.connect(self.on_layer_selected)
             widget.path_changed.connect(self.update_session_cache)
+            widget.legc_path_changed.connect(self.update_session_cache_legc_path)
+            widget.legc_state_changed.connect(self.update_session_cache_legc)
 
             # Create entry layer with data from VFSLayerData and widget from LayerWidget
             entry = {"data": data, "widget": widget}
@@ -273,13 +275,31 @@ class LayerManager:
         _session_cache[uuid] = export_path
         _legc_session_cache[uuid] = export_path
 
+    def update_session_cache_legc(self, uuid, legc_applied):
+        print(f"update_session_cache_legc called: {uuid}, {legc_applied}")
+        if uuid not in _session_cache:
+            _session_cache[uuid] = {}
+        _session_cache[uuid]["legc_applied"] = legc_applied
+        print(f"Session cache after update: {_session_cache}")
+
+    def update_session_cache_legc_path(self, uuid, legc_export_path):
+        if uuid not in _session_cache:
+            _session_cache[uuid] = {}
+        _session_cache[uuid]["legc_export_path"] = legc_export_path
+
     def _apply_session_cache(self, data):
         """Fill in export_path from session cache if not already set."""
-        if not data.export_path and data.uuid in _session_cache:
-            data.export_path = _session_cache[data.uuid]
-        if not data.legc_export_path and data.uuid in _legc_session_cache:
-            data.legc_export_path = _legc_session_cache[data.uuid]
-
+        # Add temporarily to _apply_session_cache at the top
+        print(f"Session cache for {data.uuid}: {_session_cache.get(data.uuid)}")
+        print(f"legc_applied on data before cache: {data.legc_applied}")
+        if data.uuid in _session_cache:
+            cached = _session_cache[data.uuid]
+            if not data.export_path and "export_path" in cached:
+                data.export_path = cached["export_path"]
+            if not data.legc_export_path and "legc_export_path" in cached:
+                data.legc_export_path = cached["legc_export_path"]
+            if "legc_applied" in cached:
+                data.legc_applied = cached["legc_applied"]
     # ------------ SAVE ------------
 
     def save(self):
@@ -325,6 +345,8 @@ class LayerManager:
             widget = LayerWidget(data)
             widget.selected.connect(self.on_layer_selected)
             widget.path_changed.connect(self.update_session_cache)
+            widget.legc_path_changed.connect(self.update_session_cache_legc_path)
+            widget.legc_state_changed.connect(self.update_session_cache_legc)
 
             entry = {"data": data, "widget": widget}
             self.layers.append(entry)
