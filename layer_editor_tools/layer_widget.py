@@ -457,7 +457,7 @@ class LayerWidget(QWidget):
                 QMessageBox.warning(
                     self,
                     "LEGC Material Saving Failed",
-                    f"Something went wrong with the LEGC Material Saving procedure.\n\n{value_error_msg}"
+                    f"Something went wrong with the LEGC Material Saving procedure.\n\n{value_error_msg}\n\nTry deleting history on the affected mesh."
                 )
 
         # Get all SGs connected to valid shapes, deduplicated
