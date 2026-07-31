@@ -58,7 +58,7 @@ class MainWindow(mixin, QWidget):
         self.hint_label = QLabel("Right click layer for more options")
         self.window_layout.addWidget(self.hint_label)
 
-        self.tool_version = QLabel("VFS Layer Tools v1.2.0 [FEATURE BRANCH]")
+        self.tool_version = QLabel("VFS Layer Tools v2.0.0 [FEATURE BRANCH]")
         self.window_layout.addWidget(self.tool_version)
 
         self.layer_manager = LayerManager()

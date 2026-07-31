@@ -762,7 +762,10 @@ class LayerWidget(QWidget):
             cmds.select(members)
             export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
             cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
-            cmds.inViewMessage(amg='LEGC and Regular FBX files exported <hl>successfully</hl>.', pos='topCenter', fade=True)
+            if legc_ran:
+                cmds.inViewMessage(amg="LEGC and Regular FBX files exported <hl>successfully</hl>.", pos='topCenter', fade=True)
+            else:
+                cmds.inViewMessage(amg=f"{self.data.maya_layer_name} FBX file exported <hl>successfully</hl>.", pos='topCenter', fade=True)
 
         finally:
             if original_positions:
