@@ -608,6 +608,12 @@ class LayerWidget(QWidget):
         # Delete history
         cmds.delete(valid_transforms, constructionHistory=True)
 
+        # Deleting history can rename shape nodes, so valid_shapes paths can be invalid, so we re-query shapes from the transforms
+        valid_shapes = []
+        for transform in valid_transforms:
+            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh") or []
+            valid_shapes.extend(shapes)
+
         # Capture per-face shading group assignments before material assignment
         original_shading_groups = self._capture_shading_groups(valid_shapes)
 

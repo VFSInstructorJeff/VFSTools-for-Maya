@@ -272,28 +272,30 @@ class LayerManager:
 
     def update_session_cache(self, uuid, export_path):
         """Called whenever a layer's export path changes."""
-        _session_cache[uuid] = export_path
-        _legc_session_cache[uuid] = export_path
+        if uuid not in _session_cache or isinstance(_session_cache[uuid], str):
+            _session_cache[uuid] = {}
+        _session_cache[uuid]["export_path"] = export_path
 
     def update_session_cache_legc(self, uuid, legc_applied):
-        print(f"update_session_cache_legc called: {uuid}, {legc_applied}")
-        if uuid not in _session_cache:
+        if uuid not in _session_cache or isinstance(_session_cache[uuid], str):
             _session_cache[uuid] = {}
         _session_cache[uuid]["legc_applied"] = legc_applied
-        print(f"Session cache after update: {_session_cache}")
 
     def update_session_cache_legc_path(self, uuid, legc_export_path):
-        if uuid not in _session_cache:
+        if uuid not in _session_cache  or isinstance(_session_cache[uuid], str):
             _session_cache[uuid] = {}
         _session_cache[uuid]["legc_export_path"] = legc_export_path
 
     def _apply_session_cache(self, data):
         """Fill in export_path from session cache if not already set."""
         # Add temporarily to _apply_session_cache at the top
-        print(f"Session cache for {data.uuid}: {_session_cache.get(data.uuid)}")
-        print(f"legc_applied on data before cache: {data.legc_applied}")
         if data.uuid in _session_cache:
             cached = _session_cache[data.uuid]
+            if isinstance(cached, str):
+                # Legacy format (plain string was the export path)
+                if not data.export_path:
+                    data.export_path = cached
+                return
             if not data.export_path and "export_path" in cached:
                 data.export_path = cached["export_path"]
             if not data.legc_export_path and "legc_export_path" in cached:
