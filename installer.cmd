@@ -41,6 +41,7 @@ echo     ]>> favs.json
 echo }>> favs.json
 
 :: Copy our favs.json to prefs folder (I haven't been able to redirect this one because it would mean changing the entire Maya application folder location, but it could be done by setting MAYA_APP_DIR)
+xcopy /s/y "%cd%\favs.json" "%userprofile%\Documents\maya\2027\prefs\"
 xcopy /s/y "%cd%\favs.json" "%userprofile%\Documents\maya\2026\prefs\"
 xcopy /s/y "%cd%\favs.json" "%userprofile%\Documents\maya\2025\prefs\"
 
