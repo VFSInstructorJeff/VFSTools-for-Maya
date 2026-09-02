@@ -18,6 +18,14 @@ from layer_editor_tools.layer_manager import LayerManager
 from layer_editor_tools.layer_widget import LayerWidget
 from layer_editor_tools.utils import get_main_window
 
+# Tracks the single live MainWindow instance so its scene callbacks can be
+# torn down explicitly before the UI is deleted. cmds.deleteUI() on a
+# workspaceControl does NOT reliably fire Qt's closeEvent, so relying on
+# closeEvent alone leaked a full set of om.MSceneMessage/MEventMessage
+# callbacks (all still pointing at a dead widget) every time the tool
+# was relaunched.
+_current_instance = None
+
 # ------------ MAIN WINDOW ------------
 
 class MainWindow(mixin, QWidget):
@@ -25,6 +33,13 @@ class MainWindow(mixin, QWidget):
     UI_OBJECT_NAME = "LayerToolsWindow"
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+        global _current_instance
+
+        # Clean up the previous instance's callbacks *before* its UI gets
+        # torn down, since deleteUI won't do this for us.
+        if _current_instance is not None:
+            _current_instance._teardown_callbacks()
+            _current_instance = None
 
         if cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", exists=True):
             cmds.deleteUI(self.UI_OBJECT_NAME + "WorkspaceControl")
@@ -87,6 +102,8 @@ class MainWindow(mixin, QWidget):
             "displayLayerAdded",
             lambda *args: self.on_maya_layer_added()
         )
+
+        _current_instance = self
 
         self.show(dockable=True)
 
@@ -219,6 +236,8 @@ class MainWindow(mixin, QWidget):
                     widget = LayerWidget(data)
                     widget.selected.connect(self.layer_manager.on_layer_selected)
                     widget.path_changed.connect(self.layer_manager.update_session_cache)
+                    widget.legc_path_changed.connect(self.layer_manager.update_session_cache_legc_path)
+                    widget.legc_state_changed.connect(self.layer_manager.update_session_cache_legc)
 
                     entry = {"data": data, "widget": widget}
                     self.layer_manager.layers.insert(0, entry)
@@ -234,16 +253,30 @@ class MainWindow(mixin, QWidget):
     # --------------------------------
 
     def closeEvent(self, event):
+        global _current_instance
+        self._teardown_callbacks()
+        if _current_instance is self:
+            _current_instance = None
+        super().closeEvent(event)
+
+    def _teardown_callbacks(self):
+        """Remove node + scene callbacks. Called from closeEvent, and also
+        called directly on the previous instance from __init__ since
+        cmds.deleteUI() does not reliably trigger closeEvent."""
         # Remove node callbacks for all layers
         for entry in self.layer_manager.layers:
             uuid = entry["data"].uuid
             self.layer_manager._remove_node_callback(uuid)
-    
-        om.MSceneMessage.removeCallback(self._save_callback)
-        om.MSceneMessage.removeCallback(self._new_callback)
-        om.MSceneMessage.removeCallback(self._open_callback)
-        om.MEventMessage.removeCallback(self._layer_added_callback)
-        super().closeEvent(event)
+
+        for cb in (self._save_callback, self._new_callback, self._open_callback):
+            try:
+                om.MSceneMessage.removeCallback(cb)
+            except RuntimeError:
+                pass  # Already removed
+        try:
+            om.MEventMessage.removeCallback(self._layer_added_callback)
+        except RuntimeError:
+            pass  # Already removed
 
 
 def main():

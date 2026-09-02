@@ -742,7 +742,17 @@ class LayerWidget(QWidget):
                 original_shading_groups = legc_result.get("original_shading_groups", {})
 
                 # LEGC export
-                cmds.select(members)
+                legc_export_members = [
+                    obj for obj in members
+                    if not obj.split("|")[-1].startswith("UCX_")
+                ]
+                if not legc_export_members:
+                    QMessageBox.warning(
+                        self, "Export Failed",
+                        f"No non-UCX objects found in layer {self.data.maya_layer_name} for LEGC export."
+                    )
+                    return
+                cmds.select(legc_export_members)
                 legc_export_path = f"{self.data.legc_export_path}/{self.data.maya_layer_name}_LEGC.fbx"
                 cmds.file(legc_export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
 
