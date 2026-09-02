@@ -293,15 +293,15 @@ class LayerManager:
             cached = _session_cache[data.uuid]
             if isinstance(cached, str):
                 # Legacy format (plain string was the export path)
-                if not data.export_path:
-                    data.export_path = cached
+                data.export_path = cached
                 return
-            if not data.export_path and "export_path" in cached:
+            if "export_path" in cached:
                 data.export_path = cached["export_path"]
-            if not data.legc_export_path and "legc_export_path" in cached:
+            if "legc_export_path" in cached:
                 data.legc_export_path = cached["legc_export_path"]
             if "legc_applied" in cached:
                 data.legc_applied = cached["legc_applied"]
+                
     # ------------ SAVE ------------
 
     def save(self):
