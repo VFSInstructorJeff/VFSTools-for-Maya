@@ -731,12 +731,20 @@ class LayerWidget(QWidget):
         legc_ran = False
         try:
             if self.legc_checkbox.isChecked():
+                legc_result = self._run_legc(members)
+                
+                if legc_result is None:
+                    # LEGC layout failed, abort the export entirely, don't write any FBX or mark LEGC as successful
+                    QMessageBox.warning(
+                        self, "Export Aborted",
+                        "LEGC layout failed, so no files were exported."
+                    )
+                    return
+                
                 # Run LEGC and capture state for restoration
                 legc_ran = True
                 self.data.legc_applied = True
-                print(f"Emitting legc_state_changed: {self.data.uuid}, True")
                 self.legc_state_changed.emit(self.data.uuid, True)
-                legc_result = self._run_legc(members)
                 valid_shapes = legc_result.get("valid_shapes", [])
                 valid_transforms = legc_result.get("valid_transforms", [])
                 original_shading_groups = legc_result.get("original_shading_groups", {})
@@ -752,9 +760,44 @@ class LayerWidget(QWidget):
                         f"No non-UCX objects found in layer {self.data.maya_layer_name} for LEGC export."
                     )
                     return
-                cmds.select(legc_export_members)
+
+                ucx_descendants = []
+                for obj in legc_export_members:
+                    if cmds.objExists(obj):
+                        descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True, type="transform") or []
+                        ucx_descendants.extend(d for d in descendants if d.split("|")[-1].startswith("UCX_"))
+                ucx_descendants = list(dict.fromkeys(ucx_descendants)) # Dedupe, preserve order
+                
+                detached_ucx = {} # new_path -> (original_parent, original_short_name)
+                for ucx in ucx_descendants:
+                    if not cmds.objExists(ucx):
+                        continue
+                    original_parent = cmds.listRelatives(ucx, parent=True, fullPath=True)
+                    original_parent = original_parent[0] if original_parent else None
+                    original_short_name = ucx.split("|")[-1]
+                    
+                    # Track by UUID so we can reliably re-find this exact node even if Maya
+                    # auto-renamed it to resolve a collision with another UCX_ node at world root
+                    node_uuid = cmds.ls(ucx, uuid=True)[0]
+                    
+                    cmds.parent(ucx, world=True)
+                    new_path = cmds.ls(node_uuid, long=True)[0]
+                    detached_ucx[new_path] = (original_parent, original_short_name)
+
+
                 legc_export_path = f"{self.data.legc_export_path}/{self.data.maya_layer_name}_LEGC.fbx"
-                cmds.file(legc_export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+                try:
+                    cmds.select(legc_export_members)
+                    cmds.file(legc_export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+                finally:
+                    # Reattach UCX meshes back to their original parents, regardless of export success
+                    for new_path, (original_parent, original_short_name) in detached_ucx.items():
+                        if original_parent and cmds.objExists(new_path) and cmds.objExists(original_parent):
+                            reparented = cmds.parent(new_path, original_parent)[0]
+                            reparented_long = cmds.ls(reparented, long=True)[0]
+                            # Restore exact og nme if it got renamed by Maya while detached
+                            if reparented_long.split("|")[-1] != original_short_name:
+                                cmds.rename(reparented_long, original_short_name)
 
                 # Restore original materials
                 self._restore_shading_groups(original_shading_groups)
