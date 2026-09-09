@@ -526,6 +526,7 @@ class LayerWidget(QWidget):
             all_transforms.extend(descendants)
 
         skipped = []
+        failed = []
         valid_shapes = []
 
         for transform in all_transforms:
@@ -536,7 +537,8 @@ class LayerWidget(QWidget):
                 continue
 
             # Get shape nodes from this transform
-            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh") or []
+            # noIntermediate excludes orig/intermediate shapes (e.g. history left behind by a previous LEGC + Undo LEGC pass)
+            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh", noIntermediate=True) or []
 
             for shape in shapes:
                 existing_uvsets = cmds.polyUVSet(shape, q=True, allUVSets=True) or []
@@ -551,17 +553,24 @@ class LayerWidget(QWidget):
 
                 # We're creating a new UV set instead of duplicating the existing map1 to avoid a Maya bug
                 # Where reordering the UV sets overrides them, undoing the layout of the LEGC UV set
-                
-                # Create new empty UV set called uvSet1
-                cmds.select(shape)
-                cmds.polyUVSet(create=True, uvSet = "uvSet1")
-                cmds.polyCopyUV(shape, uvSetNameInput = first_uvset, uvSetName = "uvSet1")
+                try:
+                    # Create new empty UV set called uvSet1
+                    cmds.select(shape)
+                    cmds.polyUVSet(create=True, uvSet = "uvSet1")
+                    cmds.polyCopyUV(shape, uvSetNameInput = first_uvset, uvSetName = "uvSet1")
 
-                # Reorder uvSet1 to be first
-                mel.eval(f'polyUVSet -reorder -uvSet "uvSet1" -newUVSet "{first_uvset}" {shape};')
+                    # Reorder uvSet1 to be first
+                    mel.eval(f'polyUVSet -reorder -uvSet "uvSet1" -newUVSet "{first_uvset}" {shape};')
 
-                # Set uvSet1 as current
-                cmds.polyUVSet(shape, currentUVSet=True, uvSet="uvSet1")
+                    # Set uvSet1 as current
+                    cmds.polyUVSet(shape, currentUVSet=True, uvSet="uvSet1")
+
+                except RuntimeError as runtime_error_msg:
+                    # If there's an error, it prob means there's history still holding onto a "uvSet1" name
+                    # Skip it and keep going
+                    failed.append(short_name)
+                    print(f"LEGC UV setup failed on '{short_name}': {runtime_error_msg}")
+                    continue
 
                 valid_shapes.append(shape)
 
@@ -571,6 +580,14 @@ class LayerWidget(QWidget):
                 "LEGC Skipped",
                 "The following meshes already have a uvSet1 and were skipped:\n\n" +
                 "\n".join(skipped)
+            )
+
+        if failed:
+            QMessageBox.warning(
+                self,
+                "LEGC UV Setup Failed",
+                "The following meshes failed to set up uvSet1 and were skipped."
+                "Try deleting history on these meshes and running LEGC again:\n\n" + "\n".join(failed)
             )
 
         if not valid_shapes:
@@ -658,7 +675,7 @@ class LayerWidget(QWidget):
             if short_name.startswith("UCX_") or short_name.endswith("_grp"):
                 continue
 
-            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh") or []
+            shapes = cmds.listRelatives(transform, shapes=True, fullPath=True, type="mesh", noIntermediate=True) or []
             for shape in shapes:
                 try:
                     existing_uvsets = cmds.polyUVSet(shape, q=True, allUVSets=True) or []
@@ -673,6 +690,11 @@ class LayerWidget(QWidget):
 
                     # Delete uvSet1
                     cmds.polyUVSet(shape, delete=True, uvSet="uvSet1")
+                    # polyUVSet -delete leaves intermediate "orig" shape that still references uvSet1
+                    # This leaves some history that might give artists issues if they undo and redo LEGC
+                    # We clear history to avoid any issues
+                    cmds.delete(transform, constructionHistory=True)
+
                     processed.append(short_name)
 
                 except RuntimeError as e:
