@@ -783,43 +783,59 @@ class LayerWidget(QWidget):
                     )
                     return
 
-                ucx_descendants = []
-                for obj in legc_export_members:
-                    if cmds.objExists(obj):
-                        descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True, type="transform") or []
-                        ucx_descendants.extend(d for d in descendants if d.split("|")[-1].startswith("UCX_"))
-                ucx_descendants = list(dict.fromkeys(ucx_descendants)) # Dedupe, preserve order
-                
-                detached_ucx = {} # new_path -> (original_parent, original_short_name)
-                for ucx in ucx_descendants:
-                    if not cmds.objExists(ucx):
-                        continue
-                    original_parent = cmds.listRelatives(ucx, parent=True, fullPath=True)
-                    original_parent = original_parent[0] if original_parent else None
-                    original_short_name = ucx.split("|")[-1]
-                    
-                    # Track by UUID so we can reliably re-find this exact node even if Maya
-                    # auto-renamed it to resolve a collision with another UCX_ node at world root
-                    node_uuid = cmds.ls(ucx, uuid=True)[0]
-                    
-                    cmds.parent(ucx, world=True)
-                    new_path = cmds.ls(node_uuid, long=True)[0]
-                    detached_ucx[new_path] = (original_parent, original_short_name)
+                # Rename standardSurface1 to the layer name for the LEGC export
+                exported_material_name = None
+                if cmds.objExists("standardSurface1"):
+                    exported_material_name = cmds.rename("standardSurface1", self.data.maya_layer_name)
+                    if exported_material_name != (self.data.maya_layer_name):
+                        print(
+                            f"Warning: 'standardSurface1' could not be renamed to "
+                            f"'{self.data.maya_layer_name}' (name already in use elsewhere in the "
+                            f"scene). Exported LEGC material will be named '{exported_material_name}' instead." # warns if Maya had to alter the name
+                        )  
 
-
-                legc_export_path = f"{self.data.legc_export_path}/{self.data.maya_layer_name}_LEGC.fbx"
                 try:
-                    cmds.select(legc_export_members)
-                    cmds.file(legc_export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+                    ucx_descendants = []
+                    for obj in legc_export_members:
+                        if cmds.objExists(obj):
+                            descendants = cmds.listRelatives(obj, allDescendents=True, fullPath=True, type="transform") or []
+                            ucx_descendants.extend(d for d in descendants if d.split("|")[-1].startswith("UCX_"))
+                    ucx_descendants = list(dict.fromkeys(ucx_descendants)) # Dedupe, preserve order
+
+                    detached_ucx = {} # new_path -> (original_parent, original_short_name)
+                    for ucx in ucx_descendants:
+                        if not cmds.objExists(ucx):
+                            continue
+                        original_parent = cmds.listRelatives(ucx, parent=True, fullPath=True)
+                        original_parent = original_parent[0] if original_parent else None
+                        original_short_name = ucx.split("|")[-1]
+
+                        # Track by UUID so we can reliably re-find this exact node even if Maya
+                        # auto-renamed it to resolve a collision with another UCX_ node at world root
+                        node_uuid = cmds.ls(ucx, uuid=True)[0]
+
+                        cmds.parent(ucx, world=True)
+                        new_path = cmds.ls(node_uuid, long=True)[0]
+                        detached_ucx[new_path] = (original_parent, original_short_name)
+
+
+                    legc_export_path = f"{self.data.legc_export_path}/{self.data.maya_layer_name}_LEGC.fbx"
+                    try:
+                        cmds.select(legc_export_members)
+                        cmds.file(legc_export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
+                    finally:
+                        # Reattach UCX meshes back to their original parents, regardless of export success
+                        for new_path, (original_parent, original_short_name) in detached_ucx.items():
+                            if original_parent and cmds.objExists(new_path) and cmds.objExists(original_parent):
+                                reparented = cmds.parent(new_path, original_parent)[0]
+                                reparented_long = cmds.ls(reparented, long=True)[0]
+                                # Restore exact og nme if it got renamed by Maya while detached
+                                if reparented_long.split("|")[-1] != original_short_name:
+                                    cmds.rename(reparented_long, original_short_name)
                 finally:
-                    # Reattach UCX meshes back to their original parents, regardless of export success
-                    for new_path, (original_parent, original_short_name) in detached_ucx.items():
-                        if original_parent and cmds.objExists(new_path) and cmds.objExists(original_parent):
-                            reparented = cmds.parent(new_path, original_parent)[0]
-                            reparented_long = cmds.ls(reparented, long=True)[0]
-                            # Restore exact og nme if it got renamed by Maya while detached
-                            if reparented_long.split("|")[-1] != original_short_name:
-                                cmds.rename(reparented_long, original_short_name)
+                    # Rename the material back to standardSurface1 so it stays shared/reusable
+                    if exported_material_name and cmds.objExists(exported_material_name):
+                        cmds.rename(exported_material_name, "standardSurface1")
 
                 # Restore original materials
                 self._restore_shading_groups(original_shading_groups)
