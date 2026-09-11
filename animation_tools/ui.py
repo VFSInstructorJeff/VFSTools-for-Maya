@@ -119,11 +119,13 @@ def mixamo_anim_editor():
     
     
     #####
-    '''
     
+
     cmds.setParent( '..' )
     
     cmds.separator(st = 'none', h = 10)
+
+    '''
     
     cmds.rowLayout(numberOfColumns=2)
     
