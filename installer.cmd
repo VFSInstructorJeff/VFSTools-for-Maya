@@ -14,6 +14,7 @@ xcopy /s/y "%cd%\Maya.env" "%userprofile%\Documents\maya\VFSTools\"
 xcopy /s/y "%cd%\userSetup.py" "%userprofile%\Documents\maya\VFSTools\"
 xcopy /s/y "%cd%\shelf_VFS_Tools.mel" "%userprofile%\Documents\maya\VFSTools\"
 xcopy /s/y "%cd%\shelf_VFS_LD.mel" "%userprofile%\Documents\maya\VFSTools\"
+xcopy /s/y "%cd%\shelf_VFS_Rigging.mel" "%userprofile%\Documents\maya\VFSTools\"
 xcopy /s/y "%cd%\VFS_Hotkeys.mhk" "%userprofile%\Documents\maya\VFSTools\"
 
 :: Copy VFS Tools folders
