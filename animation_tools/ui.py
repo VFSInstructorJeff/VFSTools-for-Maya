@@ -16,6 +16,8 @@ def mixamo_anim_editor():
     cmds.columnLayout( adjustableColumn=True )
     cmds.text( label='Select HIPS joint', align='center', fn = 'boldLabelFont', w = 20, h = 30)
     cmds.button( label='Build FK Controllers', command = anim_tools_core.fk_controller_builder, w = 200)
+    
+    '''
     cmds.text( label='Controller Settings', align='center', fn = 'boldLabelFont', w = 20, h = 30)
 
     cmds.rowLayout(numberOfColumns=4) 
@@ -118,9 +120,12 @@ def mixamo_anim_editor():
     
     #####
     
+
     cmds.setParent( '..' )
     
     cmds.separator(st = 'none', h = 10)
+
+    '''
     
     cmds.rowLayout(numberOfColumns=2)
     
