@@ -306,6 +306,7 @@ global proc shelf_VFS_Rigging () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
+        -imageOverlayLabel "WIP" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
         -image "C:/Users/lrenis/Documents/maya/VFSTools/icons/mixamo64.png" 
