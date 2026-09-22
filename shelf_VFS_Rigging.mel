@@ -328,7 +328,7 @@ global proc shelf_VFS_Rigging () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "RigHelp" 
+        -annotation "Karoly Controlly" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -340,7 +340,7 @@ global proc shelf_VFS_Rigging () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
-        -imageOverlayLabel "RigHelp" 
+        -imageOverlayLabel "Karoly" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
         -image "kinJoint.png" 
