@@ -1294,7 +1294,7 @@ def fk_controller_deconstructor(*args):
     for jnt in all_joints:
         parent = cmds.listRelatives(jnt, parent=True)
 
-        # If no parent OR parent is not a joint ? this is a skeleton root
+        # If no parent OR parent is not a joint → this is a skeleton root
         if not parent or cmds.nodeType(parent[0]) != "joint":
             root_joints.append(jnt)
 
@@ -1325,19 +1325,25 @@ def mixamo_anim_editor():
         cmds.deleteUI(winName)
         print('Deleted old Mixamo Editor UI')
 
-    window = cmds.workspaceControl(winName, label = "Karoly Controlly Editor", fl = True, retain = False, ih = 800, w = 400, iw = 400, wp='fixed')
+    window = cmds.workspaceControl(winName, label = "Karoly Controlly Editor", fl = True, retain = False, ih = 800, w = 320, iw = 320, wp='fixed', rsw = 320)
+    
+    scrollLayout = cmds.scrollLayout(horizontalScrollBarThickness=16, verticalScrollBarThickness=16, w = 320)
+    
+    #scrollLayout = cmds.scrollLayout(horizontalScrollBarThickness=16, verticalScrollBarThickness=50)
     cmds.columnLayout( adjustableColumn=True )
     #cmds.text( label='Select HIPS joint', align='center', fn = 'boldLabelFont', w = 20, h = 30)
     #cmds.button( label='Build FK Controllers', command = fk_controller_builder, w = 200)
-    cmds.text( label='Local Rotation Axis', align='center', fn = 'boldLabelFont', w = 20, h = 30)
+    cmds.separator(st = 'none', h = 10)
+    cmds.text( label='LOCAL ROTATION AXIS', align='center', fn = 'boldLabelFont', w = 20, h = 25, bgc=[0.2, 0.2, 0.2])
+    cmds.separator(st = 'none', h = 10)
     
     #####
     
     cmds.rowLayout(numberOfColumns=5)
     
-    cmds.separator(hr = False, h = 23, w = 50, vis = False)
+    #cmds.separator(hr = False, h = 23, w = 50, vis = False)
     cmds.button(label="Show All", w = 70, bgc=[0.5, 0.5, 1], command=enableAllTransAxis)
-    cmds.separator(hr = False, h = 23, w = 30, st = 'out')
+    cmds.separator(hr = False, h = 23, w = 12, st = 'out')
     cmds.button(label="Show Selected", w = 100, bgc=[0.3, 0.8, 0.9], command=selectedShowTransAxis)
     cmds.button(label="Show All Children", w = 100, bgc=[0.3, 0.8, 0.7], command=allChildrenShowTransAxis)
     
@@ -1349,9 +1355,9 @@ def mixamo_anim_editor():
     
     cmds.rowLayout(numberOfColumns=5)
     
-    cmds.separator(hr = False, h = 23, w = 50, vis = False)
+    #cmds.separator(hr = False, h = 23, w = 50, vis = False)
     cmds.button(label="Hide All", w = 70, bgc=[0.5, 0.5, 1], command=disableAllTransAxis)
-    cmds.separator(hr = False, h = 23, w = 30, st = 'out')
+    cmds.separator(hr = False, h = 23, w = 12, st = 'out')
     cmds.button(label="Hide Selected", w = 100, bgc=[0.3, 0.8, 0.9], command=selectedHideTransAxis)
     cmds.button(label="Hide All Children", w = 100, bgc=[0.3, 0.8, 0.7], command=allChildrenHideTransAxis)
     
@@ -1361,29 +1367,37 @@ def mixamo_anim_editor():
     
     cmds.separator(st = 'in', h = 23)
     
-    cmds.text( label='Outliner Settings', align='center', fn = 'boldLabelFont', w = 20, h = 30)
+    cmds.text( label='OUTLINER SETTINGS', align='center', fn = 'boldLabelFont', w = 20, h = 25, bgc=[0.2, 0.2, 0.2])
+    cmds.separator(st = 'none', h = 10)
     
-    cmds.rowLayout(numberOfColumns=3)
+    cmds.rowLayout(numberOfColumns=4)
 
-    cmds.colorSliderGrp('outlinerColorValue', label='Outliner Color', rgb=(0.78, 0.78, 0.78), cl3 = ('left', 'left', 'left'), cw3=(100, 80, 72) )
+    cmds.text( label='Color', align='left', w = 50 )
+    cmds.colorSliderGrp('outlinerColorValue', label='', rgb=(0.78, 0.78, 0.78), cl3 = ('left', 'left', 'left'), cw3=(1, 80, 72) )
+    
+    cmds.columnLayout(adjustableColumn=True, w=70)
+    
     cmds.button(label="Selected", command = selectedChangeOutlinerColor, w = 70, bgc=[0.3, 0.8, 0.9])
-    cmds.button(label="All Children", command = allChildrenChangeOutlinerColor, w = 70, bgc=[0.3, 0.8, 0.7])    
+    cmds.separator(st='none', h=3)
+    cmds.button(label="All Children", command = allChildrenChangeOutlinerColor, w = 70, bgc=[0.3, 0.8, 0.7])
+    
+    cmds.setParent( '..' )    
     
     
 
     #####
     
-    cmds.setParent( '..' )
+    #cmds.setParent( '..' )
     
-    cmds.separator(st = 'none', h = 2)
+    #cmds.separator(st = 'none', h = 2)
     
-    cmds.rowLayout(numberOfColumns=5)
+    #cmds.rowLayout(numberOfColumns=5)
     
-    cmds.text( label='Reset Colors', align='left', w = 100)
-    cmds.button(label="Reset All", w = 79, bgc=[0.5, 0.5, 1], command=allSceneResetOutlinerColor)
-    cmds.button(label="Undo Reset", w = 79, bgc=[0.5, 0.6, 1], command=allSceneUndoResetOutlinerColor)
-    cmds.button(label="Selected", w = 70, bgc=[0.3, 0.8, 0.9], command=selectedResetOutlinerColor)
-    cmds.button(label="All Children", w = 70, bgc=[0.3, 0.8, 0.7], command=allChildrenResetOutlinerColors)
+    #cmds.text( label='Reset Colors', align='left', w = 100)
+    #cmds.button(label="Reset All", w = 79, bgc=[0.5, 0.5, 1], command=allSceneResetOutlinerColor)
+    #cmds.button(label="Undo Reset", w = 79, bgc=[0.5, 0.6, 1], command=allSceneUndoResetOutlinerColor)
+    #cmds.button(label="Selected", w = 70, bgc=[0.3, 0.8, 0.9], command=selectedResetOutlinerColor)
+    #cmds.button(label="All Children", w = 70, bgc=[0.3, 0.8, 0.7], command=allChildrenResetOutlinerColors)
     
     cmds.setParent( '..' )
     
@@ -1391,13 +1405,13 @@ def mixamo_anim_editor():
     
     cmds.rowLayout(numberOfColumns=11)
     
-    cmds.separator(st = 'none', w = 108)
+    cmds.separator(st = 'none', w = 55)
     
-    cmds.button(label='', w = 35, bgc=[1.0, 0.0, 1.0], command=lambda x: set_float_color_value(0))
-    cmds.button(label='', w = 35, bgc=[1.0, 1.0, 0.0], command=lambda x: set_float_color_value(1))
-    cmds.button(label='', w = 35, bgc=[0.0, 0.0, 1.0], command=lambda x: set_float_color_value(2))
-    cmds.button(label='', w = 35, bgc=[1.0, 0.0, 0.0], command=lambda x: set_float_color_value(3))
-    cmds.button(label='', w = 35, bgc=[0.3, 0.3, 8.0], command=lambda x: set_float_color_value(4)) 
+    cmds.button(label='OG', w = 35, bgc=[0.78, 0.78, 0.78], command=lambda x: set_float_color_value(9))
+    cmds.button(label='1', w = 35, bgc=[1.0, 1.0, 0.0], command=lambda x: set_float_color_value(1))
+    cmds.button(label='3', w = 35, bgc=[0.0, 0.0, 1.0], command=lambda x: set_float_color_value(2))
+    cmds.button(label='5', w = 35, bgc=[1.0, 0.0, 0.0], command=lambda x: set_float_color_value(3))
+    cmds.button(label='7', w = 35, bgc=[0.0, 1.0, 0.0], command=lambda x: set_float_color_value(5)) 
     
     cmds.setParent( '..' )
     
@@ -1405,13 +1419,13 @@ def mixamo_anim_editor():
     
     cmds.rowLayout(numberOfColumns=11)
     
-    cmds.separator(st = 'none', w = 108)
+    cmds.separator(st = 'none', w = 55)
     
-    cmds.button(label='', w = 35, bgc=[0.0, 1.0, 0.0], command=lambda x: set_float_color_value(5))
-    cmds.button(label='', w = 35, bgc=[0.4, 0.4, 0.1], command=lambda x: set_float_color_value(6))
-    cmds.button(label='', w = 35, bgc=[0.0, 1.0, 1.0], command=lambda x: set_float_color_value(7))
-    cmds.button(label='', w = 35, bgc=[2.4, 0.6, 0.6], command=lambda x: set_float_color_value(8))
-    cmds.button(label='', w = 35, bgc=[0.78, 0.78, 0.78], command=lambda x: set_float_color_value(9)) 
+    cmds.button(label='0', w = 35, bgc=[1.0, 0.0, 1.0], command=lambda x: set_float_color_value(0))
+    cmds.button(label='2', w = 35, bgc=[0.4, 0.4, 0.1], command=lambda x: set_float_color_value(6))
+    cmds.button(label='4', w = 35, bgc=[0.0, 1.0, 1.0], command=lambda x: set_float_color_value(7))
+    cmds.button(label='6', w = 35, bgc=[2.4, 0.6, 0.6], command=lambda x: set_float_color_value(8))
+    cmds.button(label='8', w = 35, bgc=[0.3, 0.3, 8.0], command=lambda x: set_float_color_value(4)) 
     
     #####
     
@@ -1419,19 +1433,20 @@ def mixamo_anim_editor():
     
     cmds.separator(st = 'in', h = 23)
     
-    cmds.text( label='Controller Creator', align='center', fn = 'boldLabelFont', w = 20, h = 30)
+    cmds.text( label='CONTROLLER CREATOR', align='center', fn = 'boldLabelFont', w = 20, h = 25, bgc=[0.2, 0.2, 0.2])
+    cmds.separator(st = 'none', h = 10)
     
-    cmds.rowLayout(numberOfColumns=2, columnWidth=(1, 100))
+    cmds.rowLayout(numberOfColumns=2, columnWidth=(1, 49))
 
 
-    cmds.text( label='Controller Name', align='left', w = 100 )
-    cmds.textField("controllerNameField", w = 200)
+    cmds.text( label='Name', align='left', w = 50 )
+    cmds.textField("controllerNameField", w = 200, pht = 'Enter Controller Name')
     
     cmds.setParent( '..' )
     
     cmds.rowLayout(numberOfColumns=4)
-    cmds.separator(hr = False, h = 43, w = 82, vis = False)
-    cmds.button(label="Create Controller", w = 100, bgc=[0.9, 0.4, 0.3], command=createJustController)
+    cmds.separator(hr = False, h = 43, w = 60, vis = False)
+    #cmds.button(label="Create Controller", w = 100, bgc=[0.9, 0.4, 0.3], command=createJustController)
     cmds.button(label="ZO", w = 70, bgc=[0.9, 0.5, 0.3], command=createZeroOffsetController)
     cmds.button(label="MZO", w = 70, bgc=[0.9, 0.6, 0.3], command=MZO)
     
@@ -1441,26 +1456,42 @@ def mixamo_anim_editor():
     
     cmds.separator(st = 'in', h = 23)
     
-    cmds.text( label='Controller Settings', align='center', fn = 'boldLabelFont', w = 20, h = 30)
+    cmds.text( label='CONTROLLER SETTINGS', align='center', fn = 'boldLabelFont', w = 20, h = 25, bgc=[0.2, 0.2, 0.2])
+    cmds.separator(st = 'none', h = 10)
 
-    cmds.rowLayout(numberOfColumns=4) 
+    cmds.rowLayout(numberOfColumns=3) 
 
-    cmds.text( label='Controller Scale', align='left', w = 100 )
-    cmds.floatSliderGrp("scaleValue", value=1.0, minValue=0.1, maxValue=2, w=160, pre = 1, field = True) 
-    cmds.button(label="Selected", command = singleSelectScale, w = 70, bgc=[0.3, 0.8, 0.9])
-    cmds.button(label="All Children", command = allChildrenScale, w = 70, bgc=[0.3, 0.8, 0.7])
+    cmds.text( label='Scale', align='left', w = 50 )
+    cmds.floatSliderGrp("scaleValue", value=1.0, minValue=0.1, maxValue=2, pre = 1, field = True, cw2 = [50, 100]) 
+    
+    cmds.columnLayout(adjustableColumn=True, w=70)
+    
+    cmds.button(label="Selected", command = singleSelectScale, w = 40, bgc=[0.3, 0.8, 0.9])
+    cmds.separator(st='none', h=3)
+    cmds.button(label="All Children", command = allChildrenScale, w = 10, bgc=[0.3, 0.8, 0.7])
+    
+    cmds.setParent( '..' )   
+    
+    
+    #cmds.button(label="Selected", command = singleSelectScale, w = 70, bgc=[0.3, 0.8, 0.9])
+    #cmds.button(label="All Children", command = allChildrenScale, w = 70, bgc=[0.3, 0.8, 0.7])
     
     #####
 
     cmds.setParent( '..' )
     
-    cmds.separator(st='none', h=10)
+    cmds.rowLayout(numberOfColumns=2, w=200, columnAlign=(1, 'center'))
+    cmds.separator(hr = False, h = 10, w = 40, st = 'none')
+    cmds.separator(hr = True, h = 1, w = 200, st = 'single')
+    cmds.setParent( '..' )
+    
+    cmds.separator(st='none', h=1)
 
     cmds.rowLayout(numberOfColumns=4)
 
-    cmds.text(label='Controller Shape', align='left', w=100)
+    cmds.text(label='Shape', align='left', w=50)
 
-    cmds.optionMenu("shapeMenu", w=160)
+    cmds.optionMenu("shapeMenu", w=158)
 
 
     cmds.menuItem(label='00 - Triangle', data = 0)
@@ -1494,58 +1525,105 @@ def mixamo_anim_editor():
     cmds.menuItem(label='28 - Locator Pin')
     cmds.menuItem(label='29 - Gear')
 
-    cmds.button(label="Selected", command = singleSelectShape, w=70, bgc=[0.3, 0.8, 0.9])
-    cmds.button(label="All Children", command = allChildrenShape, w=70, bgc=[0.3, 0.8, 0.7])
+    #cmds.button(label="Selected", command = singleSelectShape, w=70, bgc=[0.3, 0.8, 0.9])
+    #cmds.button(label="All Children", command = allChildrenShape, w=70, bgc=[0.3, 0.8, 0.7])
+    
+    cmds.columnLayout(adjustableColumn=True, w=70)
+    
+    cmds.button(label="Selected", command = singleSelectShape, w = 70, bgc=[0.3, 0.8, 0.9])
+    cmds.separator(st='none', h=3)
+    cmds.button(label="All Children", command = allChildrenShape, w = 70, bgc=[0.3, 0.8, 0.7])
+    
+    cmds.setParent( '..' )   
+    
+    cmds.setParent( '..' )
+    
+    cmds.rowLayout(numberOfColumns=2, w=200, columnAlign=(1, 'center'))
+    cmds.separator(hr = False, h = 10, w = 40, st = 'none')
+    cmds.separator(hr = True, h = 1, w = 200, st = 'single')
+    cmds.setParent( '..' )
 
-    cmds.setParent('..')
     
-    cmds.separator(st = 'none', h = 10)
+    #####
+    
+    cmds.setParent( '..' )
+    
+    cmds.separator(st='none', h=1)
+    
+    cmds.rowLayout(numberOfColumns=26) 
 
-    cmds.rowLayout(numberOfColumns=9) 
+    cmds.text( label='Orient', align='left', w = 52 )
     
-    cmds.separator(st = 'none', w = 106)
-    
+    cmds.columnLayout(adjustableColumn=True, w=52)
+    cmds.rowLayout(numberOfColumns=2) 
     cmds.iconTextButton( style='iconOnly', image1='rotateUVccw.png', command =  rotateXCounterClockwise)
     cmds.iconTextButton( style='iconOnly', image1='rotateUVcw.png', label='rotateXclockwise', command = rotateXClockwise)
-    
-    cmds.separator(hr = False, h = 18, w = 2, st = 'out')
-    
-    cmds.iconTextButton( style='iconOnly', image1='rotateUVccw.png', label='rotateYcounterclockwise', command =  rotateYCounterClockwise)
-    cmds.iconTextButton( style='iconOnly', image1='rotateUVcw.png', label='rotateYclockwise', command =  rotateYClockwise)
-    
-    cmds.separator(hr = False, h = 18, w = 2, st = 'out')
-    
-    cmds.iconTextButton( style='iconOnly', image1='rotateUVccw.png', label='rotateZcounterclockwise', command =  rotateZCounterClockwise)
-    cmds.iconTextButton( style='iconOnly', image1='rotateUVcw.png', label='rotateZclockwise',  command =  rotateZClockwise)
-
-    cmds.setParent('..')
-    
-    #cmds.separator(st = 'none', h = 10)
-
-    cmds.rowLayout(numberOfColumns=9) 
-
-    cmds.text( label='Controller Orient', align='left', w = 100 )
+    cmds.setParent( '..' )
+    cmds.rowLayout(numberOfColumns=2) 
     cmds.text( label='X:', align='left', w = 10 )
     cmds.intField("XValue", value=0, w = 40)
+    cmds.setParent( '..' )
+    cmds.setParent( '..' )
+    
+    cmds.columnLayout(adjustableColumn=True, w=50)
+    cmds.rowLayout(numberOfColumns=2) 
+    cmds.iconTextButton( style='iconOnly', image1='rotateUVccw.png', label='rotateYcounterclockwise', command =  rotateYCounterClockwise)
+    cmds.iconTextButton( style='iconOnly', image1='rotateUVcw.png', label='rotateYclockwise', command =  rotateYClockwise)
+    cmds.setParent( '..' )
+    cmds.rowLayout(numberOfColumns=2) 
     cmds.text( label='Y:', align='left', w = 10 )
     cmds.intField("YValue", value=0, w = 40)
+    cmds.setParent( '..' )
+    cmds.setParent( '..' )
+    
+    cmds.columnLayout(adjustableColumn=True, w=50)
+    cmds.rowLayout(numberOfColumns=2) 
+    cmds.iconTextButton( style='iconOnly', image1='rotateUVccw.png', label='rotateZcounterclockwise', command =  rotateZCounterClockwise)
+    cmds.iconTextButton( style='iconOnly', image1='rotateUVcw.png', label='rotateZclockwise',  command =  rotateZClockwise)
+    cmds.setParent( '..' )
+    cmds.rowLayout(numberOfColumns=2) 
     cmds.text( label='Z:', align='left', w = 10 )
     cmds.intField("ZValue", value=0, w = 40)
+    cmds.setParent( '..' )
+    cmds.setParent( '..' )
+    
+    cmds.columnLayout(adjustableColumn=True, w=70)
+    
     cmds.button(label="Selected", command = singleSelectOrient, w = 70, bgc=[0.3, 0.8, 0.9])
+    cmds.separator(st='none', h=3)
     cmds.button(label="All Children", command = allChildrenOrient, w = 70, bgc=[0.3, 0.8, 0.7])
+    
+    cmds.setParent( '..' )
+
+    cmds.setParent( '..' )
+    cmds.rowLayout(numberOfColumns=2, w=200, columnAlign=(1, 'center'))
+    cmds.separator(hr = False, h = 18, w = 40, st = 'none')
+    cmds.separator(hr = True, h = 10, w = 200, st = 'single')
+
+
     
     #####
     
     cmds.setParent( '..' )
 
-    cmds.separator(st = 'none', h = 10)
+    cmds.separator(st = 'none', h = 1)
 
     cmds.rowLayout(numberOfColumns=4) 
 
-    cmds.text( label='Controller Color', align='left', w = 100 )
+    cmds.text( label='Color', align='left', w = 50 )
+    
+    
     cmds.intField("colorValue", value=17, minValue=0, maxValue=31, ed = False, bgc = [1.0, 1.0, 0.0], w=160) 
-    cmds.button(label="Selected", command = singleSelectColor, w = 70, bgc=[0.3, 0.8, 0.9])
-    cmds.button(label="All Children", command = allChildrenColor, w = 70, bgc=[0.3, 0.8, 0.7])
+    
+    cmds.columnLayout(adjustableColumn=True, w=70)
+    
+    cmds.button(label="Selected", command = singleSelectShape, w = 70, bgc=[0.3, 0.8, 0.9])
+    cmds.separator(st='none', h=3)
+    cmds.button(label="All Children", command = allChildrenShape, w = 70, bgc=[0.3, 0.8, 0.7])
+    
+    cmds.setParent( '..' )   
+    #cmds.button(label="Selected", command = singleSelectColor, w = 70, bgc=[0.3, 0.8, 0.9])
+    #cmds.button(label="All Children", command = allChildrenColor, w = 70, bgc=[0.3, 0.8, 0.7])
     
     #####
     
@@ -1557,16 +1635,22 @@ def mixamo_anim_editor():
     
     cmds.separator(st = 'none', w = 17)
     
-    cmds.button(label='0', w = 35, bgc=[0.0, 0.0, 0.1], command=lambda x: set_color_value(0))
-    cmds.button(label='1', w = 35, bgc=[0.0, 0.0, 0.0], command=lambda x: set_color_value(1))
-    cmds.button(label='2', w = 35, bgc=[0.3, 0.3, 0.3], command=lambda x: set_color_value(2))
-    cmds.button(label='3', w = 35, bgc=[0.5, 0.5, 0.5], command=lambda x: set_color_value(3))
-    cmds.button(label='4', w = 35, bgc=[0.5, 0.0, 0.0], command=lambda x: set_color_value(4)) 
-    cmds.button(label='5', w = 35, bgc=[0.0, 0.0, 0.2], command=lambda x: set_color_value(5))
-    cmds.button(label='6', w = 35, bgc=[0.0, 0.0, 1.0], command=lambda x: set_color_value(6))
-    cmds.button(label='7', w = 35, bgc=[0.0, 0.2, 0.0], command=lambda x: set_color_value(7))
-    cmds.button(label='8', w = 35, bgc=[0.1, 0.0, 0.2], command=lambda x: set_color_value(8))
-    cmds.button(label='9', w = 35, bgc=[1.0, 0.0, 1.0], command=lambda x: set_color_value(9))
+    cmds.button(label='OG', w = 35, bgc=[0.78, 0.78, 0.78], command=lambda x: set_color_value(0))
+    cmds.button(label='1', w = 35, bgc=[1.0, 1.0, 0.0], command=lambda x: set_color_value(17))
+    cmds.button(label='3', w = 35, bgc=[0.0, 0.0, 1.0], command=lambda x: set_color_value(6))
+    cmds.button(label='5', w = 35, bgc=[1.0, 0.0, 0.0], command=lambda x: set_color_value(13))
+    cmds.button(label='7', w = 35, bgc=[0.0, 1.0, 0.0], command=lambda x: set_color_value(14)) 
+    
+    #cmds.button(label='0', w = 35, bgc=[0.0, 0.0, 0.1], command=lambda x: set_color_value(0))
+    #cmds.button(label='1', w = 35, bgc=[0.0, 0.0, 0.0], command=lambda x: set_color_value(1))
+    #cmds.button(label='2', w = 35, bgc=[0.3, 0.3, 0.3], command=lambda x: set_color_value(2))
+    #cmds.button(label='3', w = 35, bgc=[0.5, 0.5, 0.5], command=lambda x: set_color_value(3))
+    #cmds.button(label='4', w = 35, bgc=[0.5, 0.0, 0.0], command=lambda x: set_color_value(4)) 
+    #cmds.button(label='5', w = 35, bgc=[0.0, 0.0, 0.2], command=lambda x: set_color_value(5))
+    #cmds.button(label='6', w = 35, bgc=[0.0, 0.0, 1.0], command=lambda x: set_color_value(6))
+    #cmds.button(label='7', w = 35, bgc=[0.0, 0.2, 0.0], command=lambda x: set_color_value(7))
+    #cmds.button(label='8', w = 35, bgc=[0.1, 0.0, 0.2], command=lambda x: set_color_value(8))
+    #cmds.button(label='9', w = 35, bgc=[1.0, 0.0, 1.0], command=lambda x: set_color_value(9))
     
     #####
     
@@ -1578,52 +1662,71 @@ def mixamo_anim_editor():
     
     cmds.separator(st = 'none', w = 17)
     
-    cmds.button(label='10', w = 35, bgc=[0.5, 0.2, 0.0], command=lambda x: set_color_value(10))
-    cmds.button(label='11', w = 35, bgc=[0.2, 0.1, 0.0], command=lambda x: set_color_value(11))
-    cmds.button(label='12', w = 35, bgc=[0.7, 0.2, 0.0], command=lambda x: set_color_value(12))
-    cmds.button(label='13', w = 35, bgc=[1.0, 0.0, 0.0], command=lambda x: set_color_value(13))
-    cmds.button(label='14', w = 35, bgc=[0.0, 1.0, 0.0], command=lambda x: set_color_value(14))
-    cmds.button(label='15', w = 35, bgc=[0.0, 0.2, 0.7], command=lambda x: set_color_value(15))
-    cmds.button(label='16', w = 35, bgc=[1.0, 1.0, 1.0], command=lambda x: set_color_value(16))
-    cmds.button(label='17', w = 35, bgc=[1.0, 1.0, 0.0], command=lambda x: set_color_value(17))
-    cmds.button(label='18', w = 35, bgc=[0.0, 1.0, 1.0], command=lambda x: set_color_value(18))
-    cmds.button(label='19', w = 35, bgc=[0.0, 1.0, 0.5], command=lambda x: set_color_value(19))
+    cmds.button(label='0', w = 35, bgc=[1.0, 0.0, 1.0], command=lambda x: set_color_value(9))
+    cmds.button(label='2', w = 35, bgc=[0.4, 0.4, 0.1], command=lambda x: set_color_value(25))
+    cmds.button(label='4', w = 35, bgc=[0.0, 1.0, 1.0], command=lambda x: set_color_value(18))
+    cmds.button(label='6', w = 35, bgc=[2.4, 0.6, 0.6], command=lambda x: set_color_value(20))
+    cmds.button(label='8', w = 35, bgc=[0.3, 0.3, 8.0], command=lambda x: set_color_value(29)) 
+    
+    #cmds.button(label='10', w = 35, bgc=[0.5, 0.2, 0.0], command=lambda x: set_color_value(10))
+    #cmds.button(label='11', w = 35, bgc=[0.2, 0.1, 0.0], command=lambda x: set_color_value(11))
+    #cmds.button(label='12', w = 35, bgc=[0.7, 0.2, 0.0], command=lambda x: set_color_value(12))
+    #cmds.button(label='13', w = 35, bgc=[1.0, 0.0, 0.0], command=lambda x: set_color_value(13))
+    #cmds.button(label='14', w = 35, bgc=[0.0, 1.0, 0.0], command=lambda x: set_color_value(14))
+    #cmds.button(label='15', w = 35, bgc=[0.0, 0.2, 0.7], command=lambda x: set_color_value(15))
+    #cmds.button(label='16', w = 35, bgc=[1.0, 1.0, 1.0], command=lambda x: set_color_value(16))
+    #cmds.button(label='17', w = 35, bgc=[1.0, 1.0, 0.0], command=lambda x: set_color_value(17))
+    #cmds.button(label='18', w = 35, bgc=[0.0, 1.0, 1.0], command=lambda x: set_color_value(18))
+    #cmds.button(label='19', w = 35, bgc=[0.0, 1.0, 0.5], command=lambda x: set_color_value(19))
     
     #####
     
-    cmds.setParent( '..' )
+    #cmds.setParent( '..' )
     
-    cmds.separator(st = 'none', h = 1)
+    #cmds.separator(st = 'none', h = 1)
     
-    cmds.rowLayout(numberOfColumns=11)
+    #cmds.rowLayout(numberOfColumns=11)
     
-    cmds.separator(st = 'none', w = 17)
+    #cmds.separator(st = 'none', w = 17)
     
-    cmds.button(label='20', w = 35, bgc=[1.0, 0.7, 0.7], command=lambda x: set_color_value(20))
-    cmds.button(label='21', w = 35, bgc=[0.9, 0.7, 0.5], command=lambda x: set_color_value(21))
-    cmds.button(label='22', w = 35, bgc=[1.0, 1.0, 0.5], command=lambda x: set_color_value(22))
-    cmds.button(label='23', w = 35, bgc=[0.0, 0.6, 0.3], command=lambda x: set_color_value(23))
-    cmds.button(label='24', w = 35, bgc=[0.6, 0.4, 0.2], command=lambda x: set_color_value(24))
-    cmds.button(label='25', w = 35, bgc=[0.6, 0.6, 0.2], command=lambda x: set_color_value(25))
-    cmds.button(label='26', w = 35, bgc=[0.4, 0.6, 0.2], command=lambda x: set_color_value(26))
-    cmds.button(label='27', w = 35, bgc=[0.2, 0.6, 0.4], command=lambda x: set_color_value(27))
-    cmds.button(label='28', w = 35, bgc=[0.2, 0.6, 0.6], command=lambda x: set_color_value(28))
-    cmds.button(label='29', w = 35, bgc=[0.2, 0.4, 0.6], command=lambda x: set_color_value(29))
+    #cmds.button(label='20', w = 35, bgc=[1.0, 0.7, 0.7], command=lambda x: set_color_value(20))
+    #cmds.button(label='21', w = 35, bgc=[0.9, 0.7, 0.5], command=lambda x: set_color_value(21))
+    #cmds.button(label='22', w = 35, bgc=[1.0, 1.0, 0.5], command=lambda x: set_color_value(22))
+    #cmds.button(label='23', w = 35, bgc=[0.0, 0.6, 0.3], command=lambda x: set_color_value(23))
+    #cmds.button(label='24', w = 35, bgc=[0.6, 0.4, 0.2], command=lambda x: set_color_value(24))
+    #cmds.button(label='25', w = 35, bgc=[0.6, 0.6, 0.2], command=lambda x: set_color_value(25))
+    #cmds.button(label='26', w = 35, bgc=[0.4, 0.6, 0.2], command=lambda x: set_color_value(26))
+    #cmds.button(label='27', w = 35, bgc=[0.2, 0.6, 0.4], command=lambda x: set_color_value(27))
+    #cmds.button(label='28', w = 35, bgc=[0.2, 0.6, 0.6], command=lambda x: set_color_value(28))
+    #cmds.button(label='29', w = 35, bgc=[0.2, 0.4, 0.6], command=lambda x: set_color_value(29))
     
     
     ###
+    cmds.setParent( '..' )
+    cmds.rowLayout(numberOfColumns=2, w=200, columnAlign=(1, 'center'))
+    cmds.separator(hr = False, h = 18, w = 40, st = 'none')
+    cmds.separator(hr = True, h = 10, w = 200, st = 'single')
 
     cmds.setParent( '..' )
     
-    cmds.separator(st = 'none', h = 10)
+    cmds.separator(st = 'none', h = 11)
 
     
     cmds.rowLayout(numberOfColumns=4) 
 
-    cmds.text( label='Line Thickness', align='left', w = 100 )
+    cmds.text( label='Thickness', align='left', w = 50 )
     cmds.intField("widthValue", value=-1, minValue=-1, maxValue=10, w=160) 
+    
+    cmds.columnLayout(adjustableColumn=True, w=70)
+    
     cmds.button(label="Selected", command = singleSelectWidth, w = 70, bgc=[0.3, 0.8, 0.9])
+    cmds.separator(st='none', h=3)
     cmds.button(label="All Children", command = allChildrenWidth, w = 70, bgc=[0.3, 0.8, 0.7])
+    
+    cmds.setParent( '..' )  
+    
+    #cmds.button(label="Selected", command = singleSelectWidth, w = 70, bgc=[0.3, 0.8, 0.9])
+    #cmds.button(label="All Children", command = allChildrenWidth, w = 70, bgc=[0.3, 0.8, 0.7])
     
     
     ###
@@ -1654,53 +1757,104 @@ def mixamo_anim_editor():
     
     cmds.separator(st = 'in', h = 23)
     
-    cmds.text( label='Controller Attribute Locker', align='center', fn = 'boldLabelFont', w = 20, h = 30)
+    cmds.text( label='ATTRIBUTE LOCKER', align='center', fn = 'boldLabelFont', w = 290, h = 25, bgc=[0.2, 0.2, 0.2])
+    cmds.separator(st = 'none', h = 10)
+    
+
+    ##############
     
     cmds.rowLayout(numberOfColumns=13) 
     
-    cmds.separator(hr = False, h = 18, w = 28, st = 'none')
+    cmds.text( label='1', align='center', fn = 'boldLabelFont', w = 25, h = 25, bgc=[0.2, 0.2, 0.2])
+    
+    cmds.separator(hr = False, h = 18, w = 20, st = 'none')
+    
+    cmds.columnLayout(adjustableColumn=True, w=100)
+    cmds.rowLayout(numberOfColumns=3)
     cmds.text(label = 'Translation: ')
     transAttrBox = cmds.checkBox(label = '')
     cmds.separator(hr = False, h = 18, w = 20, st = 'out')
+    cmds.setParent( '..' )
     
+    cmds.rowLayout(numberOfColumns=4) 
+    cmds.separator(hr = False, h = 18, w = 10, st = 'none')
     cmds.text(label = 'Rotation: ')
     rotAttrBox = cmds.checkBox(label = '')
     cmds.separator(hr = False, h = 18, w = 20, st = 'out')
+    cmds.setParent( '..' )
+    cmds.setParent( '..' )
     
+    
+    cmds.columnLayout(adjustableColumn=True, w=100)
+    cmds.rowLayout(numberOfColumns=3)
+    cmds.separator(hr = False, h = 18, w = 15, st = 'none')
     cmds.text(label = 'Scale: ')
     scaleAttrBox = cmds.checkBox(label = '')
-    cmds.separator(hr = False, h = 18, w = 20, st = 'out')
+    cmds.setParent( '..' )
     
+    cmds.rowLayout(numberOfColumns=3)
     cmds.text(label = 'Visibility: ')
     visAttrBox = cmds.checkBox(label = '')
+    cmds.setParent( '..' )
+    cmds.setParent( '..' )
     
     cmds.setParent( '..' )
     
-    cmds.separator(st = 'none', h = 13)
+    cmds.rowLayout(numberOfColumns=2, w=200, columnAlign=(1, 'center'))
+    cmds.separator(hr = False, h = 18, w = 40, st = 'none')
+    cmds.separator(hr = True, h = 10, w = 200, st = 'single')
+    cmds.setParent( '..' )
+    
+
+    
+    ##############
     
     cmds.rowLayout(numberOfColumns=13) 
     
-    cmds.separator(hr = False, h = 18, w = 30, st = 'none')
+    cmds.text( label='2', align='center', fn = 'boldLabelFont', w = 25, h = 25, bgc=[0.2, 0.2, 0.2])
+    
+    cmds.separator(hr = False, h = 18, w = 20, st = 'none')
+    
+    cmds.columnLayout(adjustableColumn=True, w=70)
+    cmds.rowLayout(numberOfColumns=4)
+    cmds.separator(hr = False, h = 18, w = 2, st = 'none')
     cmds.text(label = 'Lock: ')
     lockAttrBox = cmds.checkBox(label = '', cc = onLockChanged)
     cmds.separator(hr = False, h = 18, w = 20, st = 'out')
+    cmds.setParent( '..' )
     
+    cmds.rowLayout(numberOfColumns=4) 
+    cmds.separator(hr = False, h = 18, w = 1, st = 'none')
     cmds.text(label = 'Hide: ')
     hideAttrBox = cmds.checkBox(label = '', cc = onHideChanged)
     cmds.separator(hr = False, h = 18, w = 20, st = 'out')
-    
-    cmds.text(label = 'Unlock & Unhide: ')
-    unlockUnhideAttrBox = cmds.checkBox(label = '', cc = onUnlockUnhideHideChanged)
-    cmds.separator(hr = False, h = 18, w = 20, st = 'out')
-    
-    cmds.text(label = 'Unhide: ')
-    unhideAttrBox = cmds.checkBox(label = '', cc = onUnhideHideChanged)
-
+    cmds.setParent( '..' )
     cmds.setParent( '..' )
     
-    cmds.separator(st = 'none', h = 13)
     
-    cmds.rowLayout(numberOfColumns=3) 
+    cmds.columnLayout(adjustableColumn=True, w=200)
+    cmds.rowLayout(numberOfColumns=3)
+    #cmds.separator(hr = False, h = 18, w = 15, st = 'none')
+    cmds.text(label = 'Unlock & Unhide: ')
+    unlockUnhideAttrBox = cmds.checkBox(label = '', cc = onUnlockUnhideHideChanged)
+    cmds.setParent( '..' )
+    
+    cmds.rowLayout(numberOfColumns=4)
+    cmds.separator(hr = False, h = 18, w = 49, st = 'none')
+    cmds.text(label = 'Unhide: ')
+    unhideAttrBox = cmds.checkBox(label = '', cc = onUnhideHideChanged)
+    cmds.setParent( '..' )
+    cmds.setParent( '..' )
+    
+    cmds.setParent( '..' )
+    
+    cmds.rowLayout(numberOfColumns=2, w=200, columnAlign=(1, 'center'))
+    cmds.separator(hr = False, h = 18, w = 40, st = 'none')
+    cmds.separator(hr = True, h = 10, w = 200, st = 'single')
+    cmds.setParent( '..' )
+    
+    ##############
+    
     
     def singleControllerAttrBoxes(*args):
         
@@ -1811,6 +1965,8 @@ def mixamo_anim_editor():
         sel = cmds.ls(selection=True)
         selChildren = cmds.listRelatives(sel[0], ad = True, type = 'transform')
         allAttributesChildren = sel + selChildren
+        
+        cmds.columnLayout(adjustableColumn=True, w=70)
         
         checkBoxTrx = cmds.checkBox(transAttrBox, q=True, v=True)
         checkBoxRot = cmds.checkBox(rotAttrBox, q=True, v=True)
@@ -1938,8 +2094,9 @@ def mixamo_anim_editor():
 #        else:
 #            pass
         
-    
-    cmds.separator(hr = False, h = 18, w = 128, st = 'none')
+    cmds.rowLayout(numberOfColumns=4) 
+    cmds.text( label='3', align='center', fn = 'boldLabelFont', w = 25, h = 25, bgc=[0.2, 0.2, 0.2])
+    cmds.separator(hr = False, h = 18, w = 35, st = 'none')
     cmds.button(label="Selected", command = singleControllerAttrBoxes, w = 70, bgc=[0.3, 0.8, 0.9])
     cmds.button(label="All Children", command = allChildrenControllerAttrBoxes, w = 70, bgc=[0.3, 0.8, 0.7])
     
@@ -1975,15 +2132,23 @@ def mixamo_anim_editor():
     
     cmds.rowLayout(numberOfColumns=3)
     
-    cmds.separator(hr = False, h = 18, w = 160, st = 'out')
+    cmds.separator(hr = False, h = 18, w = 100, st = 'out')
     
-    cmds.text(label = 'VFS GD76 Roman Karoly', align = 'left', w = 150, fn = 'obliqueLabelFont')
+    cmds.text(label = 'GD76 Roman Karoly', align = 'left', w = 150, fn = 'obliqueLabelFont')
+    
+    cmds.separator(hr = False, h = 18, w = 10, st = 'out')
+    
+    cmds.setParent( '..' )
+
+    
+    cmds.rowLayout(numberOfColumns=3)
     
     cmds.separator(hr = False, h = 18, w = 100, st = 'out')
+    
+    cmds.text(label = '      Version 1.0', align = 'left', w = 150, fn = 'obliqueLabelFont')
+    
+    cmds.separator(hr = False, h = 18, w = 10, st = 'out')
     #cmds.dockControl( area='left', content=window )
 
         
     #cmds.showWindow( window )
-    
-
-

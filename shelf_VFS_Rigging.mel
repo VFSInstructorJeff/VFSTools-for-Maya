@@ -294,7 +294,7 @@ global proc shelf_VFS_Rigging () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Mixamo Autorig" 
+        -annotation "Select \"Hips\" joint" 
         -enableBackground 0
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
@@ -306,7 +306,6 @@ global proc shelf_VFS_Rigging () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
-        -imageOverlayLabel "WIP" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
         -image "C:/Users/lrenis/Documents/maya/VFSTools/icons/mixamo64.png" 
@@ -314,7 +313,7 @@ global proc shelf_VFS_Rigging () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from animation_tools import core as mixamo_controller_builder\n\nmixamo_controller_builder.fk_controller_builder()" 
+        -command "from animation_tools import mixamo_animation_editor as mae\n\nmae.fk_controller_builder()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -369,7 +368,7 @@ global proc shelf_VFS_Rigging () {
         -backgroundColor 0 0 0 
         -highlightColor 0.321569 0.521569 0.65098 
         -align "center" 
-        -label "menuItem540" 
+        -label "MatchAllTransformsOptions" 
         -labelOffset 0
         -rotation 0
         -flipX 0
