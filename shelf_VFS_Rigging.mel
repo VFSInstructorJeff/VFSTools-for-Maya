@@ -736,8 +736,8 @@ global proc shelf_VFS_Rigging () {
         -imageOverlayLabel "FK IK" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "HIKmirrorSkelLeftToRight.png" 
-        -image1 "HIKmirrorSkelLeftToRight.png" 
+        -image "nodeGrapherModeAll.svg" 
+        -image1 "nodeGrapherModeAll.svg" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
@@ -768,11 +768,11 @@ global proc shelf_VFS_Rigging () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
-        -imageOverlayLabel "FK IK" 
+        -imageOverlayLabel "VIS" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "visible.png" 
-        -image1 "visible.png" 
+        -image "nodeGrapherModeCustom.svg" 
+        -image1 "nodeGrapherModeCustom.svg" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
