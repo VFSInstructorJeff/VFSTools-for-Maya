@@ -45,5 +45,3 @@ echo }>> favs.json
 xcopy /s/y "%cd%\favs.json" "%userprofile%\Documents\maya\2027\prefs\"
 xcopy /s/y "%cd%\favs.json" "%userprofile%\Documents\maya\2026\prefs\"
 xcopy /s/y "%cd%\favs.json" "%userprofile%\Documents\maya\2025\prefs\"
-
-pause
