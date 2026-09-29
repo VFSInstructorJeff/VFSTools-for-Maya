@@ -17,7 +17,7 @@ runTimeCommand
 	-helpUrl ""
 	-hotkeyCtx ""
 	-commandLanguage "python"
-	-command ("step = ld.current_step_index + 1\nld.scale_step_snap(step)")
+	-command ("from leveldesign_tools import ld_tools as ld\nstep = ld.current_step_index + 1\nld.scale_step_snap(step)")
 	IncreaseStepSnap;
 
 runTimeCommand
@@ -32,7 +32,7 @@ runTimeCommand
 	-helpUrl ""
 	-hotkeyCtx ""
 	-commandLanguage "python"
-	-command ("step = ld.current_step_index - 1\nld.scale_step_snap(step)")
+	-command ("from leveldesign_tools import ld_tools as ld\nstep = ld.current_step_index - 1\nld.scale_step_snap(step)")
 	DecreaseStepSnap;
 
 //
