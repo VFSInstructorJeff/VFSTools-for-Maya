@@ -741,7 +741,7 @@ global proc shelf_VFS_Rigging () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from animation_tools import fk_ik_switch_node fkiksn\n\nfkiksn.blendFKIKjointsNodeSetup()" 
+        -command "from animation_tools import fk_ik_switch_node as fkiksn\n\nfkiksn.blendFKIKjointsNodeSetup()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -776,7 +776,7 @@ global proc shelf_VFS_Rigging () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from animation_tools import fk_ik_switch_visibility_node fkiksvn\n\nfkiksvn.visNodeSetup()" 
+        -command "from animation_tools import fk_ik_switch_visibility_node as fkiksvn\n\nfkiksvn.visNodeSetup()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
