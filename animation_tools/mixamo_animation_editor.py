@@ -1,5 +1,6 @@
 import maya.cmds as cmds
 
+
 if cmds.namespace(exists='mixamorig'):
     cmds.namespace(moveNamespace=('mixamorig', ':'), force=True)
     cmds.namespace(removeNamespace='mixamorig')
@@ -8,11 +9,20 @@ DEFAULT_CONTROLLER_DATA = {
     "controllers": {
         "HeadTop_End_ctl": {"radius": 0.0, "color": 17, "lineWidth": -1.0},
         "Head_ctl": {"radius": 10.0, "color": 17, "lineWidth": -1.0},
-        "Hips_ctl": {"radius": 25.0, "color": 14, "lineWidth": 3.0},
+        "Hips_ctl": {"radius": 20.0, "color": 14, "lineWidth": 3.0},
+        "Root_ctl": {"radius": 50.0, "color": 17, "lineWidth": 2.0},
+        
+        "Left_Eye_ctl": {"radius": 1.0, "color": 18, "lineWidth": -1.0},
+        "Right_Eye_ctl": {"radius": 1.0, "color": 20, "lineWidth": -1.0},
 
         "LeftArm_ctl": {"radius": 9.0, "color": 18, "lineWidth": -1.0},
         "LeftForeArm_ctl": {"radius": 8.0, "color": 18, "lineWidth": -1.0},
         "LeftHand_ctl": {"radius": 6.0, "color": 18, "lineWidth": -1.0},
+        
+        "LeftTwist1_ctl": {"radius": 6.0, "color": 18, "lineWidth": -1.0},
+        "LeftTwist2_ctl": {"radius": 7.0, "color": 18, "lineWidth": -1.0},
+        "LeftTwist3_ctl": {"radius": 8.0, "color": 18, "lineWidth": -1.0},
+        "LeftHand_End_ctl": {"radius": 1.0, "color": 18, "lineWidth": -1.0},
 
         "LeftHandThumb1_ctl": {"radius": 3.0, "color": 18, "lineWidth": -1.0},
         "LeftHandThumb2_ctl": {"radius": 2.0, "color": 18, "lineWidth": -1.0},
@@ -54,6 +64,15 @@ DEFAULT_CONTROLLER_DATA = {
         "RightArm_ctl": {"radius": 9.0, "color": 20, "lineWidth": -1.0},
         "RightForeArm_ctl": {"radius": 8.0, "color": 20, "lineWidth": -1.0},
         "RightHand_ctl": {"radius": 6.0, "color": 20, "lineWidth": -1.0},
+        
+        "RightTwist1_ctl": {"radius": 6.0, "color": 20, "lineWidth": -1.0},
+        "RightTwist2_ctl": {"radius": 7.0, "color": 20, "lineWidth": -1.0},
+        "RightTwist3_ctl": {"radius": 8.0, "color": 20, "lineWidth": -1.0},
+        "RightHand_End_ctl": {"radius": 1.0, "color": 20, "lineWidth": -1.0},
+        
+        "BlasterTelescopeSmall_ctl": {"radius": 6.0, "color": 20, "lineWidth": 2.0},
+        "BlasterTelescopeBig_ctl": {"radius": 10.0, "color": 20, "lineWidth": 2.0},
+        "BlasterVisibility_ctl": {"radius": 10.0, "color": 20, "lineWidth": 2.0},
 
         "RightHandThumb1_ctl": {"radius": 3.0, "color": 20, "lineWidth": -1.0},
         "RightHandThumb2_ctl": {"radius": 2.0, "color": 20, "lineWidth": -1.0},
@@ -109,7 +128,7 @@ def fk_controller_builder():
         jntOZ = cmds.getAttr(joint + '.jointOrientZ')
         
         
-        ctl = cmds.circle(n=joint + '_ctl', r=10, nr=[0, 1, 0])
+        ctl = cmds.circle(n=joint + '_ctl', r=10, nr=[1, 0, 0])
         ctlshape = cmds.listRelatives(ctl[0], c=True, typ='shape')
         if ctlshape:
             cmds.setAttr(ctlshape[0] + '.overrideEnabled', 1)
@@ -168,4 +187,3 @@ def fk_controller_builder():
         cmds.parentConstraint(ctl, joint, mo = True)
         
     set_controllers_to_default()
-
