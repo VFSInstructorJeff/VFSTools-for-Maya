@@ -6,7 +6,6 @@ from maya import utils
 import maya.OpenMaya as om
 
 from layer_editor_tools.old import ui as layer_editor_tools_ui
-from animation_tools import ui as anim_tools_ui
 from leveldesign_tools import ld_tools as ld
 
 def load_hotkeys(*args):
@@ -95,13 +94,6 @@ def merge_namespaces_on_import(*args):
         except Exception as e:
             print(f"Could not merge namespace '{namespace}': {e}")
 
-def reopen_mixamo_editor(*args):
-    if cmds.window("mixamoEditorWindow", exists=True):
-        cmds.deleteUI("mixamoEditorWindow", window=True)
-        anim_tools_ui.mixamo_anim_editor()
-    else:
-        print("Mixamo Editor is closed, no need to restart it.")
-
 def import_workspaces(*args):
     # Create the absolute workspaces path to import from (.../VFSTools/)
     print("Importing workspaces...")
@@ -161,12 +153,10 @@ def check_mat_duplicates():
 callbacks = []
 def create_callbacks():
     namespace_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterImport, merge_namespaces_on_import)
-    mixamo_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterImport, reopen_mixamo_editor)
     mats_new_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterNew, import_LD_mats)
     mats_open_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kAfterOpen, import_LD_mats)
     exit_callback = om.MSceneMessage.addCallback(om.MSceneMessage.kMayaExiting, remove_callbacks)
     callbacks.append(namespace_callback)
-    callbacks.append(mixamo_callback)
     callbacks.append(mats_new_callback)
     callbacks.append(mats_open_callback)
     callbacks.append(exit_callback)
