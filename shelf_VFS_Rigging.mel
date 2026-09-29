@@ -328,6 +328,41 @@ global proc shelf_VFS_Rigging () {
         -manage 1
         -visible 1
         -preventOverride 0
+        -annotation "Undo Mixamo Auto Rig" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Mixamo Removal" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "Undo" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "C:/Users/lrenis/Documents/maya/VFSTools/icons/mixamo64.png" 
+        -image1 "C:/Users/lrenis/Documents/maya/VFSTools/icons/mixamo64.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "from animation_tools import mixamo_animation_removal as mar\n\nmar.fk_controller_deconstructor()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
         -annotation "Karoly Controlly" 
         -enableBackground 0
         -backgroundColor 0 0 0 
@@ -673,6 +708,76 @@ global proc shelf_VFS_Rigging () {
         -marginHeight 1
         -command "NodeEditorWindow" 
         -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Auto FK IK Switch for Node Editor" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "FK IK Switch" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "FK IK" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "HIKmirrorSkelLeftToRight.png" 
+        -image1 "HIKmirrorSkelLeftToRight.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "from animation_tools import fk_ik_switch_node fkiksn\n\nfkiksn.blendFKIKjointsNodeSetup()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Auto FK IK Switch Visibility for Node Editor" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "FK IK Switch Visibility" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "FK IK" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "visible.png" 
+        -image1 "visible.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "from animation_tools import fk_ik_switch_visibility_node fkiksvn\n\nfkiksvn.visNodeSetup()" 
+        -sourceType "python" 
         -commandRepeatable 1
         -flat 1
     ;
