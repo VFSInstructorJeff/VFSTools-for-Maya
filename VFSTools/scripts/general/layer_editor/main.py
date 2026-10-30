@@ -41,15 +41,16 @@ class MainWindow(mixin, QWidget):
             _current_instance._teardown_callbacks()
             _current_instance = None
 
-        if cmds.workspaceControl(self.UI_OBJECT_NAME + "WorkspaceControl", exists=True):
-            cmds.deleteUI(self.UI_OBJECT_NAME + "WorkspaceControl")
+        # NOTE: the workspaceControl is deliberately never deleted here. Deleting a docked control
+        # and recreating it crashes Maya. main() reuses an open window instead.
+
 
         super().__init__(get_main_window() if not parent else parent)
 
         self.setObjectName(self.UI_OBJECT_NAME)
         self.setWindowTitle("VFS Layer Tools")
         self.setAcceptDrops(True)
-        self.resize(600, 600)
+        self.resize(350, 300)
 
         self.window_layout = QVBoxLayout(self)
 
@@ -280,8 +281,15 @@ class MainWindow(mixin, QWidget):
 
 
 def main():
-    window = MainWindow()
-    return window
+    """Show the layer editor. If it is already open (floating or docked), bring that one to the front
+    instead of deleting and rebuilding it."""
+    control = MainWindow.UI_OBJECT_NAME + "WorkspaceControl"
+    if (_current_instance is not None and isValid(_current_instance)
+            and cmds.workspaceControl(control, exists=True)):
+        cmds.workspaceControl(control, edit=True, restore=True)
+        cmds.workspaceControl(control, edit=True, visible=True)
+        return _current_instance
+    return MainWindow()
 
 
 if __name__ == "__main__":

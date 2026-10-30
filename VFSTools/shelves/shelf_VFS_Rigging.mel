@@ -383,7 +383,7 @@ global proc shelf_VFS_Rigging () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from rigging import karoly_controlly_editor as kce\nimport importlib\nimportlib.reload(kce)\n\nkce.karoly_controlly_editor()" 
+        -command "from rigging import karoly_controlly_editor as kce\nkce.karoly_controlly_editor()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
