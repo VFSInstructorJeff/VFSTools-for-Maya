@@ -4,7 +4,7 @@ from core import lifecycle, paths, shelf
 SHELF_NAME = "VFS_Rigging"
 SHELF_FILE = paths.SHELF_DIR / "shelf_VFS_Rigging.mel"
 
-WINDOWS = ("Karoly Controlly Editor",)
+WINDOWS = ("KarolyControllyEditor",)
 
 _state = {"active": False}
 
