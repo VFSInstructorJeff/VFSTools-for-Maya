@@ -1075,15 +1075,28 @@ def open_help_website(*args):
         
 ######## WINDOW & UI ########
 
-def karoly_controlly_editor():
-    
-    winName = "Karoly Controlly Editor"
-    
-    if cmds.workspaceControl(winName, exists=True):
-        cmds.deleteUI(winName)
-        print('Deleted old Mixamo Editor UI')
+WIN_NAME = "KarolyControllyEditor"      # internal control name: no spaces (same style as the UV tool)
+WIN_LABEL = "Karoly Controlly Editor"   # what the user sees on the tab / title bar
 
-    window = cmds.workspaceControl(winName, label = "Karoly Controlly Editor", fl = True, retain = False, ih = 1000, w = 200, iw = 200, wp='free ', rsw = 200)
+
+def karoly_controlly_editor():
+    """Launcher (called by the shelf button). Creates the workspaceControl ONCE, then only shows it.
+
+    Never deleteUI / workspaceControlState(remove=True) a control that may be docked - that's what
+    crashed Maya. Maya builds the contents by calling uiScript -> build_ui().
+    """
+    if not cmds.workspaceControl(WIN_NAME, exists=True):
+        # Fully qualified so Maya can rebuild the UI on its own (restore a docked layout, etc.)
+        uiScript = "import {0}; {0}.build_ui()".format(__name__)
+        cmds.workspaceControl(WIN_NAME, label = WIN_LABEL, fl = True, retain = False,
+                              ih = 1000, iw = 200, wp = 'free', rsw = 200, uiScript = uiScript)
+
+    cmds.workspaceControl(WIN_NAME, edit = True, restore = True)
+    cmds.workspaceControl(WIN_NAME, edit = True, visible = True)
+
+
+def build_ui(*args):
+    """Builds the tool's UI inside the workspaceControl. Maya calls this through uiScript."""
     scrollLayout = cmds.scrollLayout(horizontalScrollBarThickness=16, verticalScrollBarThickness=16, w = 267)
 
     bigHeaderColor = [0.15, 0.15, 0.15]
