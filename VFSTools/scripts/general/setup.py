@@ -9,8 +9,8 @@ WORKSPACES = ("Coding.json",)
 # Windows / dockable controls closed on unload
 WINDOWS = (
     "bake_test_ui", "bake_tester_dock_control",             # baking tools
-    "uv_editing_tool_ui",                                    # UV tools
-    "LayerToolsWindow",                                      # layer editor
+    "uv_editing_tool_ui",                                   # UV tools
+    "LayerToolsWindowWorkspaceControl",                     # layer editor
 )
 
 _state = {"active": False}
