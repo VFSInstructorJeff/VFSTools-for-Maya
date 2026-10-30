@@ -378,12 +378,12 @@ global proc shelf_VFS_Rigging () {
         -imageOverlayLabel "Karoly" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "kinJoint.png" 
-        -image1 "kinJoint.png" 
+        -image "karoly_controlly_icon.png" 
+        -image1 "karoly_controlly_icon.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "from rigging import karoly_controlly_editor as kce\nimport importlib\nimportlib.reload(kce)\n\nkce.mixamo_anim_editor()" 
+        -command "from rigging import karoly_controlly_editor as kce\nimport importlib\nimportlib.reload(kce)\n\nkce.karoly_controlly_editor()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
