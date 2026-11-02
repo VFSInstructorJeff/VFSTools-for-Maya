@@ -185,5 +185,3 @@ def fk_controller_builder():
         cmds.cutKey(joint, cl = True)
         
         cmds.parentConstraint(ctl, joint, mo = True)
-        
-    set_controllers_to_default()
