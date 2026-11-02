@@ -3,6 +3,7 @@ import webbrowser
 
 from maya import cmds
 from maya.api import OpenMaya as om
+from maya import OpenMayaUI as omui
 from maya.app.general.mayaMixin import (MayaQWidgetDockableMixin as mixin)
 
 from PySide6 import QtWidgets
@@ -26,13 +27,18 @@ from general.layer_editor.utils import get_main_window
 # was relaunched.
 _current_instance = None
 
+# Maya runs this string to rebuild the editor inside a control it restored from a saved workspace
+# layout (switching workspaces and back, restarting Maya, ...). It has to be fully qualified because
+# it runs in Maya's global namespace. This is what makes the tool persistent.
+UI_SCRIPT = "import {0}; {0}.restore_ui()".format(__name__)
+
 # ------------ MAIN WINDOW ------------
 
 class MainWindow(mixin, QWidget):
 
     UI_OBJECT_NAME = "LayerToolsWindow"
 
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None, restore=False):
         global _current_instance
 
         # Clean up the previous instance's callbacks *before* its UI gets
@@ -106,7 +112,11 @@ class MainWindow(mixin, QWidget):
 
         _current_instance = self
 
-        self.show(dockable=True)
+        if restore:
+            # Maya already created the control from the saved layout - just put the UI inside it
+            _attach_to_restored_control(self)
+        else:
+            self.show(dockable=True, retain=False, uiScript=UI_SCRIPT)
 
     # --------------------------------
     # Setup Custom Color Palette
@@ -278,6 +288,21 @@ class MainWindow(mixin, QWidget):
             om.MEventMessage.removeCallback(self._layer_added_callback)
         except RuntimeError:
             pass  # Already removed
+
+
+def _attach_to_restored_control(widget):
+    """Only valid while Maya is running our uiScript: moves the widget into the control Maya restored."""
+    restored_control = omui.MQtUtil.getCurrentParent()
+    widget_ptr = omui.MQtUtil.findControl(widget.objectName())
+    omui.MQtUtil.addWidgetToMayaLayout(int(widget_ptr), int(restored_control))
+
+
+def restore_ui():
+    """uiScript entry point. Rebuilds the editor (or re-attaches the one that is still alive)."""
+    if _current_instance is not None and isValid(_current_instance):
+        _attach_to_restored_control(_current_instance)
+    else:
+        MainWindow(restore=True)
 
 
 def main():
