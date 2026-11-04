@@ -1,12 +1,13 @@
 # ------------ IMPORT LIBRARIES/MODULES ------------
 import json
+import re
 
 from maya import cmds
 from maya.api import OpenMaya as om
 
 from PySide6.QtGui import QIcon
 
-from general.layer_editor.layer_data import VFSLayerData      # Import data
+from general.layer_editor.layer_data import VFSLayerData, LayerTemplate      # Import data
 from general.layer_editor.layer_widget import LayerWidget     # Import UI
 from general.layer_editor.constants import HIDDEN, VISIBLE    # Import icons
 
@@ -21,10 +22,12 @@ _legc_session_cache = {}
 class LayerManager:
     # Setup the variable name to look for in the .ma to check if there's saved layer information to pull from
     FILE_INFO_KEY = "VFSLayers"
+    TEMPLATE_FILE_INFO_KEY = "VFSTemplateLayer"
 
     def __init__(self):
         self.layers = []
         self.selected_entry = None
+        self.template = LayerTemplate()   # TEMPLATE LAYER settings (not a real layer, never in self.layers)
         self._attr_callbacks = {}   # uuid (key) -> (attr_cb_id, name_cb_id) (tuple value)
         self._creating = False      # Checking if a layer is being created to delay other callbacks so there isn't conflict
 
@@ -34,6 +37,9 @@ class LayerManager:
     def create_layer(self, empty=True, name="layer"):
         self._creating = True
         try:
+            # The TEMPLATE LAYER's name (if set) replaces the default: Name_01, Name_02, ...
+            name = self._next_template_layer_name() or name
+
             # Make Maya layer
             maya_layer = cmds.createDisplayLayer(e=empty, n=name)
 
@@ -42,13 +48,17 @@ class LayerManager:
             # Make VFS layer data using the Maya layer UUID and name
             data = VFSLayerData(uuid=uuid, maya_layer_name=maya_layer)
 
+            # Read the real values Maya gave the new layer (color, visibility, mode) instead of keeping
+            # the dataclass defaults, so the widget matches what load() will read when the scene reopens
+            self._sync_from_maya(data)
+
+            # Copy the settings the user applied in the TEMPLATE LAYER over the presets
+            self.apply_template(data)
+
             # Build the widget with the data
             widget = LayerWidget(data)
             # Connect LayerManager methods to LayerWidget Signals so widgets can emit signals to the manager
-            widget.selected.connect(self.on_layer_selected)
-            widget.path_changed.connect(self.update_session_cache)
-            widget.legc_path_changed.connect(self.update_session_cache_legc_path)
-            widget.legc_state_changed.connect(self.update_session_cache_legc)
+            self.connect_widget(widget)
 
             # Create entry layer with data from VFSLayerData and widget from LayerWidget
             entry = {"data": data, "widget": widget}
@@ -64,6 +74,119 @@ class LayerManager:
             self._creating = False
 
         return widget
+
+    def connect_widget(self, widget):
+        """Connect a LayerWidget's signals to the manager (selection + session cache)."""
+        widget.selected.connect(self.on_layer_selected)
+        widget.path_changed.connect(self.update_session_cache)
+        widget.legc_path_changed.connect(self.update_session_cache_legc_path)
+        widget.legc_state_changed.connect(self.update_session_cache_legc)
+        widget.legc_on_export_changed.connect(self.update_session_cache_legc_on_export)
+
+    # ------------ TEMPLATE LAYER ------------
+
+    @staticmethod
+    def _safe_node_name(name):
+        """Make a string usable as a Maya node name."""
+        name = re.sub(r"[^0-9A-Za-z_]", "_", name.strip())
+        if name and name[0].isdigit():
+            name = "_" + name
+        return name
+
+    def _next_template_layer_name(self):
+        """Next free 'Name_NN' for a new layer, or None if the TEMPLATE LAYER has no name."""
+        base = self._safe_node_name(self.template.applied.get("layer_name", ""))
+        if not base:
+            return None
+        pattern = re.compile(rf"^{re.escape(base)}_(\d+)$")
+        numbers = [int(m.group(1)) for m in (pattern.match(l) for l in cmds.ls(type="displayLayer")) if m]
+        number = max(numbers, default=0) + 1
+        while cmds.objExists(f"{base}_{number:02d}"):
+            number += 1
+        return f"{base}_{number:02d}"
+
+    def apply_template(self, data):
+        """New layers: copy the applied TEMPLATE LAYER settings onto this layer's data AND its Maya node.
+        Settings the user never set are left alone (normal presets)."""
+        applied = self.template.apply_to(data)
+        if not applied:
+            return
+
+        layer = data.maya_layer_name
+
+        if "visibility" in applied:
+            cmds.setAttr(f"{layer}.visibility", data.visibility)
+        if "display_type" in applied:
+            cmds.setAttr(f"{layer}.displayType", data.display_type)
+        if "color_rgb" in applied:
+            r, g, b = data.color_rgb
+            cmds.setAttr(f"{layer}.overrideRGBColors", 1)
+            cmds.setAttr(f"{layer}.overrideColorRGB", r, g, b)
+
+        # Keep the session cache in step so these survive closing/reopening the tool unsaved
+        if "export_path" in applied:
+            self.update_session_cache(data.uuid, data.export_path)
+        if "legc_export_path" in applied:
+            self.update_session_cache_legc_path(data.uuid, data.legc_export_path)
+        if "legc_on_export" in applied:
+            self.update_session_cache_legc_on_export(data.uuid, data.legc_on_export)
+
+        if {"visibility", "display_type", "color_rgb"} & set(applied):
+            from maya import mel
+            mel.eval("updateLayerEditor();")
+
+    def apply_overrides(self, field_names):
+        """Existing layers: push the applied TEMPLATE LAYER values for these settings onto ALL layers."""
+        from maya import mel
+
+        cmds.undoInfo(openChunk=True, chunkName="VFSTemplateOverride")
+        try:
+            for entry in self.layers:
+                for name in field_names:
+                    if name == "layer_name":
+                        continue
+                    entry["widget"].apply_template_value(name, self.template.applied[name])
+
+            if "layer_name" in field_names:
+                self._rename_all_layers(self.template.applied["layer_name"])
+
+            mel.eval("updateLayerEditor();")
+        finally:
+            cmds.undoInfo(closeChunk=True)
+
+    def _rename_all_layers(self, base):
+        """Rename every layer to Name_01, Name_02, ... (the oldest/bottom layer gets 01, like new layers do)."""
+        base = self._safe_node_name(base)
+        if not base:
+            return
+
+        ordered = [e for e in reversed(self.layers) if cmds.objExists(e["data"].maya_layer_name)]
+
+        # Two passes through temporary names so a layer can't collide with another layer's old name
+        for i, entry in enumerate(ordered):
+            entry["data"].maya_layer_name = cmds.rename(entry["data"].maya_layer_name, f"__vfs_rename_{i}__")
+
+        width = max(2, len(str(len(ordered))))
+        for i, entry in enumerate(ordered, 1):
+            new_name = cmds.rename(entry["data"].maya_layer_name, f"{base}_{i:0{width}d}")
+            entry["data"].maya_layer_name = new_name
+            entry["widget"].name_edit.setText(new_name)
+            entry["widget"].name_edit.setCursorPosition(0)
+
+    # Saved straight away on Apply (not only before a scene save), so it survives closing/reopening the tool.
+    # fileInfo lives in the scene, so a new scene starts with a blank TEMPLATE LAYER.
+    def save_template(self):
+        cmds.fileInfo(self.TEMPLATE_FILE_INFO_KEY, json.dumps(self.template.to_dict()))
+
+    def load_template(self):
+        raw = cmds.fileInfo(self.TEMPLATE_FILE_INFO_KEY, q=True)
+        loaded = {}
+        if raw:
+            try:
+                loaded = json.loads(raw[0].replace('\\"', '"'))
+            except Exception as e:
+                print(f"Failed to parse TEMPLATE LAYER fileInfo: {e}")
+        self.template.load_dict(loaded)
 
     # ------------ REMOVE LAYER METHODS ------------
 
@@ -281,6 +404,11 @@ class LayerManager:
             _session_cache[uuid] = {}
         _session_cache[uuid]["legc_applied"] = legc_applied
 
+    def update_session_cache_legc_on_export(self, uuid, legc_on_export):
+        if uuid not in _session_cache or isinstance(_session_cache[uuid], str):
+            _session_cache[uuid] = {}
+        _session_cache[uuid]["legc_on_export"] = legc_on_export
+
     def update_session_cache_legc_path(self, uuid, legc_export_path):
         if uuid not in _session_cache  or isinstance(_session_cache[uuid], str):
             _session_cache[uuid] = {}
@@ -301,6 +429,8 @@ class LayerManager:
                 data.legc_export_path = cached["legc_export_path"]
             if "legc_applied" in cached:
                 data.legc_applied = cached["legc_applied"]
+            if "legc_on_export" in cached:
+                data.legc_on_export = cached["legc_on_export"]
                 
     # ------------ SAVE ------------
 
@@ -345,10 +475,7 @@ class LayerManager:
             self._apply_session_cache(data)
 
             widget = LayerWidget(data)
-            widget.selected.connect(self.on_layer_selected)
-            widget.path_changed.connect(self.update_session_cache)
-            widget.legc_path_changed.connect(self.update_session_cache_legc_path)
-            widget.legc_state_changed.connect(self.update_session_cache_legc)
+            self.connect_widget(widget)
 
             entry = {"data": data, "widget": widget}
             self.layers.append(entry)

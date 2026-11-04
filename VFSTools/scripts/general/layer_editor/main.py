@@ -17,6 +17,7 @@ from general.layer_editor.constants import *
 from general.layer_editor.layer_data import VFSLayerData
 from general.layer_editor.layer_manager import LayerManager
 from general.layer_editor.layer_widget import LayerWidget
+from general.layer_editor.template_panel import TemplatePanel
 from general.layer_editor.utils import get_main_window
 
 # Tracks the single live MainWindow instance so its scene callbacks can be
@@ -88,6 +89,7 @@ class MainWindow(mixin, QWidget):
 
         self._setup_color_palette()
         self.setup_toolbar()
+        self._setup_template_panel()
         self.load_existing_layers()
 
         # Scene callbacks
@@ -166,6 +168,17 @@ class MainWindow(mixin, QWidget):
         bug_btn.setToolTip("Report a bug")
 
     # --------------------------------
+    # Template Layer
+    # --------------------------------
+
+    def _setup_template_panel(self):
+        # Pinned between the toolbar and the scrolling layer list so it never scrolls away or gets
+        # selected/moved/deleted like a real layer
+        self.layer_manager.load_template()
+        self.template_panel = TemplatePanel(self.layer_manager)
+        self.window_layout.insertWidget(1, self.template_panel)
+
+    # --------------------------------
     # Layer Operations
     # --------------------------------
 
@@ -224,6 +237,10 @@ class MainWindow(mixin, QWidget):
             self.layer_manager.selected_entry = None
     
             self.load_existing_layers()
+
+            # The TEMPLATE LAYER lives in the scene's fileInfo, so re-read it for the new/opened scene
+            self.layer_manager.load_template()
+            self.template_panel.refresh()
         finally:
             self._refreshing = False
 
@@ -245,10 +262,7 @@ class MainWindow(mixin, QWidget):
                     self.layer_manager._sync_from_maya(data)
 
                     widget = LayerWidget(data)
-                    widget.selected.connect(self.layer_manager.on_layer_selected)
-                    widget.path_changed.connect(self.layer_manager.update_session_cache)
-                    widget.legc_path_changed.connect(self.layer_manager.update_session_cache_legc_path)
-                    widget.legc_state_changed.connect(self.layer_manager.update_session_cache_legc)
+                    self.layer_manager.connect_widget(widget)
 
                     entry = {"data": data, "widget": widget}
                     self.layer_manager.layers.insert(0, entry)
