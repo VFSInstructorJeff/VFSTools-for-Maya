@@ -40,6 +40,7 @@ class LayerWidget(QWidget):
     path_changed = Signal(str, str)     # Emitted when export path changes: uuid, export_path
     legc_path_changed = Signal(str, str)  # uuid, legc_export_path
     legc_state_changed = Signal(str, bool)  # uuid, legc_applied
+    legc_on_export_changed = Signal(str, bool)  # uuid, legc_on_export
 
     def __init__(self, data: VFSLayerData):
         super().__init__()
@@ -136,15 +137,15 @@ class LayerWidget(QWidget):
 
         self.legc_path_edit = QLineEdit()
         self.legc_path_edit.setReadOnly(True)
-        self.legc_path_edit.setPlaceholderText("No LEGC export path set")
-        self.legc_path_edit.setToolTip("LEGC export path")
+        self.legc_path_edit.setPlaceholderText("No RGB Mask export path set")
+        self.legc_path_edit.setToolTip("RGB Mask export path")
         self.legc_path_edit.setVisible(False)
 
         self.origin_checkbox = QCheckBox("Origin")
         self.origin_checkbox.setToolTip("Move objects to origin before exporting")
 
-        self.legc_checkbox = QCheckBox("LEGC")
-        self.legc_checkbox.setToolTip("Run LEGC UV operation on export")
+        self.legc_checkbox = QCheckBox("RGBm")
+        self.legc_checkbox.setToolTip("Run RGB Mask UV operation on export")
 
         self.legc_undo_label = QLabel("LEGC")
         self.legc_undo_label.setVisible(False)
@@ -185,10 +186,15 @@ class LayerWidget(QWidget):
         if self.data.legc_export_path:
             self.legc_path_edit.setText(self.data.legc_export_path)
 
+        # Signals aren't connected yet, so this doesn't trigger on_legc_toggled
+        self.legc_checkbox.setChecked(self.data.legc_on_export)
+
         if self.data.legc_applied:
             self.legc_checkbox.setVisible(False)
             self.legc_undo_label.setVisible(True)
             self.legc_undo_button.setVisible(True)
+
+        self._refresh_path_view()
 
         self.name_edit.setCursorPosition(0)
         self.apply_color_styles()
@@ -280,8 +286,20 @@ class LayerWidget(QWidget):
     # ------------ LEGC TOGGLE ------------
 
     def on_legc_toggled(self, checked):
-        self.path_edit.setVisible(not checked)
-        self.legc_path_edit.setVisible(checked)
+        # The checkbox is a stored per-layer setting: "run RGB Mask on export"
+        self.data.legc_on_export = checked
+        self.legc_on_export_changed.emit(self.data.uuid, checked)
+        self._refresh_path_view()
+
+    def _should_run_legc(self):
+        # The pass is skipped when it has already been applied (the checkbox is hidden then, but may still be ticked)
+        return self.legc_checkbox.isChecked() and not self.data.legc_applied
+
+    def _refresh_path_view(self):
+        # Show the RGBm export path while RGBm is active, the regular export path otherwise
+        show_legc = self._should_run_legc()
+        self.path_edit.setVisible(not show_legc)
+        self.legc_path_edit.setVisible(show_legc)
 
     # ------------ MAYA UPDATES ------------
 
@@ -301,6 +319,44 @@ class LayerWidget(QWidget):
 
     def on_origin_changed(self, checked):
         self.data.use_origin = checked
+
+    def apply_template_value(self, name, value):
+        """Set one setting on this layer from the TEMPLATE LAYER: data, Maya node and UI."""
+        if name == "visibility":
+            self.visibility_button.blockSignals(True)
+            self.visibility_button.setChecked(not value)
+            self.visibility_button.blockSignals(False)
+            self.on_visibility_changed(not value)       # Button is checked when the layer is HIDDEN
+
+        elif name == "display_type":
+            self.data.display_type = value
+            self.mode_button.setText(LAYER_MODES[value])
+            cmds.setAttr(f"{self.data.maya_layer_name}.displayType", value)
+
+        elif name == "color_rgb":
+            self.data.color_rgb = tuple(value)
+            cmds.setAttr(f"{self.data.maya_layer_name}.overrideRGBColors", 1)
+            cmds.setAttr(f"{self.data.maya_layer_name}.overrideColorRGB", value[0], value[1], value[2])
+            self.apply_color_styles()
+
+        elif name == "use_origin":
+            self.origin_checkbox.setChecked(value)
+            self.data.use_origin = value
+
+        elif name == "export_path":
+            self.data.export_path = value
+            self.path_edit.setText(value)
+            self.path_changed.emit(self.data.uuid, value)
+
+        elif name == "legc_export_path":
+            self.data.legc_export_path = value
+            self.legc_path_edit.setText(value)
+            self.legc_path_changed.emit(self.data.uuid, value)
+
+        elif name == "legc_on_export":
+            self.legc_checkbox.setChecked(value)
+            self.data.legc_on_export = value
+            self.legc_on_export_changed.emit(self.data.uuid, value)
 
     def rename_layer(self):
         new_name = self.name_edit.text()
@@ -394,7 +450,7 @@ class LayerWidget(QWidget):
     # ------------ EXPORT PATH ------------
 
     def pick_export_path(self):
-        is_legc = self.legc_checkbox.isChecked()
+        is_legc = self._should_run_legc()
         current_path = self.data.legc_export_path if is_legc else self.data.export_path
 
         path = QFileDialog.getExistingDirectory(
@@ -724,6 +780,7 @@ class LayerWidget(QWidget):
         self.legc_checkbox.setVisible(True)
         self.data.legc_applied = False
         self.legc_state_changed.emit(self.data.uuid, False)
+        self._refresh_path_view()
 
         # Build result message
         msg_parts = []
@@ -750,7 +807,7 @@ class LayerWidget(QWidget):
             return
 
         # LEGC path validation
-        if self.legc_checkbox.isChecked():
+        if self._should_run_legc():
             if not self.data.legc_export_path:
                 QMessageBox.warning(self, "Export Failed", "No LEGC export path set for this layer.")
                 return
@@ -769,7 +826,7 @@ class LayerWidget(QWidget):
 
         legc_ran = False
         try:
-            if self.legc_checkbox.isChecked():
+            if self._should_run_legc():
                 legc_result = self._run_legc(members)
                 
                 if legc_result is None:
@@ -889,14 +946,13 @@ class LayerWidget(QWidget):
                 cmds.select(previous_selection)
             else:
                 cmds.select(clear=True)
-            self.legc_checkbox.setChecked(False)
+            # The RGBm checkbox is a stored setting now, so it is no longer reset after export.
+            # If the pass ran, it is hidden behind the Undo button until the pass is undone.
             if legc_ran:
                 self.legc_checkbox.setVisible(False)
                 self.legc_undo_label.setVisible(True)
                 self.legc_undo_button.setVisible(True)
-
-            # Reset LEGC checkbox after export regardless of success or failure
-            self.legc_checkbox.setChecked(False)
+            self._refresh_path_view()
 
     # ------------ COLOR ------------
 
@@ -921,11 +977,12 @@ class LayerWidget(QWidget):
         bg_rgb = shifted_background_color(self.data.color_rgb)
         bg_hex = rgb_to_hex(bg_rgb)
 
+        cls = type(self).__name__
         self.setStyleSheet(f"""
-            LayerWidget {{
+            {cls} {{
                 background-color: {bg_hex};
             }}
-            LayerWidget[selected=true] {{
+            {cls}[selected=true] {{
                 background-color: {bg_hex};
                 border: 2px solid white;
             }}
