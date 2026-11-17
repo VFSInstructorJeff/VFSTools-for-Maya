@@ -5,18 +5,22 @@ from pathlib import Path
 from maya import cmds, mel
 
 from PySide6.QtCore import Qt, Signal, QEvent
-from PySide6.QtGui import QDrag, QIcon
+from PySide6.QtGui import QDrag, QIcon, QColor
 from PySide6.QtWidgets import (QWidget, QPushButton, QLineEdit, QHBoxLayout,
                                 QVBoxLayout, QCheckBox, QComboBox, QColorDialog,
                                 QFileDialog, QMessageBox, QMenu, QFrame, QLabel,
                                 QSizePolicy)
 
 from general.layer_editor.layer_data import VFSLayerData
-from general.layer_editor.utils import hex_to_rgb, rgb_to_hex, shifted_background_color
-from general.layer_editor.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN, BUG_REPORT_URL, HELP, BUG_REPORT, DRAG_HANDLE, UNDO
+from general.layer_editor.utils import hex_to_rgb, rgb_to_hex, contrast_text_color
+from general.layer_editor.constants import VISIBLE, HIDDEN, CONFIG_DROPDOWN, FOLDER_OPEN, BUG_REPORT_URL, HELP, BUG_REPORT, DRAG_HANDLE, UNDO, NEUTRAL_ROW_COLOR
 
 # Layer display types and their labels for the cycling button
 LAYER_MODES = ["N", "T", "R"]
+
+# Row heights: just the top row, or with the export settings row open
+COLLAPSED_HEIGHT = 30
+EXPANDED_HEIGHT = 60
 
 # Persistent mat named and renamed for LEGC exports
 LEGC_SHARED_MATERIAL = "M_LEGC_shared"
@@ -40,11 +44,15 @@ class LayerWidget(QWidget):
     path_changed = Signal(str, str)     # Emitted when export path changes: uuid, export_path
     legc_path_changed = Signal(str, str)  # uuid, legc_export_path
     legc_state_changed = Signal(str, bool)  # uuid, legc_applied
+    legc_on_export_changed = Signal(str, bool)  # uuid, legc_on_export
 
     def __init__(self, data: VFSLayerData):
         super().__init__()
         self.data = data
-        self.setFixedHeight(30)
+        self._report = None                                 # Set while exporting as part of a batch (see _warn)
+        self._text_color = "#dcdcdc"                        # Updated by apply_color_styles()
+        self._name_overlay = "rgba(255, 255, 255, 10)"
+        self.setFixedHeight(COLLAPSED_HEIGHT)
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setSpacing(2)
@@ -80,7 +88,7 @@ class LayerWidget(QWidget):
         self.name_edit = LayerNameEdit(self.data.maya_layer_name)
         self.name_edit.setMinimumWidth(80)
         self.name_edit.setReadOnly(True)
-        self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
+        self._refresh_name_style()
         self.name_edit.setToolTip("Layer name — double click to rename")
         self.name_edit.installEventFilter(self)
 
@@ -136,15 +144,15 @@ class LayerWidget(QWidget):
 
         self.legc_path_edit = QLineEdit()
         self.legc_path_edit.setReadOnly(True)
-        self.legc_path_edit.setPlaceholderText("No LEGC export path set")
-        self.legc_path_edit.setToolTip("LEGC export path")
+        self.legc_path_edit.setPlaceholderText("No RGB Mask export path set")
+        self.legc_path_edit.setToolTip("RGB Mask export path")
         self.legc_path_edit.setVisible(False)
 
         self.origin_checkbox = QCheckBox("Origin")
         self.origin_checkbox.setToolTip("Move objects to origin before exporting")
 
-        self.legc_checkbox = QCheckBox("LEGC")
-        self.legc_checkbox.setToolTip("Run LEGC UV operation on export")
+        self.legc_checkbox = QCheckBox("RGBm")
+        self.legc_checkbox.setToolTip("Run RGB Mask UV operation on export")
 
         self.legc_undo_label = QLabel("LEGC")
         self.legc_undo_label.setVisible(False)
@@ -185,10 +193,15 @@ class LayerWidget(QWidget):
         if self.data.legc_export_path:
             self.legc_path_edit.setText(self.data.legc_export_path)
 
+        # Signals aren't connected yet, so this doesn't trigger on_legc_toggled
+        self.legc_checkbox.setChecked(self.data.legc_on_export)
+
         if self.data.legc_applied:
             self.legc_checkbox.setVisible(False)
             self.legc_undo_label.setVisible(True)
             self.legc_undo_button.setVisible(True)
+
+        self._refresh_path_view()
 
         self.name_edit.setCursorPosition(0)
         self.apply_color_styles()
@@ -221,13 +234,13 @@ class LayerWidget(QWidget):
 
     def start_rename(self):
         self.name_edit.setReadOnly(False)
-        self.name_edit.setStyleSheet("")
+        self._refresh_name_style()
         self.name_edit.setFocus()
         self.name_edit.selectAll()
 
     def finish_rename(self):
         self.name_edit.setReadOnly(True)
-        self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
+        self._refresh_name_style()
         self.name_edit.setCursorPosition(0)
         self.rename_layer()
 
@@ -238,7 +251,9 @@ class LayerWidget(QWidget):
             self.selected.emit(self)
         elif event.button() == Qt.RightButton:
             self.show_context_menu(event.globalPosition().toPoint())
-        super().mousePressEvent(event)
+        # Handled here. Calling super() would mark the click as unhandled, so it would bubble up to the
+        # layer list's "click on empty space clears the selection" and deselect this row again.
+        event.accept()
 
     def set_selected(self, is_selected: bool):
         """Toggle visual selected state."""
@@ -275,13 +290,25 @@ class LayerWidget(QWidget):
         self.bottom_row.setVisible(checked)
         self.separator.setVisible(checked)
         self.export_toggle.setIcon(QIcon(CONFIG_DROPDOWN))
-        self.setFixedHeight(60 if checked else 30)
+        self.setFixedHeight(EXPANDED_HEIGHT if checked else COLLAPSED_HEIGHT)
 
     # ------------ LEGC TOGGLE ------------
 
     def on_legc_toggled(self, checked):
-        self.path_edit.setVisible(not checked)
-        self.legc_path_edit.setVisible(checked)
+        # The checkbox is a stored per-layer setting: "run RGB Mask on export"
+        self.data.legc_on_export = checked
+        self.legc_on_export_changed.emit(self.data.uuid, checked)
+        self._refresh_path_view()
+
+    def _should_run_legc(self):
+        # The pass is skipped when it has already been applied (the checkbox is hidden then, but may still be ticked)
+        return self.legc_checkbox.isChecked() and not self.data.legc_applied
+
+    def _refresh_path_view(self):
+        # Show the RGBm export path while RGBm is active, the regular export path otherwise
+        show_legc = self._should_run_legc()
+        self.path_edit.setVisible(not show_legc)
+        self.legc_path_edit.setVisible(show_legc)
 
     # ------------ MAYA UPDATES ------------
 
@@ -301,6 +328,64 @@ class LayerWidget(QWidget):
 
     def on_origin_changed(self, checked):
         self.data.use_origin = checked
+
+    def apply_template_value(self, name, value):
+        """Set one setting on this layer from the TEMPLATE LAYER: data, Maya node and UI."""
+        if name == "visibility":
+            self.visibility_button.blockSignals(True)
+            self.visibility_button.setChecked(not value)
+            self.visibility_button.blockSignals(False)
+            self.on_visibility_changed(not value)       # Button is checked when the layer is HIDDEN
+
+        elif name == "display_type":
+            self.data.display_type = value
+            self.mode_button.setText(LAYER_MODES[value])
+            cmds.setAttr(f"{self.data.maya_layer_name}.displayType", value)
+
+        elif name == "color_rgb":
+            layer = self.data.maya_layer_name
+            if value is None:
+                cmds.setAttr(f"{layer}.overrideRGBColors", 0)
+                cmds.setAttr(f"{layer}.color", 0)
+                self.data.color_rgb = None
+            else:
+                cmds.setAttr(f"{layer}.overrideRGBColors", 1)
+                cmds.setAttr(f"{layer}.overrideColorRGB", value[0], value[1], value[2])
+                self.data.color_rgb = tuple(value)
+            self.apply_color_styles()
+
+        elif name == "use_origin":
+            self.origin_checkbox.setChecked(value)
+            self.data.use_origin = value
+
+        elif name == "export_path":
+            self.data.export_path = value
+            self.path_edit.setText(value)
+            self.path_changed.emit(self.data.uuid, value)
+
+        elif name == "legc_export_path":
+            self.data.legc_export_path = value
+            self.legc_path_edit.setText(value)
+            self.legc_path_changed.emit(self.data.uuid, value)
+
+        elif name == "legc_on_export":
+            self.legc_checkbox.setChecked(value)
+            self.data.legc_on_export = value
+            self.legc_on_export_changed.emit(self.data.uuid, value)
+
+    def refresh_from_data(self):
+        """Show the Maya-driven settings (name, visibility, mode, color) from self.data, without writing
+        anything back to Maya. Used by the resync button."""
+        d = self.data
+        if self.name_edit.isReadOnly():     # Don't overwrite a name that is being typed
+            self.name_edit.setText(d.maya_layer_name)
+            self.name_edit.setCursorPosition(0)
+        self.visibility_button.blockSignals(True)
+        self.visibility_button.setChecked(not d.visibility)
+        self.visibility_button.blockSignals(False)
+        self.visibility_button.setIcon(QIcon(VISIBLE) if d.visibility else QIcon(HIDDEN))
+        self.mode_button.setText(LAYER_MODES[d.display_type])
+        self.apply_color_styles()
 
     def rename_layer(self):
         new_name = self.name_edit.text()
@@ -394,7 +479,7 @@ class LayerWidget(QWidget):
     # ------------ EXPORT PATH ------------
 
     def pick_export_path(self):
-        is_legc = self.legc_checkbox.isChecked()
+        is_legc = self._should_run_legc()
         current_path = self.data.legc_export_path if is_legc else self.data.export_path
 
         path = QFileDialog.getExistingDirectory(
@@ -456,8 +541,7 @@ class LayerWidget(QWidget):
                 if parent:
                     valid_transform_short.add(parent[0].split("|")[-1])
             except ValueError as value_error_msg:
-                QMessageBox.warning(
-                    self,
+                self._warn(
                     "LEGC Material Saving Failed",
                     f"Something went wrong with the LEGC Material Saving procedure.\n\n{value_error_msg}\n\nTry deleting history on the affected mesh."
                 )
@@ -591,18 +675,16 @@ class LayerWidget(QWidget):
                 valid_shapes.append(shape)
 
         if skipped:
-            QMessageBox.warning(
-                self,
+            self._warn(
                 "LEGC Skipped",
                 "The following meshes already have a uvSet1 and were skipped:\n\n" +
                 "\n".join(skipped)
             )
 
         if failed:
-            QMessageBox.warning(
-                self,
+            self._warn(
                 "LEGC UV Setup Failed",
-                "The following meshes failed to set up uvSet1 and were skipped."
+                "The following meshes failed to set up uvSet1 and were skipped. "
                 "Try deleting history on these meshes and running LEGC again:\n\n" + "\n".join(failed)
             )
 
@@ -623,8 +705,7 @@ class LayerWidget(QWidget):
                             box=(0, 1, 0, 1)
                             )
         except RuntimeError as runtime_error_msg:
-            QMessageBox.warning(
-                self,
+            self._warn(
                 "LEGC Layout Failed",
                 f"Something went wrong with the LEGC Layout procedure.\n\n{runtime_error_msg}"
             )
@@ -724,6 +805,7 @@ class LayerWidget(QWidget):
         self.legc_checkbox.setVisible(True)
         self.data.legc_applied = False
         self.legc_state_changed.emit(self.data.uuid, False)
+        self._refresh_path_view()
 
         # Build result message
         msg_parts = []
@@ -741,44 +823,75 @@ class LayerWidget(QWidget):
     # ------------ EXPORT ------------
 
     def export_layer(self):
+        """The Export button on this row: problems are shown in dialogs."""
+        self._export(report=None)
+
+    def export_layer_batch(self, report, legc_mode=None):
+        """Export as part of Export Selected / Export All. Nothing is shown: problems are appended to
+        `report` (a list of dicts) so the batch can show one summary at the end. Returns True on success.
+
+        legc_mode only affects this export, the layer's settings are never changed:
+            None                -> use the layer's own RGBm settings
+            "skip"              -> don't run RGBm
+            "use_regular_path"  -> save the RGBm file in the layer's regular export folder
+        """
+        return self._export(report=report, legc_mode=legc_mode)
+
+    def _warn(self, title, message, fatal=False):
+        if self._report is None:
+            QMessageBox.warning(self, title, message)
+        else:
+            self._report.append({
+                "layer": self.data.maya_layer_name,
+                "title": title,
+                "message": message,
+                "fatal": fatal,
+            })
+
+    def _fail(self, title, message):
+        self._warn(title, message, fatal=True)
+        return False
+
+    def _export(self, report=None, legc_mode=None):
+        self._report = report
+        try:
+            return self._export_layer(legc_mode)
+        finally:
+            self._report = None
+
+    def _export_layer(self, legc_mode):
+        run_legc = self._should_run_legc() and legc_mode != "skip"
+        legc_folder = self.data.export_path if legc_mode == "use_regular_path" else self.data.legc_export_path
+
         if not self.data.export_path:
-            QMessageBox.warning(self, "Export Failed", "No export path set for this layer.")
-            return
+            return self._fail("Export Failed", "No export path set for this layer.")
 
         if not Path(self.data.export_path).exists():
-            QMessageBox.warning(self, "Export Failed", f"Export path does not exist:\n{self.data.export_path}")
-            return
+            return self._fail("Export Failed", f"Export path does not exist:\n{self.data.export_path}")
 
         # LEGC path validation
-        if self.legc_checkbox.isChecked():
-            if not self.data.legc_export_path:
-                QMessageBox.warning(self, "Export Failed", "No LEGC export path set for this layer.")
-                return
-            if not Path(self.data.legc_export_path).exists():
-                QMessageBox.warning(self, "Export Failed", f"LEGC export path does not exist:\n{self.data.legc_export_path}")
-                return
+        if run_legc:
+            if not legc_folder:
+                return self._fail("Export Failed", "No LEGC export path set for this layer.")
+            if not Path(legc_folder).exists():
+                return self._fail("Export Failed", f"LEGC export path does not exist:\n{legc_folder}")
 
-        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True)
+        members = cmds.editDisplayLayerMembers(self.data.maya_layer_name, q=True, fullNames=True) or []
         members = [obj for obj in members if cmds.nodeType(obj) == "transform"]
         if not members:
-            QMessageBox.warning(self, "Export Failed", f"No objects found in layer {self.data.maya_layer_name}.")
-            return
+            return self._fail("Export Failed", f"No objects found in layer {self.data.maya_layer_name}.")
 
         previous_selection = cmds.ls(selection=True)
         original_positions = self._move_to_origin(members) if self.data.use_origin else {}
 
         legc_ran = False
         try:
-            if self.legc_checkbox.isChecked():
+            if run_legc:
                 legc_result = self._run_legc(members)
                 
                 if legc_result is None:
                     # LEGC layout failed, abort the export entirely, don't write any FBX or mark LEGC as successful
-                    QMessageBox.warning(
-                        self, "Export Aborted",
-                        "LEGC layout failed, so no files were exported."
-                    )
-                    return
+                    return self._fail("Export Aborted", "LEGC layout failed, so no files were exported.")
                 
                 # Run LEGC and capture state for restoration
                 legc_ran = True
@@ -794,11 +907,10 @@ class LayerWidget(QWidget):
                     if not obj.split("|")[-1].startswith("UCX_")
                 ]
                 if not legc_export_members:
-                    QMessageBox.warning(
-                        self, "Export Failed",
+                    return self._fail(
+                        "Export Failed",
                         f"No non-UCX objects found in layer {self.data.maya_layer_name} for LEGC export."
                     )
-                    return
 
                 # Rename shared LEGC mat to M_<LayerName> for the LEGC export
                 target_material_name = f"M_{self.data.maya_layer_name}"
@@ -837,7 +949,7 @@ class LayerWidget(QWidget):
                         detached_ucx[new_path] = (original_parent, original_short_name)
 
 
-                    legc_export_path = f"{self.data.legc_export_path}/{self.data.maya_layer_name}_LEGC.fbx"
+                    legc_export_path = f"{legc_folder}/{self.data.maya_layer_name}_LEGC.fbx"
                     try:
                         cmds.select(legc_export_members)
                         cmds.file(legc_export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
@@ -877,10 +989,12 @@ class LayerWidget(QWidget):
             cmds.select(members)
             export_path = f"{self.data.export_path}/{self.data.maya_layer_name}.fbx"
             cmds.file(export_path, force=True, options="v=0;smoothingGroups=1", type="FBX export", exportSelected=True)
-            if legc_ran:
-                cmds.inViewMessage(amg="LEGC and Regular FBX files exported <hl>successfully</hl>.", pos='topCenter', fade=True)
-            else:
-                cmds.inViewMessage(amg=f"{self.data.maya_layer_name} FBX file exported <hl>successfully</hl>.", pos='topCenter', fade=True)
+            if self._report is None:    # Batch exports show one summary at the end instead
+                if legc_ran:
+                    cmds.inViewMessage(amg="LEGC and Regular FBX files exported <hl>successfully</hl>.", pos='topCenter', fade=True)
+                else:
+                    cmds.inViewMessage(amg=f"{self.data.maya_layer_name} FBX file exported <hl>successfully</hl>.", pos='topCenter', fade=True)
+            return True
 
         finally:
             if original_positions:
@@ -889,19 +1003,18 @@ class LayerWidget(QWidget):
                 cmds.select(previous_selection)
             else:
                 cmds.select(clear=True)
-            self.legc_checkbox.setChecked(False)
+            # The RGBm checkbox is a stored setting now, so it is no longer reset after export.
+            # If the pass ran, it is hidden behind the Undo button until the pass is undone.
             if legc_ran:
                 self.legc_checkbox.setVisible(False)
                 self.legc_undo_label.setVisible(True)
                 self.legc_undo_button.setVisible(True)
-
-            # Reset LEGC checkbox after export regardless of success or failure
-            self.legc_checkbox.setChecked(False)
+            self._refresh_path_view()
 
     # ------------ COLOR ------------
 
     def pick_color(self):
-        color = QColorDialog.getColor()
+        color = QColorDialog.getColor(self._picker_start_color())
         if not color.isValid():
             return
 
@@ -914,20 +1027,67 @@ class LayerWidget(QWidget):
 
         self.apply_color_styles()
 
-    def apply_color_styles(self):
-        hex_color = rgb_to_hex(self.data.color_rgb)
-        self.color_button.setStyleSheet(f"background-color: {hex_color};")
+    def _picker_start_color(self):
+        rgb = self.data.color_rgb
+        return QColor(rgb_to_hex(rgb)) if rgb else QColor("#ffffff")
 
-        bg_rgb = shifted_background_color(self.data.color_rgb)
-        bg_hex = rgb_to_hex(bg_rgb)
+    def _name_is_editing(self):
+        return not self.name_edit.isReadOnly()
+
+    def _refresh_name_style(self):
+        if self._name_is_editing():
+            self.name_edit.setStyleSheet("")    # Normal text field look while typing
+        else:
+            self.name_edit.setStyleSheet(
+                f"QLineEdit {{ border: none; background: {self._name_overlay}; color: {self._text_color}; }}"
+            )
+
+    def apply_color_styles(self):
+        """Color the row from the layer color.
+
+        The row IS the layer color, so what you picked is what you see. The name text is black or white,
+        whichever is easier to read on that color. Layers with no custom color use the neutral row and a
+        dashed gray swatch.
+
+        The selection outline and the checkboxes (check mark + label) are always white: checkboxes keep
+        a dark box whatever the row color is. On light rows the checkboxes get a dark backing so the white
+        stays readable.
+
+        Text colors are set on this row's own widgets only. A style sheet rule like "all QLabels inside
+        this row" would also reach pop-up dialogs opened from the row, which keep Maya's gray background.
+        """
+        rgb = self.data.color_rgb
+        cls = type(self).__name__
+
+        if rgb is None:
+            row_color, text_color = NEUTRAL_ROW_COLOR, "#dcdcdc"
+            swatch = "background-color: #555555; border: 1px dashed #9a9a9a;"
+        else:
+            hex_color = rgb_to_hex(rgb)
+            row_color = hex_color
+            text_color = contrast_text_color(rgb)
+            swatch = f"background-color: {hex_color}; border: 1px solid {text_color};"
+
+        light_row = text_color == "#111111"
+        self._text_color = text_color
+        self._name_overlay = "rgba(0, 0, 0, 30)" if light_row else "rgba(255, 255, 255, 10)"
+
+        self.color_button.setStyleSheet(swatch)
+        self._refresh_name_style()
+        self.legc_undo_label.setStyleSheet(f"color: {text_color};")
+
+        checkbox_backing = "background: rgba(0, 0, 0, 120); border-radius: 3px; padding-right: 4px;" if light_row else ""
+        checkbox_style = f"QCheckBox {{ color: #ffffff; {checkbox_backing} }}"
+        self.origin_checkbox.setStyleSheet(checkbox_style)
+        self.legc_checkbox.setStyleSheet(checkbox_style)
 
         self.setStyleSheet(f"""
-            LayerWidget {{
-                background-color: {bg_hex};
+            {cls} {{
+                background-color: {row_color};
             }}
-            LayerWidget[selected=true] {{
-                background-color: {bg_hex};
-                border: 2px solid white;
+            {cls}[selected=true] {{
+                background-color: {row_color};
+                border: 2px solid #ffffff;
             }}
         """)
 

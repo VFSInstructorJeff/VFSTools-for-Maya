@@ -7,9 +7,10 @@ from maya import OpenMayaUI as omui
 from maya.app.general.mayaMixin import (MayaQWidgetDockableMixin as mixin)
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QSize, QTimer
+from PySide6.QtCore import Qt, QSize, QTimer, Signal
 from PySide6.QtGui import QIcon, QColor
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QScrollArea, QLabel, QColorDialog
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QToolBar, QScrollArea, QLabel, QColorDialog,
+                               QPushButton, QMessageBox)
 
 from shiboken6 import isValid
 
@@ -17,6 +18,8 @@ from general.layer_editor.constants import *
 from general.layer_editor.layer_data import VFSLayerData
 from general.layer_editor.layer_manager import LayerManager
 from general.layer_editor.layer_widget import LayerWidget
+from general.layer_editor.batch_export import run_batch_export
+from general.layer_editor.template_panel import TemplatePanel
 from general.layer_editor.utils import get_main_window
 
 # Tracks the single live MainWindow instance so its scene callbacks can be
@@ -31,6 +34,19 @@ _current_instance = None
 # layout (switching workspaces and back, restarting Maya, ...). It has to be fully qualified because
 # it runs in Maya's global namespace. This is what makes the tool persistent.
 UI_SCRIPT = "import {0}; {0}.restore_ui()".format(__name__)
+
+# ------------ LAYER CONTAINER ------------
+# Holds the layer rows. Clicking the empty space between/below them clears the selection (like a file browser).
+
+class LayerContainer(QWidget):
+    background_clicked = Signal()
+
+    def mousePressEvent(self, event):
+        modifiers = event.modifiers()
+        if event.button() == Qt.LeftButton and not (modifiers & (Qt.ControlModifier | Qt.ShiftModifier)):
+            self.background_clicked.emit()
+        super().mousePressEvent(event)
+
 
 # ------------ MAIN WINDOW ------------
 
@@ -64,7 +80,7 @@ class MainWindow(mixin, QWidget):
         self.toolbar.setIconSize(QSize(20, 20))
         self.window_layout.addWidget(self.toolbar)
 
-        self.layer_container = QWidget()
+        self.layer_container = LayerContainer()
         self.layer_layout = QVBoxLayout(self.layer_container)
         self.layer_layout.setAlignment(Qt.AlignTop)
         self.layer_layout.setSpacing(2)
@@ -77,17 +93,33 @@ class MainWindow(mixin, QWidget):
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)       # Scrollbar only appears when there's more layers than the window can show
         self.window_layout.addWidget(self.scroll_area)
 
+        # Export buttons: under the layer list, above the hint/version labels
+        self.export_bar = QWidget()
+        export_layout = QHBoxLayout(self.export_bar)
+        export_layout.setContentsMargins(0, 0, 0, 0)
+        self.export_selected_button = QPushButton("Export Selected")
+        self.export_all_button = QPushButton("Export All")
+        export_layout.addWidget(self.export_selected_button)
+        export_layout.addWidget(self.export_all_button)
+        self.window_layout.addWidget(self.export_bar)
+
         self.hint_label = QLabel("Right click layer for more options")
         self.window_layout.addWidget(self.hint_label)
 
-        self.tool_version = QLabel("VFS Layer Tools v3.0.0")
+        self.tool_version = QLabel("VFS Layer Tools v4.0.0")
         self.window_layout.addWidget(self.tool_version)
 
         self.layer_manager = LayerManager()
+        self.layer_manager.on_selection_changed = self._update_export_buttons
+        self.layer_container.background_clicked.connect(self.layer_manager.clear_selection)
+        self.export_selected_button.clicked.connect(self.export_selected_layers)
+        self.export_all_button.clicked.connect(self.export_all_layers)
+        self._update_export_buttons()
         self._refreshing = False
 
         self._setup_color_palette()
         self.setup_toolbar()
+        self._setup_template_panel()
         self.load_existing_layers()
 
         # Scene callbacks
@@ -151,19 +183,35 @@ class MainWindow(mixin, QWidget):
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         self.toolbar.addWidget(spacer)
 
+        resync_btn = self.toolbar.addAction(QIcon(RESYNC), "")
         help_btn = self.toolbar.addAction(QIcon(HELP), "")
         bug_btn = self.toolbar.addAction(QIcon(BUG_REPORT), "")
+
+        resync_btn.triggered.connect(self.resync_layers)
 
         help_btn.triggered.connect(lambda: webbrowser.open(HELP_URL) if HELP_URL else None) # TODO: Add documentation
         bug_btn.triggered.connect(lambda: webbrowser.open(BUG_REPORT_URL))
 
         new_layer.setToolTip("Create new empty layer")
         add_layer.setToolTip("Create new layer from selection")
-        delete_layer.setToolTip("Delete selected layer")
-        move_up.setToolTip("Move selected layer up")
-        move_down.setToolTip("Move selected layer down")
+        delete_layer.setToolTip("Delete selected layer(s)")
+        move_up.setToolTip("Move selected layer(s) up")
+        move_down.setToolTip("Move selected layer(s) down")
+        resync_btn.setToolTip("Resync with Maya's layers\n"
+                              "Use after layers were deleted or restored (Ctrl+Z) outside of this tool")
         help_btn.setToolTip("Open documentation")
         bug_btn.setToolTip("Report a bug")
+
+    # --------------------------------
+    # Template Layer
+    # --------------------------------
+
+    def _setup_template_panel(self):
+        # Pinned at the very top, above the toolbar, so it stands out from the layers and never scrolls
+        # away or gets selected/moved/deleted like a real layer
+        self.layer_manager.load_template()
+        self.template_panel = TemplatePanel(self.layer_manager)
+        self.window_layout.insertWidget(0, self.template_panel)
 
     # --------------------------------
     # Layer Operations
@@ -174,36 +222,72 @@ class MainWindow(mixin, QWidget):
         self.layer_layout.insertWidget(0, widget, alignment=Qt.AlignTop)
 
     def delete_selected_layer(self):
-        entry = self.layer_manager.selected_entry
-        if not entry:
+        entries = list(self.layer_manager.selected_entries)
+        if not entries:
             return
-        widget = entry["widget"]
+
+        # Deleting one layer needs no confirmation (as before), several at once do
+        if len(entries) > 1:
+            answer = QMessageBox.question(
+                self, "Delete Layers",
+                f"Delete {len(entries)} selected layers?\n\nThe objects in them are not deleted.",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+            if answer != QMessageBox.Yes:
+                return
+
+        widgets = [entry["widget"] for entry in entries]
         self.layer_manager.remove_selected()
-        self.layer_layout.removeWidget(widget)
+        for widget in widgets:
+            self.layer_layout.removeWidget(widget)
 
     def move_selected_up(self):
-        entry = self.layer_manager.selected_entry
-        if not entry:
-            return
-        widget = entry["widget"]
-        index = self.layer_layout.indexOf(widget)
-        if index <= 0:
-            return
         self.layer_manager.move_selected_up()
-        self.layer_layout.removeWidget(widget)
-        self.layer_layout.insertWidget(index - 1, widget, alignment=Qt.AlignTop)
+        self._sync_layout_order()
 
     def move_selected_down(self):
-        entry = self.layer_manager.selected_entry
-        if not entry:
-            return
-        widget = entry["widget"]
-        index = self.layer_layout.indexOf(widget)
-        if index == self.layer_layout.count() - 1:
-            return
         self.layer_manager.move_selected_down()
-        self.layer_layout.removeWidget(widget)
-        self.layer_layout.insertWidget(index + 1, widget, alignment=Qt.AlignTop)
+        self._sync_layout_order()
+
+    def _sync_layout_order(self):
+        """Make the rows on screen match the order in the layer manager."""
+        entries = self.layer_manager.layers
+        for entry in entries:
+            self.layer_layout.removeWidget(entry["widget"])
+        for index, entry in enumerate(entries):
+            self.layer_layout.insertWidget(index, entry["widget"], alignment=Qt.AlignTop)
+
+    def resync_layers(self):
+        """Make the list match Maya's layers (see LayerManager.resync)."""
+        added, removed = self.layer_manager.resync()
+        self._sync_layout_order()
+        self._update_export_buttons()
+
+        if added or removed:
+            parts = []
+            if added:
+                parts.append(f"<hl>{len(added)}</hl> added")
+            if removed:
+                parts.append(f"<hl>{len(removed)}</hl> removed")
+            message = "Layers resynced: " + ", ".join(parts) + "."
+        else:
+            message = "Layers are already <hl>in sync</hl> with Maya."
+        cmds.inViewMessage(amg=message, pos="topCenter", fade=True)
+
+    # --------------------------------
+    # Export
+    # --------------------------------
+
+    def _update_export_buttons(self):
+        count = len(self.layer_manager.selected_entries)
+        self.export_selected_button.setEnabled(count > 0)
+        self.export_selected_button.setText(f"Export Selected ({count})" if count else "Export Selected")
+
+    def export_selected_layers(self):
+        run_batch_export(self, list(self.layer_manager.selected_entries))
+
+    def export_all_layers(self):
+        run_batch_export(self, list(self.layer_manager.layers))
 
     def load_existing_layers(self):
         widgets = self.layer_manager.load()
@@ -221,9 +305,15 @@ class MainWindow(mixin, QWidget):
                     widget.deleteLater()
     
             self.layer_manager.layers = []
-            self.layer_manager.selected_entry = None
+            self.layer_manager.selected_entries = []
+            self.layer_manager.anchor_entry = None
+            self._update_export_buttons()
     
             self.load_existing_layers()
+
+            # The TEMPLATE LAYER lives in the scene's fileInfo, so re-read it for the new/opened scene
+            self.layer_manager.load_template()
+            self.template_panel.refresh()
         finally:
             self._refreshing = False
 
@@ -245,10 +335,7 @@ class MainWindow(mixin, QWidget):
                     self.layer_manager._sync_from_maya(data)
 
                     widget = LayerWidget(data)
-                    widget.selected.connect(self.layer_manager.on_layer_selected)
-                    widget.path_changed.connect(self.layer_manager.update_session_cache)
-                    widget.legc_path_changed.connect(self.layer_manager.update_session_cache_legc_path)
-                    widget.legc_state_changed.connect(self.layer_manager.update_session_cache_legc)
+                    self.layer_manager.connect_widget(widget)
 
                     entry = {"data": data, "widget": widget}
                     self.layer_manager.layers.insert(0, entry)

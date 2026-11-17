@@ -21,11 +21,21 @@ def hex_to_rgb(value):
     return tuple(v / 255.0 for v in rgb_255)
 
 def rgb_to_hex(rgb):
+    # round() instead of int(): int() truncates, so e.g. 0.2 * 255 = 50.999... became 50 instead of 51
     return '#{:02x}{:02x}{:02x}'.format(
-        int(rgb[0] * 255),
-        int(rgb[1] * 255),
-        int(rgb[2] * 255)
+        round(rgb[0] * 255),
+        round(rgb[1] * 255),
+        round(rgb[2] * 255)
     )
+
+def contrast_text_color(rgb):
+    """Black or white text, whichever is easier to read on top of this (sRGB 0-1) color."""
+    def linear(c):
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (linear(c) for c in rgb)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    # Equal contrast against white and black happens at a luminance of ~0.179
+    return "#ffffff" if luminance <= 0.179 else "#111111"
 
 def shifted_background_color(rgb_color):
     # Unpack each separate variable (Hue, Saturation, Value)
