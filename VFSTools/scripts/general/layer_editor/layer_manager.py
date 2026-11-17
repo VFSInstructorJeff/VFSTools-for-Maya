@@ -5,7 +5,8 @@ import re
 from maya import cmds
 from maya.api import OpenMaya as om
 
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QGuiApplication
 
 from general.layer_editor.layer_data import VFSLayerData, LayerTemplate      # Import data
 from general.layer_editor.layer_widget import LayerWidget     # Import UI
@@ -26,7 +27,9 @@ class LayerManager:
 
     def __init__(self):
         self.layers = []
-        self.selected_entry = None
+        self.selected_entries = []        # Selected layers, in the order they are listed (top to bottom)
+        self.anchor_entry = None          # Where Shift+click ranges start from
+        self.on_selection_changed = None  # Optional callback so the UI can update (e.g. the Export Selected button)
         self.template = LayerTemplate()   # TEMPLATE LAYER settings (not a real layer, never in self.layers)
         self._attr_callbacks = {}   # uuid (key) -> (attr_cb_id, name_cb_id) (tuple value)
         self._creating = False      # Checking if a layer is being created to delay other callbacks so there isn't conflict
@@ -119,9 +122,13 @@ class LayerManager:
         if "display_type" in applied:
             cmds.setAttr(f"{layer}.displayType", data.display_type)
         if "color_rgb" in applied:
-            r, g, b = data.color_rgb
-            cmds.setAttr(f"{layer}.overrideRGBColors", 1)
-            cmds.setAttr(f"{layer}.overrideColorRGB", r, g, b)
+            if data.color_rgb is None:
+                cmds.setAttr(f"{layer}.overrideRGBColors", 0)
+                cmds.setAttr(f"{layer}.color", 0)
+            else:
+                r, g, b = data.color_rgb
+                cmds.setAttr(f"{layer}.overrideRGBColors", 1)
+                cmds.setAttr(f"{layer}.overrideColorRGB", r, g, b)
 
         # Keep the session cache in step so these survive closing/reopening the tool unsaved
         if "export_path" in applied:
@@ -192,11 +199,11 @@ class LayerManager:
 
     def remove_selected(self):
         # If no layers are selected, return
-        if not self.selected_entry:
+        if not self.selected_entries:
             return
-        # Call layer removal for the selected layer and set selection to None again
-        self.remove_layer(self.selected_entry["widget"])
-        self.selected_entry = None
+        # Remove every selected layer (a copy of the list, since remove_layer edits the selection)
+        for entry in list(self.selected_entries):
+            self.remove_layer(entry["widget"])
     
     def remove_layer(self, widget):
         """
@@ -239,36 +246,94 @@ class LayerManager:
         if uuid in _legc_session_cache:
             del _legc_session_cache[uuid]
 
-        # Remove it from Layer Manager list
+        # Remove it from Layer Manager list (and the selection)
         self.layers.remove(entry)
+        if entry in self.selected_entries:
+            self.selected_entries.remove(entry)
+            self._notify_selection_changed()
+        if self.anchor_entry is entry:
+            self.anchor_entry = None
 
     # ------------ SELECT LAYER METHOD ------------
 
     def on_layer_selected(self, widget):
-        # Deselect previous
-        if self.selected_entry:
-            self.selected_entry["widget"].set_selected(False)
+        """A layer was clicked. Works like a file browser:
+            click            -> only this layer
+            Ctrl+click       -> add/remove this layer
+            Shift+click      -> every layer from the last clicked one to this one
+            Ctrl+Shift+click -> add that range to the current selection
+        """
+        entry = next((x for x in self.layers if x["widget"] == widget), None)
+        if entry is None:
+            return
 
-        self.selected_entry = next(
-            (x for x in self.layers if x["widget"] == widget),
-            None
-        )
+        modifiers = QGuiApplication.keyboardModifiers()
+        ctrl = bool(modifiers & Qt.ControlModifier)
+        shift = bool(modifiers & Qt.ShiftModifier)
 
-        # Select new
-        if self.selected_entry:
-            self.selected_entry["widget"].set_selected(True)
+        if shift and self.anchor_entry in self.layers:
+            start = self.layers.index(self.anchor_entry)
+            end = self.layers.index(entry)
+            low, high = min(start, end), max(start, end)
+            selection = self.layers[low:high + 1]
+            if ctrl:
+                selection = list(self.selected_entries) + [e for e in selection if e not in self.selected_entries]
+            # The anchor stays put, so the range can be adjusted with further Shift+clicks
+        elif ctrl:
+            selection = list(self.selected_entries)
+            if entry in selection:
+                selection.remove(entry)
+            else:
+                selection.append(entry)
+            self.anchor_entry = entry
+        else:
+            selection = [entry]
+            self.anchor_entry = entry
+
+        self._set_selection(selection)
+
+    def clear_selection(self):
+        self._set_selection([])
+        self.anchor_entry = None
+
+    def _set_selection(self, entries):
+        chosen = [e for e in self.layers if e in entries]   # Keep list order (top to bottom)
+        for entry in self.layers:
+            entry["widget"].set_selected(entry in chosen)
+        self.selected_entries = chosen
+        self._notify_selection_changed()
+
+    def _notify_selection_changed(self):
+        if self.on_selection_changed:
+            self.on_selection_changed()
 
     # ------------ REORDER LAYERS METHODS ------------
 
     def move_selected_up(self):
-        if not self.selected_entry:
-            return
-        self.move_layer(self.selected_entry["widget"], "up")
+        self._move_selected("up")
 
     def move_selected_down(self):
-        if not self.selected_entry:
+        self._move_selected("down")
+
+    def _move_selected(self, direction):
+        """Move all selected layers one step, keeping them in the same order relative to each other.
+        A selected layer that is blocked (at the edge, or behind another blocked one) stays where it is."""
+        if not self.selected_entries:
             return
-        self.move_layer(self.selected_entry["widget"], "down")
+
+        selected_ids = {id(e) for e in self.selected_entries}
+        indices = [i for i, e in enumerate(self.layers) if id(e) in selected_ids]
+        if direction == "down":
+            indices.reverse()       # Start from the bottom so layers don't step on each other
+
+        step = -1 if direction == "up" else 1
+        for index in indices:
+            neighbour = index + step
+            if neighbour < 0 or neighbour >= len(self.layers):
+                continue
+            if id(self.layers[neighbour]) in selected_ids:
+                continue
+            self.move_layer(self.layers[index]["widget"], direction)
 
     def move_layer(self, widget, direction):
         index = next(
@@ -362,16 +427,9 @@ class LayerManager:
                 data.display_type = cmds.getAttr(f"{data.maya_layer_name}.displayType")
                 widget.mode_button.setText(["N", "T", "R"][data.display_type])
 
-            elif attr_name == "c":  # index color
-                color_index = cmds.getAttr(f"{data.maya_layer_name}.color")
-                data.color_rgb = self._index_to_rgb(color_index)
+            elif attr_name in ("c", "ovrgb", "ovcr", "ovcg", "ovcb"):  # index color, RGB toggle, RGB channels
+                data.color_rgb = self._read_layer_color(data.maya_layer_name)
                 widget.apply_color_styles()
-
-            elif attr_name in ("ovcr", "ovcg", "ovcb"):  # RGB color channels
-                if cmds.getAttr(f"{data.maya_layer_name}.overrideRGBColors"):
-                    r, g, b = cmds.getAttr(f"{data.maya_layer_name}.overrideColorRGB")[0]
-                    data.color_rgb = (r, g, b)
-                    widget.apply_color_styles()
 
         except RuntimeError:
             pass  # Widget already deleted during tool shutdown, safe to ignore
@@ -385,6 +443,21 @@ class LayerManager:
             widget.name_edit.setText(new_name)
         except RuntimeError:
             pass  # Widget already deleted during tool shutdown, safe to ignore
+
+    def _read_layer_color(self, layer):
+        """The layer's color as an RGB 0-1 tuple, or None when it has no custom color.
+
+        Layers that were never given a color sit on color index 0, Maya's default. That index is
+        deliberately NOT converted to an RGB value (the converted value never matched what Maya shows,
+        which made the color shift when a scene was reopened), the layer is simply treated as uncolored.
+        """
+        if cmds.getAttr(f"{layer}.overrideRGBColors"):
+            r, g, b = cmds.getAttr(f"{layer}.overrideColorRGB")[0]
+            return (r, g, b)
+        color_index = cmds.getAttr(f"{layer}.color")
+        if color_index == 0:
+            return None
+        return self._index_to_rgb(color_index)
 
     def _index_to_rgb(self, index):
         """Convert Maya color index to RGB 0-1 tuple."""
@@ -440,8 +513,8 @@ class LayerManager:
 
     # ------------ LOAD ------------
 
-    def load(self):
-        # Read fileInfo, keyed by UUID for quick lookup
+    def _read_saved_layers(self):
+        """The layer data saved in the scene's fileInfo, keyed by UUID."""
         saved = {}
         raw = cmds.fileInfo(self.FILE_INFO_KEY, q=True)
         if raw:
@@ -451,6 +524,32 @@ class LayerManager:
                 saved = {item["uuid"]: item for item in payload}
             except (json.JSONDecodeError, Exception) as e:
                 print(f"Failed to parse fileInfo: {e}")
+        return saved
+
+    def _make_entry(self, layer_name, uuid, saved_item=None):
+        """Build the data + widget for an existing Maya layer and attach its callbacks (not added to self.layers)."""
+        if saved_item:
+            data = VFSLayerData.from_dict(saved_item)
+            data.maya_layer_name = layer_name
+        else:
+            data = VFSLayerData(uuid=uuid, maya_layer_name=layer_name)
+
+        # Always overwrite Maya-native fields with live values
+        self._sync_from_maya(data)
+
+        # Fill in export_path from session cache if not set by fileInfo
+        self._apply_session_cache(data)
+
+        widget = LayerWidget(data)
+        self.connect_widget(widget)
+
+        entry = {"data": data, "widget": widget}
+        self._attach_node_callback(entry)
+        return entry
+
+    def load(self):
+        # Read fileInfo, keyed by UUID for quick lookup
+        saved = self._read_saved_layers()
 
         # Maya's layer stack is the source of truth
         maya_layers = [l for l in cmds.ls(type="displayLayer") if l != "defaultLayer"]
@@ -462,28 +561,76 @@ class LayerManager:
         for layer_name in maya_layers:
             uuid = cmds.ls(layer_name, uuid=True)[0]
 
-            if uuid in saved:
-                data = VFSLayerData.from_dict(saved[uuid])
-                data.maya_layer_name = layer_name
-            else:
-                data = VFSLayerData(uuid=uuid, maya_layer_name=layer_name)
-
-            # Always overwrite Maya-native fields with live values
-            self._sync_from_maya(data)
-
-            # Fill in export_path from session cache if not set by fileInfo
-            self._apply_session_cache(data)
-
-            widget = LayerWidget(data)
-            self.connect_widget(widget)
-
-            entry = {"data": data, "widget": widget}
+            entry = self._make_entry(layer_name, uuid, saved.get(uuid))
             self.layers.append(entry)
-            widgets.append(widget)
-
-            self._attach_node_callback(entry)
+            widgets.append(entry["widget"])
 
         return widgets
+
+    def resync(self):
+        """Make the tool match the layers that actually exist in Maya (after layers were deleted, restored
+        with undo, or otherwise changed outside of this tool):
+            1. rows whose Maya layer is gone are removed (the layer's cached paths are kept in case it comes back)
+            2. Maya layers that have no row yet get one
+            3. every other row re-reads its name, visibility, mode and color from Maya
+            4. rows follow Maya's layer order
+        Returns (added layer names, removed layer names)."""
+        maya_layers = [l for l in cmds.ls(type="displayLayer") if l != "defaultLayer"]
+        maya_by_uuid = {cmds.ls(l, uuid=True)[0]: l for l in maya_layers}
+
+        # 1. Layers deleted in Maya
+        removed = []
+        for entry in list(self.layers):
+            if entry["data"].uuid not in maya_by_uuid:
+                removed.append(entry["data"].maya_layer_name)
+                self._discard_entry(entry)
+
+        # 2. Layers that exist in Maya but not here (data comes from the scene's saved info + session cache)
+        known = {entry["data"].uuid for entry in self.layers}
+        saved = self._read_saved_layers()
+        added = []
+        for uuid, layer_name in maya_by_uuid.items():
+            if uuid not in known:
+                self.layers.append(self._make_entry(layer_name, uuid, saved.get(uuid)))
+                added.append(layer_name)
+
+        # 3. Everything else: re-read from Maya, re-attach callbacks (a restored node can leave stale ones)
+        for entry in self.layers:
+            data = entry["data"]
+            if data.maya_layer_name in added:
+                continue
+            data.maya_layer_name = maya_by_uuid[data.uuid]
+            self._sync_from_maya(data)
+            entry["widget"].refresh_from_data()
+            try:
+                self._remove_node_callback(data.uuid)
+            except Exception:
+                pass    # Stale callback ids are fine, we attach fresh ones below
+            self._attach_node_callback(entry)
+
+        # 4. Maya's order: highest displayOrder first, like load()
+        self.layers.sort(key=lambda e: cmds.getAttr(f"{e['data'].maya_layer_name}.displayOrder"), reverse=True)
+
+        return added, removed
+
+    def _discard_entry(self, entry):
+        """Drop a row whose Maya layer no longer exists. Unlike remove_layer() this never touches Maya,
+        and keeps the session cache (so the layer's paths come back if the deletion is undone)."""
+        try:
+            self._remove_node_callback(entry["data"].uuid)
+        except Exception:
+            pass    # The node is already gone, its callbacks may be too
+
+        widget = entry["widget"]
+        widget.setParent(None)
+        widget.deleteLater()
+
+        self.layers.remove(entry)
+        if entry in self.selected_entries:
+            self.selected_entries.remove(entry)
+            self._notify_selection_changed()
+        if self.anchor_entry is entry:
+            self.anchor_entry = None
 
     def _sync_from_maya(self, data: VFSLayerData):
         """Overwrite Maya-native fields with current values from the layer stack."""
@@ -492,9 +639,4 @@ class LayerManager:
         data.visibility = cmds.getAttr(f"{layer}.visibility")
         data.display_type = cmds.getAttr(f"{layer}.displayType")
 
-        if cmds.getAttr(f"{layer}.overrideRGBColors"):
-            r, g, b = cmds.getAttr(f"{layer}.overrideColorRGB")[0]
-            data.color_rgb = (r, g, b)
-        else:
-            color_index = cmds.getAttr(f"{layer}.color")
-            data.color_rgb = self._index_to_rgb(color_index)
+        data.color_rgb = self._read_layer_color(layer)

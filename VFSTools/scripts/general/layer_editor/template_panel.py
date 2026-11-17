@@ -55,12 +55,12 @@ class TemplatePanel(QWidget):
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(2)
+        main_layout.setSpacing(8)       # Room between the header row and the template row
 
         # ---- HEADER ROW ----
         header = QWidget()
         header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(4, 0, 4, 0)
+        header_layout.setContentsMargins(4, 4, 4, 0)
 
         self.title_label = QLabel(TEMPLATE_LAYER_LABEL)
         font = self.title_label.font()
@@ -167,7 +167,7 @@ class TemplatePanel(QWidget):
     def _describe(self, name):
         value = self.template.get(name)
         if name == "color_rgb":
-            return rgb_to_hex(value)
+            return rgb_to_hex(value) if value else "(no color - clears layer colors)"
         if name == "visibility":
             return "Visible" if value else "Hidden"
         if name == "display_type":

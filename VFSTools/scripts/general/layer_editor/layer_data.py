@@ -1,7 +1,7 @@
 # ------------ IMPORTING MODULES ------------
 
 from dataclasses import dataclass, asdict, fields, field
-from typing import ClassVar
+from typing import ClassVar, Optional
 
 # ------------ SETUP DATA CLASS ------------
 # Using data class for cleaner code (automatically handles __init__ and self.var = var assignments)
@@ -14,7 +14,7 @@ class VFSLayerData:
 
     visibility: bool = True
     display_type: int = 0
-    color_rgb: tuple = (1.0, 1.0, 1.0)
+    color_rgb: Optional[tuple] = None   # None = no custom color (Maya's default layer color)
 
     select_sm: bool = False
     select_ucx: bool = False
@@ -32,7 +32,7 @@ class VFSLayerData:
         # asdict() is specific to @dataclass, it converts an instance of dataclass to a dictionary format
         data = asdict(self)
         # Make the color_rgb parameter a list instead of a tuple since JSON doesn't support tuples
-        data["color_rgb"] = list(self.color_rgb)
+        data["color_rgb"] = list(self.color_rgb) if self.color_rgb else None
 
         return data
 
@@ -41,9 +41,8 @@ class VFSLayerData:
     @classmethod
     def from_dict(cls, data):
         # Make the color_rbg parameters a tuple again
-        data["color_rgb"] = tuple(
-            data.get("color_rgb", [1, 1, 1])
-        )
+        color = data.get("color_rgb")
+        data["color_rgb"] = tuple(color) if color else None
 
         # Strip any keys that no longer exist on the dataclass
         # This handles backwards compatibility when fields are removed
@@ -70,7 +69,7 @@ class LayerTemplate:
         "layer_name": "",
         "visibility": True,
         "display_type": 0,
-        "color_rgb": (1.0, 1.0, 1.0),
+        "color_rgb": None,      # None = no custom color
         "use_origin": False,
         "export_path": "",
         "legc_export_path": "",
@@ -82,7 +81,7 @@ class LayerTemplate:
 
     @staticmethod
     def _normalize(name, value):
-        return tuple(value) if name == "color_rgb" else value
+        return tuple(value) if name == "color_rgb" and value is not None else value
 
     # ---- draft (staged edits) ----
 
@@ -131,7 +130,7 @@ class LayerTemplate:
 
     def to_dict(self):
         out = dict(self.applied)
-        if "color_rgb" in out:
+        if out.get("color_rgb") is not None:
             out["color_rgb"] = list(out["color_rgb"])  # JSON has no tuples
         return out
 

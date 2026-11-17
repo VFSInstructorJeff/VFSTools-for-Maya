@@ -28,6 +28,15 @@ def rgb_to_hex(rgb):
         round(rgb[2] * 255)
     )
 
+def contrast_text_color(rgb):
+    """Black or white text, whichever is easier to read on top of this (sRGB 0-1) color."""
+    def linear(c):
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (linear(c) for c in rgb)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    # Equal contrast against white and black happens at a luminance of ~0.179
+    return "#ffffff" if luminance <= 0.179 else "#111111"
+
 def shifted_background_color(rgb_color):
     # Unpack each separate variable (Hue, Saturation, Value)
     h, s, v = colorsys.rgb_to_hsv(*rgb_color)
