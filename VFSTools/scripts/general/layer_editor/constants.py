@@ -17,6 +17,8 @@ from core.paths import ICON_DIR  # <module root>/icons
 # ---- COLORS ----
 DARK_GRAY = "#292929"
 
+NEUTRAL_ROW_COLOR = "#333333"       # Row color for layers that have no custom color
+
 LAYER_PALETTE = [
     # Red
     ["#7B0000", "#9B0000", "#B71C1C", "#E53935", "#EF9A9A", "#FFCDD2"],
@@ -50,6 +52,7 @@ VISIBLE = str(ICON_DIR / "visible.png")
 CONFIG_DROPDOWN = str(ICON_DIR / "hotkeySetSettings.png")
 FOLDER_OPEN = str(ICON_DIR / "folder-open.png")
 HELP = str(ICON_DIR / "help_line.png")
+RESYNC = str(ICON_DIR / "refresh.png")
 BUG_REPORT = str(ICON_DIR / "aic_warning.png")
 DRAG_HANDLE = str(ICON_DIR / "draggable.png")
 UNDO = str(ICON_DIR/ "undo_s.png")

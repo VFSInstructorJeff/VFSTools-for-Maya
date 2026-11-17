@@ -39,7 +39,7 @@ class TemplateLayerWidget(LayerWidget):
         self.name_edit.setPlaceholderText("Layer name")
         self.name_edit.setToolTip("Base name for layers: Name_01, Name_02, ...\n"
                                   "Leave empty to keep Maya's default layer names.")
-        self.name_edit.setStyleSheet("QLineEdit { border: none; background: rgba(255, 255, 255, 10); }")
+        self._refresh_name_style()
 
         # Nothing to export
         self.export_button.setVisible(False)
@@ -109,8 +109,11 @@ class TemplateLayerWidget(LayerWidget):
         self._refresh_path_view()
         self._emit_value("legc_on_export", checked)
 
+    def _name_is_editing(self):
+        return False    # The name field is always editable, but keeps the flat row look
+
     def pick_color(self):
-        color = QColorDialog.getColor()
+        color = QColorDialog.getColor(self._picker_start_color())
         if not color.isValid():
             return
         rgb = hex_to_rgb(color.name())
