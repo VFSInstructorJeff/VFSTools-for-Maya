@@ -39,4 +39,3 @@ if not errorlevel 1 (
 
 echo.
 echo Module creation DONE.
-pause
