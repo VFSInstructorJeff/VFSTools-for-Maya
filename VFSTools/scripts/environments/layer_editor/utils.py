@@ -1,0 +1,50 @@
+import colorsys
+from maya import OpenMayaUI as omui
+from PySide6 import QtWidgets
+from shiboken6 import wrapInstance
+
+
+# ------------ PYSIDE6 WINDOW WRAPPER ------------
+
+
+def get_main_window() -> QtWidgets.QWidget:
+    ptr = omui.MQtUtil.mainWindow()
+    return wrapInstance(int(ptr), QtWidgets.QWidget)
+
+
+# ------------ COLOR CONVERSION FUNCTIONS ------------
+
+def hex_to_rgb(value):
+    value = value.lstrip('#')
+    rgb_255 = tuple(int(value[i:i+2], 16) for i in (0, 2, 4))
+
+    return tuple(v / 255.0 for v in rgb_255)
+
+def rgb_to_hex(rgb):
+    # round() instead of int(): int() truncates, so e.g. 0.2 * 255 = 50.999... became 50 instead of 51
+    return '#{:02x}{:02x}{:02x}'.format(
+        round(rgb[0] * 255),
+        round(rgb[1] * 255),
+        round(rgb[2] * 255)
+    )
+
+def contrast_text_color(rgb):
+    """Black or white text, whichever is easier to read on top of this (sRGB 0-1) color."""
+    def linear(c):
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (linear(c) for c in rgb)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    # Equal contrast against white and black happens at a luminance of ~0.179
+    return "#ffffff" if luminance <= 0.179 else "#111111"
+
+def shifted_background_color(rgb_color):
+    # Unpack each separate variable (Hue, Saturation, Value)
+    h, s, v = colorsys.rgb_to_hsv(*rgb_color)
+
+    # Define the factor by which we're making th BG color darker/brighter based on the picked color value
+    factor = 0.5 if v > 0.5 else 1.5
+
+    return tuple(
+        max(min(c * factor, 1.0), 0.075) if factor > 1 else max(c * factor, 0.0)
+        for c in rgb_color
+    )

@@ -1,17 +1,20 @@
 """'Level Design' category: LD shelf, materials, scene callbacks, workspace, hotkeys, modular kit.
 
 Called by plug-ins/vfs_leveldesign.py. The shelf also contains two UV buttons that use
-general.uv; those import on demand, so they work whether or not the General plug-in is loaded.
+environments.uv; those import on demand, so they work whether or not the Environments plug-in is loaded.
 """
 from core import favorites, lifecycle, paths, shelf, workspace
 from leveldesign import callbacks, hotkeys
 
-SHELF_NAME = "VFS_LD"
-SHELF_FILE = paths.SHELF_DIR / "shelf_VFS_LD.mel"
-WORKSPACE_FILE = paths.WORKSPACE_DIR / "VFS_LD.json"
+SHELF_NAME = "VFS_LevelDesign"
+SHELF_FILE = paths.SHELF_DIR / "shelf_VFS_LevelDesign.mel"
+WORKSPACE_FILE = paths.WORKSPACE_DIR / "VFS_LevelDesign.json"
 MODULAR_KIT_DIR = paths.ASSETS_DIR / "modular_kit"
 
-WINDOWS = ("LDToolsWindow",)
+LEGACY_WORKSPACES = ("VFS_LD",)       # pre-2.0.0 workspace name; wiped after the renamed one is imported
+LEGACY_SHELVES = ("VFS_LD",)       # pre-2.0.0 shelf name; removed so renamed shelves don't show up twice
+
+WINDOWS = ()                       # no dockable tool windows at the moment
 
 _state = {"active": False}
 
@@ -27,8 +30,12 @@ def _install_ui():
         return
     # Order matters: the workspace points the Content Browser at the modular kit favorite.
     lifecycle.safe("content browser favorite", favorites.add_favorite, MODULAR_KIT_DIR) # First add favorite to prefs/favs.json
-    lifecycle.safe("workspace VFS_LD", workspace.import_workspace, WORKSPACE_FILE,      # Import the LD workspace
+    lifecycle.safe("workspace VFS_LevelDesign", workspace.import_workspace, WORKSPACE_FILE,      # Import the LD workspace
                    {"REPLACETHISLINE": paths.posix(MODULAR_KIT_DIR)})                   # REPLACETHISLINE for the MODULAR_KIT_DIR (instead of doing it with a separate script)
+    for legacy in LEGACY_WORKSPACES:
+        lifecycle.safe("legacy workspace " + legacy, workspace.delete_workspace, legacy, WORKSPACE_FILE.stem)
+    for legacy in LEGACY_SHELVES:
+        lifecycle.safe("legacy shelf " + legacy, shelf.remove_shelf, legacy)           # Remove pre-2.0.0 shelf tab
     lifecycle.safe("shelf " + SHELF_NAME, shelf.load_shelf, SHELF_NAME, SHELF_FILE)     # Add LD shelf
     lifecycle.safe("hotkeys", hotkeys.install)                                          # Install hotkeys
     lifecycle.log("Level Design tools loaded.")

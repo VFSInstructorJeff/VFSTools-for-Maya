@@ -1,13 +1,13 @@
 """VFS Tools - Level Design.
 
-VFS_LD shelf, grid materials, scene callbacks, VFS hotkey set and the modular kit workspace.
+VFS_LevelDesign shelf, grid materials, scene callbacks, VFS hotkey set and the modular kit workspace.
 
 Load / unload from  Windows > Settings/Preferences > Plug-in Manager
 All of the real work lives in leveldesign.setup (install / uninstall).
 """
 import maya.api.OpenMaya as om
 
-PLUGIN_VERSION = "1.3.0"
+PLUGIN_VERSION = "2.0.0"
 
 
 def maya_useNewAPI():

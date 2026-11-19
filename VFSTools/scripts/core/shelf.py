@@ -6,7 +6,7 @@ from core import paths
 
 
 def load_shelf(name, mel_file):
-    """Create the shelf tab `name` from `mel_file` (e.g. 'VFS_Tools' from shelf_VFS_Tools.mel).
+    """Create the shelf tab `name` from `mel_file` (e.g. 'VFS_Environments' from shelf_VFS_Environments.mel).
 
     The tab name Maya creates is the file name without 'shelf_' and '.mel', so `name` must match it.
     A pre-existing tab of the same name (for instance one Maya restored from the user's prefs) is

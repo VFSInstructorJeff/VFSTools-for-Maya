@@ -9,6 +9,20 @@ import maya.cmds as cmds
 from core import paths
 
 
+def delete_workspace(name, switch_to=None):
+    """Delete a workspace by name (a no-op if it doesn't exist). Used to retire renamed workspaces.
+
+    If it's the active workspace, switch to `switch_to` first (when that exists), since Maya won't
+    reliably delete the layout it is currently showing.
+    """
+    if name not in (cmds.workspaceLayoutManager(query=True, listUserLayouts=True) or []):
+        return False
+    if cmds.workspaceLayoutManager(query=True, current=True) == name and switch_to:
+        cmds.workspaceLayoutManager(setCurrent=switch_to)
+    cmds.workspaceLayoutManager(delete=name)
+    return True
+
+
 def import_workspace(json_file, replacements=None):
     """Import a workspace .json. `replacements` maps placeholder text -> value, applied first.
 

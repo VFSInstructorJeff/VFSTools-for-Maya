@@ -7,7 +7,7 @@ All of the real work lives in rigging.setup (install / uninstall).
 """
 import maya.api.OpenMaya as om
 
-PLUGIN_VERSION = "1.3.0"
+PLUGIN_VERSION = "2.0.0"
 
 
 def maya_useNewAPI():

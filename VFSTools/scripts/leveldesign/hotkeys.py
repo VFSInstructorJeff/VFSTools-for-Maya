@@ -10,8 +10,8 @@ _PREVIOUS_SET_OPTVAR = "VFSTools_previousHotkeySet"
 # Kept in sync with hotkeys/VFS_Hotkeys.mhk. Re-applied on every load so a set imported by an older
 # install (whose commands still import the old 'leveldesign_tools' package) keeps working.
 RUNTIME_COMMANDS = {
-    "DecreaseStepSnap": "from leveldesign import ld_tools as ld\nstep = ld.current_step_index - 1\nld.scale_step_snap(step)",
-    "IncreaseStepSnap": "from leveldesign import ld_tools as ld\nstep = ld.current_step_index + 1\nld.scale_step_snap(step)",
+    "DecreaseStepSnap": "from leveldesign import level_design_tools as ld\nstep = ld.current_step_index - 1\nld.scale_step_snap(step)",
+    "IncreaseStepSnap": "from leveldesign import level_design_tools as ld\nstep = ld.current_step_index + 1\nld.scale_step_snap(step)",
 }
 
 
