@@ -1047,7 +1047,29 @@ def build_ui():
         width=18,
         height=FOOTER_TEXT_HEIGHT,
         backgroundColor=FOOTER_BODY_BACKGROUND,
-        annotation="Batch Import/Export Weights",
+        annotation=(
+            "<span style='color: #ffffff;'>"
+            "<table cellspacing='0' cellpadding='3' border='0' width='270' bgcolor='#3b3b3b'>"
+            "<tr><td align='left'><b><i>[[ USAGE ]]</i></b></td></tr>"
+            "<tr><td>"
+            "<table cellspacing='0' cellpadding='3' border='0' width='264'>"
+            "<tr><td width='8' valign='top'>&#8226;</td><td>"
+            "<b><i>Select</i></b> a folder for your "
+            "<b><i>.json Weight Files</i></b>."
+            "</td></tr>"
+            "<tr><td width='8' valign='top'>&#8226;</td><td>"
+            "<b><i>&#34;Import All&#34;</i></b> searches the outliner for objects "
+            "with <b><i>Skin Clusters</i></b> then "
+            "<b><i>Applies Weights</i></b> by <b><i>Matching "
+            "Names</i></b> of the files from the folder."
+            "</td></tr>"
+            "<tr><td width='8' valign='top'>&#8226;</td><td>"
+            "<b><i>&#34;Export All&#34;</i></b> will <b><i>Save Every</i></b> skin clustered "
+            "object&#39;s weight file to the chosen folder."
+            "</td></tr>"
+            "</table></td></tr>"
+            "</table></span>"
+        ),
     )
     cmds.text(
         "batchWeightsFooterAuthor",
