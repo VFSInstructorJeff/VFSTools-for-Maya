@@ -1211,7 +1211,7 @@ global proc shelf_VFS_Rigging () {
         -style "iconOnly"
         -marginWidth 0
         -marginHeight 1
-        -command "from rigging import batch_import_export_weights as batch_weights\nbatch_weights.show()"
+        -command "from rigging import import_export_weights as batch_weights\nbatch_weights.show()"
         -sourceType "python"
         -commandRepeatable 1
         -flat 1
