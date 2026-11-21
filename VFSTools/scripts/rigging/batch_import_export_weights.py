@@ -30,8 +30,17 @@ FOLDER_OPTION_VAR = "VFSBatchWeightsFolder"
 MAPPING_MODES = (
     "Closest point on surface",
     "UV space",
-    "By vertex ID (source and destination vert count must match)",
+    "By Vertex ID",
 )
+WINDOW_WIDTH = 180
+WINDOW_CONTENT_WIDTH = WINDOW_WIDTH - 10
+WINDOW_HEIGHT = 160
+FIELD_HEIGHT = 20
+BUTTON_HEIGHT = 26
+FOOTER_ROW_HEIGHT = 19
+FOOTER_TEXT_HEIGHT = 16
+FOOTER_SIDE_PADDING = 2
+FOOTER_BODY_BACKGROUND = (0.30, 0.30, 0.30)
 FILE_SUFFIX = "_weights.json"
 FORMAT_VERSION = 1
 
@@ -449,8 +458,13 @@ def import_all(directory, mapping_mode=MAPPING_MODES[0]):
                     MAPPING_MODES[1]: VertexTransferMode.uvSpace,
                     MAPPING_MODES[2]: VertexTransferMode.vertexId,
                 }
+                mode = modes.get(mapping_mode, VertexTransferMode.closestPoint)
+                if "vertex" in str(mapping_mode).lower():
+                    mode = VertexTransferMode.vertexId
+                elif "uv" in str(mapping_mode).lower():
+                    mode = VertexTransferMode.uvSpace
                 importer = LayersTransfer()
-                importer.vertex_transfer_mode = modes[mapping_mode]
+                importer.vertex_transfer_mode = mode
                 importer.influences_mapping.config = InfluenceMappingConfig.transfer_defaults()
                 importer.load_source_from_file(path, format=FileFormat.JSON)
                 importer.target = cluster
@@ -523,38 +537,243 @@ def _run_import(*_):
         cmds.confirmDialog(title="Import Weights", message=str(exc), button=["OK"])
 
 
+def _set_footer_text_color():
+    import maya.OpenMayaUI as omui
+
+    try:
+        from PySide6 import QtWidgets
+        import shiboken6
+
+        wrap_instance = shiboken6.wrapInstance
+    except ImportError:
+        from PySide2 import QtWidgets
+        import shiboken2
+
+        wrap_instance = shiboken2.wrapInstance
+
+    for control_name in ("batchWeightsFooterAuthor", "batchWeightsFooterVersion"):
+        pointer = omui.MQtUtil.findControl(control_name)
+        if pointer:
+            label = wrap_instance(int(pointer), QtWidgets.QWidget)
+            label.setStyleSheet("color: rgb(153, 153, 153);")
+
+
+def _set_workspace_control_fixed_width():
+    import maya.OpenMayaUI as omui
+
+    try:
+        from PySide6 import QtCore, QtWidgets
+        import shiboken6
+
+        wrap_instance = shiboken6.wrapInstance
+        is_valid = shiboken6.isValid
+    except ImportError:
+        from PySide2 import QtCore, QtWidgets
+        import shiboken2
+
+        wrap_instance = shiboken2.wrapInstance
+        is_valid = shiboken2.isValid
+
+    pointer = omui.MQtUtil.findControl(WINDOW)
+    if not pointer:
+        return
+    control = wrap_instance(int(pointer), QtWidgets.QWidget)
+
+    def fit_floating_window():
+        if not is_valid(control):
+            return
+        if not cmds.workspaceControl(WINDOW, query=True, exists=True):
+            return
+        if not cmds.workspaceControl(WINDOW, query=True, floating=True):
+            return
+
+        control.adjustSize()
+        floating_window = control.window()
+        target_size = QtCore.QSize(control.width(), control.height())
+        floating_window.setFixedSize(target_size)
+
+    legacy_filter = control.findChild(QtCore.QObject, "batchWeightsFloatingSizeFilter")
+    if legacy_filter is not None:
+        legacy_filter.deleteLater()
+
+    legacy_timer = control.findChild(QtCore.QTimer, "batchWeightsFloatingSizeTimer")
+    if legacy_timer is not None:
+        legacy_timer.stop()
+        legacy_timer.deleteLater()
+
+    timer_name = "batchWeightsFloatingSizeTimerV2"
+    timer = control.findChild(QtCore.QTimer, timer_name)
+    if timer is None:
+        floating_state = {
+            "value": cmds.workspaceControl(WINDOW, query=True, floating=True)
+        }
+        timer = QtCore.QTimer(control)
+        timer.setObjectName(timer_name)
+        timer.setInterval(200)
+
+        def watch_floating_state():
+            if not is_valid(control):
+                return
+            if not cmds.workspaceControl(WINDOW, query=True, exists=True):
+                timer.stop()
+                return
+
+            is_floating = cmds.workspaceControl(WINDOW, query=True, floating=True)
+            if is_floating and not floating_state["value"]:
+                QtCore.QTimer.singleShot(100, fit_floating_window)
+            floating_state["value"] = is_floating
+
+        timer.timeout.connect(watch_floating_state)
+        timer.start()
+
+    control.setFixedWidth(WINDOW_WIDTH)
+    control.updateGeometry()
+    QtWidgets.QApplication.processEvents()
+    fit_floating_window()
+
+
 def show():
     """Create or restore the dockable Batch Import/Export Weights panel."""
     if cmds.window(LEGACY_WINDOW, exists=True):
         cmds.deleteUI(LEGACY_WINDOW, window=True)
-    if not cmds.workspaceControl(WINDOW, exists=True):
+    if cmds.workspaceControl(WINDOW, query=True, exists=True):
+        cmds.workspaceControl(
+            WINDOW,
+            edit=True,
+            label=WINDOW_TITLE,
+            restore=True,
+            initialWidth=WINDOW_WIDTH,
+            minimumWidth=WINDOW_WIDTH,
+            widthProperty="fixed",
+        )
+    else:
         ui_script = "from rigging import batch_import_export_weights as tool; tool.build_ui()"
-        cmds.workspaceControl(WINDOW, label=WINDOW_TITLE, floating=True,
-                              retain=False, initialWidth=390, initialHeight=270,
-                              widthProperty="free", uiScript=ui_script)
+        cmds.workspaceControl(
+            WINDOW,
+            label=WINDOW_TITLE,
+            floating=True,
+            retain=False,
+            initialWidth=WINDOW_WIDTH,
+            minimumWidth=WINDOW_WIDTH,
+            initialHeight=WINDOW_HEIGHT,
+            widthProperty="fixed",
+            uiScript=ui_script,
+        )
     cmds.workspaceControl(WINDOW, edit=True, restore=True)
     cmds.workspaceControl(WINDOW, edit=True, visible=True)
+    _set_workspace_control_fixed_width()
     return WINDOW
 
 
 def build_ui():
     """Build the panel contents; Maya calls this when restoring its workspace."""
-    cmds.columnLayout(adjustableColumn=True, rowSpacing=8, columnOffset=("both", 12))
-    cmds.text(label="Batch Import/Export Weights", align="left", height=30,
-              font="boldLabelFont")
-    cmds.rowLayout(numberOfColumns=2, adjustableColumn=2, columnWidth2=(32, 340),
-                   columnAttach=[(1, "both", 0), (2, "both", 0)])
-    cmds.button(label="...", height=28, command=_folder_browse)
-    folder = (cmds.optionVar(query=FOLDER_OPTION_VAR)
-              if cmds.optionVar(exists=FOLDER_OPTION_VAR) else "")
-    cmds.textField(FOLDER_FIELD, text=folder, changeCommand=_save_folder)
+    cmds.columnLayout(
+        adjustableColumn=True,
+        rowSpacing=6,
+        columnOffset=("both", 4),
+    )
+    cmds.rowLayout(
+        numberOfColumns=2,
+        adjustableColumn=2,
+        columnWidth2=(24, WINDOW_CONTENT_WIDTH - 24),
+        columnAttach=[(1, "both", 0), (2, "both", 0)],
+        height=FIELD_HEIGHT,
+    )
+    cmds.iconTextButton(
+        style="iconOnly",
+        image="folder-open.png",
+        width=22,
+        height=FIELD_HEIGHT,
+        command=_folder_browse,
+    )
+    folder = (
+        cmds.optionVar(query=FOLDER_OPTION_VAR)
+        if cmds.optionVar(exists=FOLDER_OPTION_VAR)
+        else ""
+    )
+    cmds.textField(
+        FOLDER_FIELD,
+        text=folder,
+        height=FIELD_HEIGHT,
+        changeCommand=_save_folder,
+    )
     cmds.setParent("..")
-    cmds.optionMenu(MAPPING_MENU, label="Mapping mode", changeCommand=lambda *_: None)
+
+    cmds.optionMenu(
+        MAPPING_MENU,
+        height=FIELD_HEIGHT,
+        changeCommand=lambda *_: None,
+    )
     for mode in MAPPING_MODES:
         cmds.menuItem(label=mode)
-    cmds.button(label="IMPORT ALL", height=42, backgroundColor=(0.38, 0.62, 0.40),
-                command=_run_import)
-    cmds.button(label="EXPORT ALL", height=42, backgroundColor=(0.43, 0.41, 0.66),
-                command=_run_export)
-    cmds.text(label="VFS Rigging  |  V1.00", align="right", height=20)
+
+    cmds.button(
+        label="IMPORT ALL",
+        height=BUTTON_HEIGHT,
+        backgroundColor=(0.50, 0.70, 0.50),
+        command=_run_import,
+    )
+    cmds.button(
+        label="EXPORT ALL",
+        height=BUTTON_HEIGHT,
+        backgroundColor=(0.56, 0.56, 0.78),
+        command=_run_export,
+    )
+
+    # Footer
+    cmds.separator(height=2, style="none")
+    cmds.rowLayout(
+        numberOfColumns=5,
+        adjustableColumn=3,
+        columnWidth5=(
+            FOOTER_SIDE_PADDING,
+            18,
+            WINDOW_CONTENT_WIDTH - 55 - 18 - FOOTER_SIDE_PADDING * 2,
+            55,
+            FOOTER_SIDE_PADDING,
+        ),
+        columnAttach5=("both", "both", "both", "both", "both"),
+        height=FOOTER_ROW_HEIGHT,
+        backgroundColor=FOOTER_BODY_BACKGROUND,
+    )
+    cmds.text(
+        label="",
+        width=FOOTER_SIDE_PADDING,
+        height=FOOTER_TEXT_HEIGHT,
+        backgroundColor=FOOTER_BODY_BACKGROUND,
+    )
+    cmds.iconTextButton(
+        "batchWeightsFooterHelp",
+        style="iconOnly",
+        image="help.png",
+        width=18,
+        height=FOOTER_TEXT_HEIGHT,
+        backgroundColor=FOOTER_BODY_BACKGROUND,
+        annotation="Batch Import/Export Weights",
+    )
+    cmds.text(
+        "batchWeightsFooterAuthor",
+        label="InstructorJeff",
+        align="left",
+        height=FOOTER_TEXT_HEIGHT,
+        backgroundColor=FOOTER_BODY_BACKGROUND,
+    )
+    cmds.text(
+        "batchWeightsFooterVersion",
+        label="V1.00",
+        align="right",
+        height=FOOTER_TEXT_HEIGHT,
+        backgroundColor=FOOTER_BODY_BACKGROUND,
+    )
+    cmds.text(
+        label="",
+        width=FOOTER_SIDE_PADDING,
+        height=FOOTER_TEXT_HEIGHT,
+        backgroundColor=FOOTER_BODY_BACKGROUND,
+    )
+    cmds.setParent("..")
+
+    _set_footer_text_color()
+    cmds.setParent("..")
+    _set_workspace_control_fixed_width()
     return WINDOW
