@@ -26,17 +26,19 @@ LEGACY_WINDOW = "VFSBatchWeightsWindow"
 WINDOW_TITLE = "Batch Import/Export Weights"
 FOLDER_FIELD = "VFSBatchWeightsFolder"
 MAPPING_MENU = "VFSBatchWeightsMapping"
+IMPORT_BUTTON = "VFSBatchWeightsImportButton"
+EXPORT_BUTTON = "VFSBatchWeightsExportButton"
 FOLDER_OPTION_VAR = "VFSBatchWeightsFolder"
 MAPPING_MODES = (
-    "Closest point on surface",
-    "UV space",
     "By Vertex ID",
+    "Closest Point On Surface",
+    "By UVs Space",
 )
 WINDOW_WIDTH = 180
 WINDOW_CONTENT_WIDTH = WINDOW_WIDTH - 10
 WINDOW_HEIGHT = 160
 FIELD_HEIGHT = 20
-BUTTON_HEIGHT = 26
+BUTTON_HEIGHT = 25
 FOOTER_ROW_HEIGHT = 19
 FOOTER_TEXT_HEIGHT = 16
 FOOTER_SIDE_PADDING = 2
@@ -454,15 +456,17 @@ def import_all(directory, mapping_mode=MAPPING_MODES[0]):
                 from ngSkinTools2.api.transfer import LayersTransfer
 
                 modes = {
-                    MAPPING_MODES[0]: VertexTransferMode.closestPoint,
-                    MAPPING_MODES[1]: VertexTransferMode.uvSpace,
-                    MAPPING_MODES[2]: VertexTransferMode.vertexId,
+                    MAPPING_MODES[0]: VertexTransferMode.vertexId,
+                    MAPPING_MODES[1]: VertexTransferMode.closestPoint,
+                    MAPPING_MODES[2]: VertexTransferMode.uvSpace,
                 }
-                mode = modes.get(mapping_mode, VertexTransferMode.closestPoint)
+                mode = modes.get(mapping_mode, VertexTransferMode.vertexId)
                 if "vertex" in str(mapping_mode).lower():
                     mode = VertexTransferMode.vertexId
                 elif "uv" in str(mapping_mode).lower():
                     mode = VertexTransferMode.uvSpace
+                elif "closest" in str(mapping_mode).lower() or "point" in str(mapping_mode).lower() or "surface" in str(mapping_mode).lower():
+                    mode = VertexTransferMode.closestPoint
                 importer = LayersTransfer()
                 importer.vertex_transfer_mode = mode
                 importer.influences_mapping.config = InfluenceMappingConfig.transfer_defaults()
@@ -478,24 +482,60 @@ def import_all(directory, mapping_mode=MAPPING_MODES[0]):
     return successful, errors
 
 
+def _saved_folder():
+    if cmds.optionVar(exists=FOLDER_OPTION_VAR):
+        return (cmds.optionVar(query=FOLDER_OPTION_VAR) or "").strip()
+    return ""
+
+
+def _format_display_folder(path):
+    path = (path or "").strip().rstrip("/\\")
+    if not path:
+        return ""
+    leaf = os.path.basename(path)
+    return f"../{leaf}" if leaf else path
+
+
 def _folder_browse(*_):
-    current = cmds.textField(FOLDER_FIELD, query=True, text=True)
-    result = cmds.fileDialog2(fileMode=3, caption="Choose weights folder",
-                             startingDirectory=current or os.path.expanduser("~"))
+    current = _saved_folder()
+    result = cmds.fileDialog2(
+        fileMode=3,
+        caption="Choose weights folder",
+        startingDirectory=current or os.path.expanduser("~"),
+    )
     if result:
-        cmds.textField(FOLDER_FIELD, edit=True, text=result[0])
-        _save_folder(result[0])
+        full_path = result[0]
+        _save_folder(full_path)
+        cmds.textField(
+            FOLDER_FIELD,
+            edit=True,
+            text=_format_display_folder(full_path),
+            annotation=full_path,
+        )
 
 
 def _save_folder(folder):
     """Persist the selected path in Maya preferences for future sessions."""
     folder = (folder or "").strip()
-    if folder:
+    if folder and not folder.startswith("../"):
         cmds.optionVar(stringValue=(FOLDER_OPTION_VAR, folder))
 
 
 def _folder_value():
-    return (cmds.textField(FOLDER_FIELD, query=True, text=True) or "").strip()
+    text = (cmds.textField(FOLDER_FIELD, query=True, text=True) or "").strip()
+    saved = _saved_folder()
+    if text.startswith("../"):
+        return saved
+    if text:
+        _save_folder(text)
+        cmds.textField(
+            FOLDER_FIELD,
+            edit=True,
+            text=_format_display_folder(text),
+            annotation=text,
+        )
+        return text
+    return saved
 
 
 def _selected_mapping():
@@ -556,6 +596,166 @@ def _set_footer_text_color():
         if pointer:
             label = wrap_instance(int(pointer), QtWidgets.QWidget)
             label.setStyleSheet("color: rgb(153, 153, 153);")
+
+
+_DROPDOWN_HOVER_FILTERS = []
+
+
+def _install_dropdown_hover_effects():
+    """Lighten dropdown backgrounds slightly while hovered (matching X-Gen Template Tool)."""
+    import maya.OpenMayaUI as omui
+
+    try:
+        from PySide6 import QtCore, QtWidgets
+        import shiboken6
+
+        wrap_instance = shiboken6.wrapInstance
+    except ImportError:
+        from PySide2 import QtCore, QtWidgets
+        import shiboken2
+
+        wrap_instance = shiboken2.wrapInstance
+
+    class DropdownHoverFilter(QtCore.QObject):
+        def __init__(self, widget, parent=None):
+            super(DropdownHoverFilter, self).__init__(parent)
+            self.widget = widget
+            self.normal_style = ""
+
+        def eventFilter(self, watched, event):
+            if event.type() == QtCore.QEvent.Enter:
+                self.normal_style = self.widget.styleSheet()
+                self.widget.setStyleSheet(
+                    self.normal_style
+                    + " QComboBox { background-color: rgb(54, 54, 54); }"
+                )
+                self.widget.update()
+            elif event.type() == QtCore.QEvent.Leave:
+                self.widget.setStyleSheet(self.normal_style)
+                self.widget.update()
+            return False
+
+    _DROPDOWN_HOVER_FILTERS[:] = []
+    pointer = omui.MQtUtil.findControl(MAPPING_MENU)
+    if pointer:
+        widget = wrap_instance(int(pointer), QtWidgets.QComboBox)
+        hover_filter = DropdownHoverFilter(widget, widget)
+        widget.setMouseTracking(True)
+        widget.installEventFilter(hover_filter)
+        _DROPDOWN_HOVER_FILTERS.append(hover_filter)
+
+
+_ACTION_BUTTON_FILTERS = []
+
+
+class ActionButtonPressEffect:
+    """Apply explicit colors during mouse and keyboard press/release."""
+
+    def __new__(cls, *args, **kwargs):
+        try:
+            from PySide6 import QtCore
+        except ImportError:
+            from PySide2 import QtCore
+
+        normal_style = "QPushButton { color: %s; font-weight: %s; }" % (
+            args[4], args[5]
+        )
+
+        class _Filter(QtCore.QObject):
+            def __init__(self, widget, pressed_color, hover_color, pressed_text, text_color, weight, normal_style):
+                super(_Filter, self).__init__(widget)
+                self.widget = widget
+                self.normal_style = normal_style
+                self.hover_style = self._color_style(hover_color, text_color, weight)
+                self.pressed_style = (
+                    "QPushButton {{ background-color: rgb({}, {}, {}); "
+                    "border: 1px solid rgb({}, {}, {}); "
+                    "color: {}; font-weight: {}; }}".format(
+                        pressed_color[0],
+                        pressed_color[1],
+                        pressed_color[2],
+                        max(0, pressed_color[0] - 18),
+                        max(0, pressed_color[1] - 18),
+                        max(0, pressed_color[2] - 18),
+                        pressed_text,
+                        weight,
+                    )
+                )
+
+            def _color_style(self, color, text, weight):
+                return (
+                    "QPushButton {{ background-color: rgb({}, {}, {}); "
+                    "border: 1px solid rgb({}, {}, {}); color: {}; "
+                    "font-weight: {}; }}".format(
+                        color[0], color[1], color[2],
+                        max(0, color[0] - 18),
+                        max(0, color[1] - 18),
+                        max(0, color[2] - 18),
+                        text, weight,
+                    )
+                )
+
+            def eventFilter(self, watched, event):
+                event_type = event.type()
+                if event_type in (QtCore.QEvent.MouseButtonPress, QtCore.QEvent.KeyPress):
+                    self.widget.setStyleSheet(self.pressed_style)
+                    self.widget.update()
+                elif event_type in (QtCore.QEvent.Enter,):
+                    self.widget.setStyleSheet(self.hover_style)
+                    self.widget.update()
+                elif event_type == QtCore.QEvent.Leave:
+                    self.widget.setStyleSheet(self.normal_style)
+                    self.widget.update()
+                elif event_type in (QtCore.QEvent.MouseButtonRelease, QtCore.QEvent.KeyRelease):
+                    self.widget.setStyleSheet(
+                        self.hover_style if self.widget.underMouse() else self.normal_style
+                    )
+                    self.widget.update()
+                return False
+
+        return _Filter(*args, normal_style=normal_style, **kwargs)
+
+
+def _style_action_button(
+    control_name,
+    pressed_color,
+    hover_color,
+    text_color="rgb(0, 0, 0)",
+    pressed_text_color="white",
+    font_weight="bold",
+):
+    import maya.OpenMayaUI as omui
+
+    try:
+        from PySide6 import QtWidgets
+        import shiboken6
+
+        wrap_instance = shiboken6.wrapInstance
+    except ImportError:
+        from PySide2 import QtWidgets
+        import shiboken2
+
+        wrap_instance = shiboken2.wrapInstance
+
+    pointer = omui.MQtUtil.findControl(control_name)
+    if not pointer:
+        return
+    button = wrap_instance(int(pointer), QtWidgets.QWidget)
+    normal_style = "QPushButton { color: %s; font-weight: %s; }" % (
+        text_color,
+        font_weight,
+    )
+    button.setStyleSheet(normal_style)
+    effect = ActionButtonPressEffect(
+        button,
+        pressed_color,
+        hover_color,
+        pressed_text_color,
+        text_color,
+        font_weight,
+    )
+    button.installEventFilter(effect)
+    _ACTION_BUTTON_FILTERS.append(effect)
 
 
 def _set_workspace_control_fixed_width():
@@ -669,8 +869,8 @@ def build_ui():
     """Build the panel contents; Maya calls this when restoring its workspace."""
     cmds.columnLayout(
         adjustableColumn=True,
-        rowSpacing=6,
-        columnOffset=("both", 4),
+        rowSpacing=0,
+        columnAttach=("both", 4),
     )
     cmds.rowLayout(
         numberOfColumns=2,
@@ -686,38 +886,54 @@ def build_ui():
         height=FIELD_HEIGHT,
         command=_folder_browse,
     )
-    folder = (
-        cmds.optionVar(query=FOLDER_OPTION_VAR)
-        if cmds.optionVar(exists=FOLDER_OPTION_VAR)
-        else ""
-    )
+    folder = _saved_folder()
     cmds.textField(
         FOLDER_FIELD,
-        text=folder,
+        text=_format_display_folder(folder),
+        annotation=folder,
         height=FIELD_HEIGHT,
-        changeCommand=_save_folder,
+        changeCommand=lambda *_: _folder_value(),
     )
     cmds.setParent("..")
 
+    cmds.separator(height=3, style="none")
     cmds.optionMenu(
         MAPPING_MENU,
         height=FIELD_HEIGHT,
+        backgroundColor=(0.16, 0.16, 0.16),
         changeCommand=lambda *_: None,
     )
     for mode in MAPPING_MODES:
         cmds.menuItem(label=mode)
+    _install_dropdown_hover_effects()
 
+    cmds.separator(height=3, style="none")
     cmds.button(
+        IMPORT_BUTTON,
         label="IMPORT ALL",
         height=BUTTON_HEIGHT,
         backgroundColor=(0.50, 0.70, 0.50),
         command=_run_import,
     )
+    _style_action_button(
+        IMPORT_BUTTON,
+        pressed_color=(46, 75, 48),
+        hover_color=(99, 184, 102),
+        pressed_text_color="white",
+    )
+    cmds.separator(height=3, style="none")
     cmds.button(
+        EXPORT_BUTTON,
         label="EXPORT ALL",
         height=BUTTON_HEIGHT,
         backgroundColor=(0.56, 0.56, 0.78),
         command=_run_export,
+    )
+    _style_action_button(
+        EXPORT_BUTTON,
+        pressed_color=(51, 49, 77),
+        hover_color=(105, 102, 199),
+        pressed_text_color="white",
     )
 
     # Footer
